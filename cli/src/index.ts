@@ -1,0 +1,70 @@
+#!/usr/bin/env -S npx tsx
+import { Command } from "commander";
+import { dashboard } from "./commands/dashboard";
+import { team } from "./commands/team";
+import { rulebook } from "./commands/rulebook";
+import { keepers } from "./commands/keepers";
+import { simulate } from "./commands/simulate";
+import { inflation } from "./commands/inflation";
+import { trades } from "./commands/trades";
+import { refresh } from "./commands/refresh";
+
+const program = new Command();
+program
+  .name("sgm")
+  .description("Sleeper GM — keeper/value/trade helper for league 'Los Socios'")
+  .version("0.1.0");
+
+program.command("dashboard").description("List all teams with records").action(run(dashboard));
+
+program
+  .command("team")
+  .argument("<query>", "team name or roster number")
+  .description("Single-team view: players, acquisition cost, years kept, keeper cost")
+  .action(run(team));
+
+program.command("rulebook").description("Show resolved house rules (flags outstanding ones)").action(run(rulebook));
+
+program
+  .command("keepers")
+  .argument("[query]", "team name or roster number (omit for all teams)")
+  .option("-i, --inflated", "adjust worth for league auction inflation")
+  .description("Keeper board sorted by surplus (worth - keeper cost)")
+  .action(run(keepers));
+
+program
+  .command("inflation")
+  .description("League auction inflation from keeper surplus")
+  .action(run(inflation));
+
+program
+  .command("trades")
+  .argument("<query>", "your team name or roster number")
+  .option("-p, --partner <query>", "limit to one partner team")
+  .option("-n, --top <n>", "how many rows per section")
+  .option("-s, --sharky", "show one-sided surplus-max swaps instead of mutual-fit")
+  .description("Trade chips, buy-low targets, and mutual-fit swaps")
+  .action(run(trades));
+
+program
+  .command("simulate")
+  .requiredOption("-t, --team <query>", "team name or roster number")
+  .option("-k, --keep <names>", "comma-separated player names/ids to keep")
+  .description("Cap impact of a chosen keeper set")
+  .action(run(simulate));
+
+program.command("refresh").description("Clear the API cache").action(run(refresh));
+
+/** Wrap an async action so errors print cleanly and set a non-zero exit code. */
+function run<A extends unknown[]>(fn: (...args: A) => void | Promise<void>) {
+  return async (...args: A) => {
+    try {
+      await fn(...args);
+    } catch (err) {
+      console.error(`\nError: ${err instanceof Error ? err.message : String(err)}`);
+      process.exitCode = 1;
+    }
+  };
+}
+
+program.parseAsync();

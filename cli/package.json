@@ -1,0 +1,12 @@
+{
+  "name": "@sgm/cli",
+  "version": "0.1.0",
+  "type": "module",
+  "bin": {
+    "sgm": "./src/index.ts"
+  },
+  "dependencies": {
+    "@sgm/core": "*",
+    "commander": "^12.1.0"
+  }
+}

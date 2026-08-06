@@ -1,0 +1,200 @@
+# DECISIONS — append-only log
+
+Non-obvious choices and their rationale, so we don't re-litigate them. Newest at top.
+
+## 2026-08-06 — Resilience+perf: timeout, circuit breaker, request coalescing, permanent history cache
+`team`/`keepers` hung under throttling (no fetch timeout) and re-pulled immutable history every run.
+Fixes: (1) per-request AbortController timeout (7s) so hangs fail fast; (2) module-level circuit breaker
+— after a call exhausts retries, remaining calls this run fail fast so the cache serves stale data in
+seconds instead of grinding through ~200 timeouts; (3) in-flight coalescing in `cached()` so concurrent
+identical fetches (FAAB + acquisition share transactions) dedupe; (4) past-season transactions/matchups
+cached PERMANENTLY (immutable) via a `historical` flag on getTransactions/getMatchups — the big win:
+cold run dropped ~26s→7s, warm ~3s, and API load drops sharply (main throttling cause). Also serve
+stale-on-error and surface err.cause (ENOTFOUND/ECONNRESET/etc.). Tests: coalescing + stale-fallback.
+
+## 2026-08-06 — Fetch retry/backoff + build league indexes once (fixed `keepers` fetch-fail)
+`sgm keepers` (all 12 teams) crashed with "fetch failed" — a transient network/rate-limit error with no
+retry, made worse by rebuilding the full history indexes per team (12×). Fixes: `fetchJson` retries
+429/5xx/network with exponential backoff (0.3→2.4s) and reports the failing URL; CLI now builds
+draft/FAAB/acquisition indexes + valuation ONCE via `loadKeeperData` and reuses across teams. Per-team
+functions (`teamKeeperLines`, `teamSurplusBoard`) are now sync over prebuilt data.
+
+## 2026-08-06 — Static build for GitHub Pages via a data snapshot (T35), + mobile pass
+**Static hosting:** rather than refactor the Node core to run in the browser (fs cache/config/env make
+that messy), chose a snapshot approach: `scripts/snapshot.ts` runs the SAME engines the server uses and
+writes one `web/public/data.json` (all view models: league, per-team base+inflated, inflation, players,
+rules, per-team trades). `web/src/api.ts` now decides mode at runtime — if `./data.json` loads it serves
+from it (static, GitHub Pages), else calls `/api/*` (local server). Views unchanged. Trades partner
+filter runs client-side on the snapshot. `base: "./"` so it works at any Pages path; single-page (tab
+state) so no 404 fallback needed. Verified: served web/dist from a plain no-API static server and the
+whole app renders + is interactive from data.json alone. Deploy steps in web/DEPLOY.md; refresh = re-run
+`npm run web:static`. One source of truth for LOGIC (only response shapes are replicated in the snapshot
+script). **Mobile:** header stacks, tab nav scrolls, wide tables scroll horizontally (@media ≤760px).
+
+## 2026-08-06 — Web polish: Rules + Data pages, interactive keeper sim, Trades partner/sharky (T34)
+Added `/api/players` (flattened league keeper lines). Web: **Team** page now has an interactive keeper
+SIMULATION — per-row checkboxes seeded from the keep/hold/cut call, live sim cap used / left / surplus
+(the `simulate` CLI command, in-page). **Trades** got a partner-team `<select>` (?partner=) and a
+mutual-fit ↔ sharky toggle (both come from computeTrades already). New **Data** page: all rostered
+players, client-side filter (team/position/search) + click-to-sort columns. New **Rules** page renders
+league-rules.ts (escalation bases + full rookie table). All verified live in-browser.
+
+## 2026-08-06 — M5 web: extracted orchestration to core; Express API + React/Vite UI (T32/T33)
+Moved the CLI's network orchestration (loadContext/loadKeeperData/teamKeeperLines/teamSurplusBoard/
+leagueInflation/inflateBoard, Ctx/KeeperData, STREAMER_POSITIONS) out of `cli/src/lib.ts` into
+`core/src/app.ts` (relative imports, no barrel cycle) so the CLI AND the server share ONE
+implementation; cli/lib.ts deleted, commands import from @sgm/core. `server/` = Express (tsx) exposing
+/api/league,/team/:id,/inflation,/trades/:id,/rules,POST /refresh; memoizes assembled state 5 min;
+serves web/dist if built (one port). `web/` = React 18 + Vite, plain CSS dark theme, no router (tab
+state), local API types (no core in browser). `npm run web` builds UI + serves on :3001. Verified live:
+Dashboard, Team (keeper board + inflation toggle), Inflation all render real data. 53 tests still green;
+server type-checked in the gate (added server/src to root tsconfig). Web not in the gate (jsx; Vite
+build is the check). Chose plain CSS over Tailwind and fetch/useAsync over TanStack Query to minimize
+setup risk for the first working UI.
+
+## 2026-08-06 — Trade explorer v2: positional need + mutual-fit (less sharky) — T31
+Added roster-need modeling so the DEFAULT trades view is mutually beneficial, not one-sided. Per team,
+per skill position: need = baseStarterSlots (integer QB1/RB2/WR2/TE1, FLEX ignored on purpose) −
+count(startable players, worth≥$12). need>0 short, need<0 depth. A swap "fills" for a team when it gives
+from depth (need<0) and receives at a relatively thinner position (higher need) — covers real shortages
+AND depth-for-depth rebalancing (the everyday "you're stacked at RB, I'm stacked at WR" trade). Default
+`fairSwaps` = both teams fill + comparable worth + ≤$15 surplus swing; `--sharky` keeps the surplus-max
+view. Verified: deep team (Jahmyr) gets balanced depth swaps; thin team (Blotter, all "set", no depth)
+correctly gets none → its lever is the sharky A.J. Brown dump. rosterPositions now on Ctx. Tested.
+
+## 2026-08-06 — `keepers --inflated` + trade explorer (T29/T30)
+**--inflated:** `keepers -i` scales skill worth by the league inflation multiplier (K/DEF unchanged),
+re-ranking the board to real auction-market worth. Reveals that at true prices even A.J. Brown ($45)
+flips to a "keep" vs. rebuying. Shared `leagueInflation()` + `inflateBoard()` in lib; `recommendation()`
+exported from core. **trades:** `sgm trades <team> [--partner X]` — pure engine `computeTrades`: your
+chips (surplus assets), dead weight (overpriced, shop these), buy-low targets (cheap studs elsewhere),
+and talent-neutral SWAPS (comparable worth) ranked by MY surplus gain + cap relief. 1-for-1 surplus is
+zero-sum (stated in output); swaps diversified to ≤3 per give-player. K/DEF excluded (no trade value).
+Correctly flags offloading A.J. Brown as the top move. Both tested; 52 tests green.
+
+## 2026-08-06 — K/DEF are streamers: flat ~$1 worth, out of the pool + inflation (fixed overvaluation)
+VORP→$ overvalued kickers/defenses (Aubrey $34, Seahawks $29…) because they score points, but the
+market pays ~$0 (user: max $3 DEF, $1 K, most streamed free). Fix: `valuePlayers` treats
+`streamerPositions` (default K/DEF) as flat `streamerValue` (default $1) and EXCLUDES them from the
+dollar pool, so QB/RB/WR/TE absorb it (skill worths rose, e.g. Achane $59→$70 — more realistic). The
+`inflation` command also drops K/DEF from the keeper economy (they'd never be value-kept). Result: NE
+DEF now worth $2 → "hold" at $3; inflation drivers are all skill players; multiplier ×2.0→×2.53 (money
+now concentrated on skill). Per-position `streamerValues` (default K $1, DEF $2) is configurable. T28.
+
+## 2026-08-06 — Salary sheet is superseded by a re-acquire in its season+ (fixed stale Javonte)
+The workbook is a PRE-auction snapshot of its season (2025). A player re-drafted/re-added via
+auction/FAAB in 2025+ has a reset cost (§6.3) the snapshot never saw. Bug: Javonte Williams showed $41†
+(sheet: Hunt Greatness's stale $32 keeper) though the user re-bought him in the 2025 auction for $5.
+Fix: `sheetSupersededByReacquire(sheetSeason, acquisitionSeason, acquiredVia)` — if the most-recent
+PRICED acquisition (auction/faab/free_agent) is ≥ sheetSeason, skip the sheet and use the API-computed
+cost. Trades don't reset, so traded players (A.J. Brown, basis 2022) still use the sheet. Javonte now
+$5→$12 computed; kept players unchanged. Tested.
+
+## 2026-08-06 — Inflation modeled as keeper-surplus → auction multiplier (per the user's framing)
+User clarified inflation isn't "player overpriced" — it's that cheap keepers leave surplus cap in the
+economy chasing a smaller auction pool, so available players' true worth is HIGHER than a naive
+full-budget valuation. Engine (`computeInflation`, pure): rational keepers = surplus>0 (raw worth −
+salary, matching the board so decisions/$ aren't distorted); keeperSurplus = Σ(worth−salary);
+multiplier = (capTotal − keeperSalaries)/(capTotal − keeperWorth) = 1 + keeperSurplus/auctionValue.
+Live: 53 keepers, $855 surplus, ×2.0 (~100% over face); valuation calibration vs cap ≈ 0.98 (so worth
+and money share a scale — no normalization applied, only reported). `sgm inflation` shows top discount
+drivers + per-team surplus. Did NOT feed the multiplier back into board worth yet (circular; left as a
+future `--inflated` view). Also made `keepers` take a positional `[team]` like `team`.
+
+## 2026-08-06 — Imported the commissioner's workbook → config/salaries.csv (authoritative)
+Parsed "League Deployment.xlsx" (no python; unzipped the xlsx + a Node XML parser). Sheets: Salary
+Dashboard (163 players: Manager/PlayerID/Name/Pos/Team/Status/Old Salary/Years Kept/Salary
+Increase/New Salary) and Contract Ledger (Prev Year Salary/Years Kept). This CONFIRMED our escalation
+formula exactly (e.g. Rashee Rice WR 9→17 via +8=6+2; PHI DEF 0→1). **League Info says Season = 2025**
+and the dashboard has zero 2025 NFL rookies → "New Salary" is the **2025** salary. So we escalate it ONE
+year to 2026 (McConkey 8→16, A.J. Brown 36→45, Hurts 22→29 — all verified). Wrote `config/salaries.csv`
+(season 2025, 163 players) and taught `loadSalarySheet` to prefer CSV (parseSalaryCsv, pure+tested) over
+JSON. The user is "Josh Blotter". Sheet salaries display `†`; players absent from the sheet fall back to
+computed (`≈`).
+
+## 2026-08-06 — Salary carries (accumulates) through trades; + optional salary-sheet override
+User confirmed: (1) 2026 keeper cost = current salary escalated one year; (2) a trade carries the
+ACCUMULATED salary (not a reset to original draft price) — only the years-kept term resets.
+Implemented `accumulatedSalary` (engines/keepers.ts): replays the salary from origin to the target
+season, carrying it across owners while resetting the "+yearsKept" term at each ownership stint
+(`stintStarts`). Fixed the earlier wrong "reset base to original on trade."
+Added an optional authoritative override: `config/salaries.json` (`loadSalarySheet`/`sheetSalary`) with
+per-player `{salary, yearsKept}` as-of a season; the app escalates forward. With `yearsKept` supplied
+this is EXACT even for pre-2022 players (verified: A.J. Brown $45, Pickens $35, Hurts $29, Achane $25 —
+all match the commissioner's numbers + one year). Computed (non-sheet) salaries flag `≈` when the player
+was traded or has an auction origin at the oldest visible season (pre-Sleeper risk). Task T26.
+
+## 2026-08-06 — Reconciled vs the commissioner's salary sheet: 3 causes of difference
+Compared our output to the league manager's app for 6 players. **Our escalation formula + rookie table
+are CONFIRMED correct** (clean user-drafted cases match exactly: McConkey $8@N1, Achane $16@N2,
+Pickens $25@N3 as 2025 salaries). Differences come from:
+1. **Season offset (dominant):** commissioner shows the CURRENT (2025) salary; we compute the upcoming
+   2026 keeper cost = one more escalation. Our 2026 = their 2025 + one year (McConkey 8→16, Achane
+   16→25). This is the user's own hypothesis; not a bug.
+2. **Pre-2022 history the API lacks:** Hurts (kept 5 → since ~2020) and A.J. Brown ($36 implies a
+   carried basis ~$21, not the $1 the 2022 auction shows) both have keeper history before Sleeper's
+   earliest visible season (2022). We cannot reconstruct it from the API.
+3. **Trade/acquisition-year counting:** preseason trades (Pickens, 2023 wk1) count that season as kept;
+   mid-season (A.J. Brown, 2023 wk9) and rookie-draft years do not. Our `currentSeason − tenureStart`
+   under-counts the preseason-trade case by 1.
+**Recommended fix (pending user):** import the commissioner's current salary sheet as the authoritative
+base, then apply exactly one escalation for 2026. Sidesteps #2 and #3 entirely. Trace tool
+(`npm run sgm:trace`) now shows full draft+trade timelines and was the key diagnostic.
+
+## 2026-08-06 — yearsKept is per-owner and resets on trade (base salary still carries)
+Escalation's "years kept" counts only the CURRENT owner's tenure; a trade resets it, but the base
+salary keeps the player's original draft/auction value. Implemented via `buildAcquisitionIndex` +
+`ownerTenureStart` (draft `picked_by` + transaction `adds`→owner, user_ids stable across seasons);
+`lib.ts` overrides `yearsKept = currentSeason − tenureStart`, falling back to the cost-basis season
+when no acquisition-by-owner is found. Verified live: A.J. Brown 4→3 yrs ($35→$25); Hurts stays 4
+(drafted by current owner, never traded). Task T25.
+
+## 2026-08-06 — Real keeper rules encoded; escalation replayed annually (compounds)
+User supplied the rules. §6.1: skill positions `new = old + positionalBase + yearsKept` (QB 1, RB 6,
+WR 6, TE 3); K/DEF `+$1/yr`. §6.4: rookie starting salary from a slot×position table (single 12-pick
+round). **Key interpretation:** the formula is an annual recurrence on *last year's* salary, so we
+replay it from the acquisition season → closed form `base + N·posBase + N(N+1)/2` (skill), `base + N`
+(K/DEF), with N = yearsKept = currentSeason − acquisitionSeason. Rookies start escalating the season
+after they're drafted. Flagged for user confirmation in docs/league-rules.md; changing the count is a
+one-line edit. Verified live: A.J. Brown $35, Achane $25, Hurts $18, NE DEF $3.
+
+## 2026-08-05 — Cost basis = ALL drafts per season (auctions + rookie linear); trades carry, don't reset
+Superseded the earlier "trade-acquired = unknown" gap. Root cause was that we read only
+`league.draft_id` (one auction) per season. Fix: `buildDraftIndex` enumerates **every** draft per season
+via `getDrafts` — all auctions **and** the `linear` rookie draft. Rookie picks index by `(round, slot)`
+and dollarize via the §6.4 schedule. **Trade carryover falls out for free:** trades aren't priced draft
+events, so scanning by `player_id` naturally lands on the player's original draft basis (confirmed:
+A.J. Brown → 2022 auction $1, carried through a later trade). Re-auction/waiver still reset because the
+newest priced event wins, and in-season FAAB is checked before the same season's preseason draft.
+Verified live: the user's roster now resolves with ZERO unknowns. Task T24 done.
+
+## 2026-08-05 — [SUPERSEDED] Trade-acquired players get `unknown` cost
+Was accepted as a temporary gap; fixed same day by the all-drafts refactor above.
+
+## 2026-08-05 — CLI-first, pure-core architecture
+Logic lives in `core/` as pure functions; CLI/web are thin consumers. **Why:** lets every engine be
+tested offline and exercised in the terminal the day it's written (user priority: "test early").
+
+## 2026-08-05 — Fake the two open house rules behind config, don't block
+Keeper escalation (§6.1) and rookie cost (§6.4) are unknown. Encoded as `placeholder: true` values in
+`config/league-rules.ts` (flat +$5/yr; flat $3). **Why:** unblocks all downstream engines; swapping in
+the real rule touches exactly one file. `sgm rulebook` prints an OUTSTANDING banner so we never mistake
+placeholders for truth.
+
+## 2026-08-05 — `yearsKept` approximated from most-recent acquisition
+Sleeper doesn't reliably flag keepers historically (`is_keeper` was null in the 2025 draft data). So
+`yearsKept = currentSeasonYear − seasonOfMostRecentAcquisition`. **Why:** good enough for a placeholder
+escalation model; revisit if the real §6.1 rule needs true consecutive-years-kept.
+
+## 2026-08-05 — Cost basis = most-recent acquisition across the season chain
+Provenance scans seasons newest→oldest and takes the first hit (auction `metadata.amount` or FAAB
+`waiver_bid`). **Why:** this naturally implements rule §6.3 (re-acquire resets cost) with no special case.
+
+## 2026-08-05 — Valuation v1 = VORP→$ on last-season actual points
+No external projections dependency yet; use prior-season realized points as the projection proxy,
+convert points-above-replacement to auction dollars scaled to the 12×$200 pool. **Why:** end-to-end and
+offline now; swap in real projections later behind the same interface.
+
+## 2026-08-05 — tsx + moduleResolution "bundler", no build step for dev
+Run TS directly with `tsx`; typecheck with `tsc --noEmit`. **Why:** zero build friction for a small
+personal tool; extensionless ESM imports resolve cleanly.

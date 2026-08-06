@@ -1,0 +1,10 @@
+node_modules/
+.cache/
+scripts/snapshots/
+dist/
+web/dist/
+web/public/data.json
+*.log
+.env
+config/salaries.json
+.DS_Store

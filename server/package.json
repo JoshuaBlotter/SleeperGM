@@ -1,0 +1,9 @@
+{
+  "name": "@sgm/server",
+  "version": "0.1.0",
+  "type": "module",
+  "dependencies": {
+    "@sgm/core": "*",
+    "express": "^4.21.2"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "_comment": "Copy to config/salaries.json to override computed salaries with the league's authoritative sheet. 'season' is the season these salaries are current AS OF; the app escalates forward to the upcoming keeper season. Each entry is a bare salary number, or { salary, yearsKept }. Supplying yearsKept makes escalation exact even for players with pre-2022 history the API can't see. Keys can be Sleeper player ids (byPlayerId) or player names (byName).",
+  "season": 2025,
+  "byName": {
+    "A.J. Brown": { "salary": 36, "yearsKept": 2 },
+    "Jalen Hurts": { "salary": 22, "yearsKept": 5 },
+    "George Pickens": { "salary": 25, "yearsKept": 3 },
+    "De'Von Achane": { "salary": 16, "yearsKept": 2 },
+    "Ladd McConkey": { "salary": 8, "yearsKept": 1 },
+    "Christian Watson": 8
+  }
+}
