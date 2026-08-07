@@ -98,6 +98,14 @@
   - **Trending** — Sleeper's most-added players last 24h (`/players/nfl/trending/add`), with add counts +
     owner/FA tags. `core loadTrending(ctx,data)`. New `/api/trending`; snapshot bakes `players.trending`.
   - Source-independent (no worth shown). `AllPlayerRow`/`TrendingRow` in core; web `PlayersView`.
+- **Mobile pass 3** (2026-08-07, user-reported): fixed Inflation/Rookies/Rules on phones.
+  - **Rules** value glossary was a 2-col table; the mobile `white-space:nowrap` rule turned the prose
+    cells into infinite horizontal scroll → converted to responsive **cards** (`.deck`/`.info-card`).
+  - **Rookies** 4 stacked tables → **Prospects / Pick board** sub-tabs (matches Players); base order
+    tucked into a `<details>` (`.reveal`). Fixed a 99px overflow: `.two-col > * { min-width:0 }` (grid
+    tracks couldn't shrink, so inner tables forced the track wide — also fixed Inflation/Trades).
+  - **Players** list capped at 65vh with a sticky header + internal scroll (`.table-scroll`).
+  - Card pattern reserved for prose/definitional + stat-tile content; dense sortable data stays tabular.
 
 ## Static hosting
 - `scripts/snapshot.ts` → `web/public/data.json` (all view models from the real engines).

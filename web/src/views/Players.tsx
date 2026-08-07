@@ -83,6 +83,7 @@ function AllPlayers() {
         <span className="dim">{rows.length} players</span>
       </div>
 
+      <div className="table-scroll">
       <table className="grid">
         <thead>
           <tr>
@@ -113,6 +114,7 @@ function AllPlayers() {
           ))}
         </tbody>
       </table>
+      </div>
       <div className="legend">
         Free agents (<span className="badge hold">FA</span>) are unrostered but fantasy-relevant (in the ADP list or
         50+ points last season). Keep $ / In league apply to rostered players only.
@@ -131,6 +133,7 @@ function Trending() {
       <p className="dim" style={{ marginTop: 0 }}>
         Most-added players across Sleeper in the last 24 hours (waiver/pickup buzz).
       </p>
+      <div className="table-scroll">
       <table className="grid">
         <thead>
           <tr>
@@ -159,6 +162,7 @@ function Trending() {
           ))}
         </tbody>
       </table>
+      </div>
     </>
   );
 }

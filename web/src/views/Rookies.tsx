@@ -1,6 +1,8 @@
-import { api, type RookiePick } from "../api";
+import { useState } from "react";
+import { api, type RookieBoard, type RookiePick } from "../api";
 import { ErrorBox, Loading, money, record, useAsync } from "../ui";
 
+type Sub = "prospects" | "picks";
 const POS = ["QB", "RB", "WR", "TE"];
 
 function costCell(cost: Record<string, number>) {
@@ -17,35 +19,14 @@ function costCell(cost: Record<string, number>) {
   );
 }
 
-export function RookiesView() {
-  const s = useAsync(() => api.rookies(), []);
-  if (s.loading) return <Loading what="rookie draft board" />;
-  if (s.error) return <ErrorBox message={s.error} />;
-  const b = s.data!;
+function Prospects({ b }: { b: RookieBoard }) {
   const rookies = b.prospects ?? [];
-
   return (
-    <section>
-      <div className="head-row">
-        <h2>
-          Rookie Draft Board <span className="dim">· {b.season} · {b.rounds} round{b.rounds === 1 ? "" : "s"}{b.snake ? " · snake" : ""}</span>
-        </h2>
-      </div>
-
-      <div className="notice" style={{ marginBottom: 16 }}>
-        <strong>Derived order.</strong> Sleeper doesn't publish the {b.season} rookie order, so the base is the{" "}
-        <strong>reverse of last season's regular-season standings</strong> (wins, then points-for); current pick
-        ownership is applied from Sleeper's traded-picks.
-      </div>
-
-      <div className="head-row" style={{ marginBottom: 4 }}>
-        <h3 style={{ margin: 0 }}>
-          Rookie prospects <span className="dim">· ranked by {b.prospectSource || "value"} · {rookies.length} shown</span>
-        </h3>
-      </div>
+    <>
       <p className="dim" style={{ marginTop: 0 }}>
-        The incoming rookie class (Sleeper first-year players), ranked by draft-market value — shown deeper than the 12
-        first-round slots so you can eyeball the stretch prospects who might sneak into round 1.
+        The incoming rookie class (Sleeper first-year players), ranked by {b.prospectSource || "value"} — shown
+        deeper than the 12 first-round slots so you can eyeball the stretch prospects who might sneak into round 1.
+        <span className="dim"> · {rookies.length} shown</span>
       </p>
       {rookies.length === 0 ? (
         <p className="notice">No rookie values available from the {b.prospectSource || "value"} source.</p>
@@ -62,10 +43,16 @@ export function RookiesView() {
           ))}
         </div>
       )}
+    </>
+  );
+}
 
-      <div className="two-col" style={{ marginTop: 24 }}>
+function PickBoard({ b }: { b: RookieBoard }) {
+  return (
+    <>
+      <div className="two-col">
         <div>
-          <h3>Pick slots (round 1)</h3>
+          <h3 style={{ marginTop: 8 }}>Pick slots (round {b.rounds === 1 ? "1" : `1–${b.rounds}`})</h3>
           <table className="grid">
             <thead>
               <tr>
@@ -90,7 +77,7 @@ export function RookiesView() {
         </div>
 
         <div>
-          <h3>Draft capital by team</h3>
+          <h3 style={{ marginTop: 8 }}>Draft capital by team</h3>
           <table className="grid">
             <thead>
               <tr>
@@ -111,30 +98,66 @@ export function RookiesView() {
               ))}
             </tbody>
           </table>
-
-          <h3 style={{ marginTop: 24 }}>Base order (reverse 2025 standings)</h3>
-          <table className="grid">
-            <thead>
-              <tr>
-                <th className="r">Slot</th>
-                <th>Team</th>
-                <th>2025</th>
-                <th className="r">Points</th>
-              </tr>
-            </thead>
-            <tbody>
-              {b.baseOrder.map((o) => (
-                <tr key={o.slot}>
-                  <td className="r dim">{o.slot}</td>
-                  <td>{o.teamName}</td>
-                  <td className="dim">{record(o.wins, o.losses, o.ties)}</td>
-                  <td className="r dim">{o.pointsFor.toFixed(1)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
         </div>
       </div>
+
+      <details className="reveal">
+        <summary>Base order — reverse of 2025 regular-season standings</summary>
+        <table className="grid" style={{ marginTop: 8 }}>
+          <thead>
+            <tr>
+              <th className="r">Slot</th>
+              <th>Team</th>
+              <th>2025</th>
+              <th className="r">Points</th>
+            </tr>
+          </thead>
+          <tbody>
+            {b.baseOrder.map((o) => (
+              <tr key={o.slot}>
+                <td className="r dim">{o.slot}</td>
+                <td>{o.teamName}</td>
+                <td className="dim">{record(o.wins, o.losses, o.ties)}</td>
+                <td className="r dim">{o.pointsFor.toFixed(1)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </details>
+    </>
+  );
+}
+
+export function RookiesView() {
+  const s = useAsync(() => api.rookies(), []);
+  const [sub, setSub] = useState<Sub>("prospects");
+  if (s.loading) return <Loading what="rookie draft board" />;
+  if (s.error) return <ErrorBox message={s.error} />;
+  const b = s.data!;
+
+  return (
+    <section>
+      <div className="head-row">
+        <h2>
+          Rookies <span className="dim">· {b.season} · {b.rounds} round{b.rounds === 1 ? "" : "s"}{b.snake ? " · snake" : ""}</span>
+        </h2>
+        <div className="subtabs">
+          <button className={sub === "prospects" ? "active" : ""} onClick={() => setSub("prospects")}>
+            Prospects
+          </button>
+          <button className={sub === "picks" ? "active" : ""} onClick={() => setSub("picks")}>
+            Pick board
+          </button>
+        </div>
+      </div>
+
+      <div className="notice" style={{ marginBottom: 16 }}>
+        <strong>Derived order.</strong> Sleeper doesn't publish the {b.season} rookie order, so the base is the{" "}
+        <strong>reverse of last season's regular-season standings</strong>; current pick ownership is applied from
+        Sleeper's traded-picks.
+      </div>
+
+      {sub === "prospects" ? <Prospects b={b} /> : <PickBoard b={b} />}
     </section>
   );
 }

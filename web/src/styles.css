@@ -88,6 +88,14 @@ h3 { margin: 22px 0 8px; color: var(--dim); font-size: 13px; text-transform: upp
 .subtabs button { background: transparent; color: var(--dim); border: 0; padding: 6px 14px; border-radius: 8px; cursor: pointer; font-size: 13px; }
 .subtabs button:hover { color: var(--text); }
 .subtabs button.active { background: var(--accent-dim); color: var(--text); }
+
+/* Collapsible reference section (e.g. Rookies → base order) */
+.reveal { margin-top: 20px; border-top: 1px solid var(--border); padding-top: 12px; }
+.reveal > summary { cursor: pointer; color: var(--dim); font-size: 13px; list-style: none; user-select: none; }
+.reveal > summary::-webkit-details-marker { display: none; }
+.reveal > summary::before { content: "▸  "; }
+.reveal[open] > summary::before { content: "▾  "; }
+.reveal > summary:hover { color: var(--text); }
 .toggle { color: var(--dim); font-size: 13px; display: flex; align-items: center; gap: 6px; cursor: pointer; }
 
 .cards { display: flex; gap: 12px; flex-wrap: wrap; margin: 4px 0 8px; }
@@ -188,9 +196,15 @@ table.grid tr:hover td { background: var(--panel); }
 @media (max-width: 760px) { .prospect-grid { grid-template-columns: 1fr; } }
 
 .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.two-col > * { min-width: 0; } /* let grid tracks shrink so inner tables scroll instead of overflowing */
 @media (max-width: 800px) {
   .two-col { grid-template-columns: 1fr; }
 }
+
+/* Height-capped, scrollable table (long lists e.g. Players) with a sticky header. */
+.table-scroll { max-height: 65vh; overflow: auto; border: 1px solid var(--border); border-radius: 10px; }
+.table-scroll table.grid { display: table; margin: 0; overflow-x: visible; }
+.table-scroll thead th { position: sticky; top: 0; background: var(--bg); z-index: 1; }
 
 .needs { display: flex; gap: 8px; flex-wrap: wrap; margin: 4px 0 8px; color: var(--dim); align-items: center; }
 .need-pill { background: var(--panel); border: 1px solid var(--border); border-radius: 999px; padding: 3px 10px; font-size: 12px; }
