@@ -265,3 +265,12 @@ re-trigger the legacy Pages build under the repo's read-only default workflow pe
 build + deploy in one job via `actions/configure-pages` + `upload-pages-artifact` + `deploy-pages`
 (permissions: pages: write, id-token: write). Requires Pages Source = "GitHub Actions" (one-time settings
 flip). This removes the `docs/` round-trip entirely and is GitHub's current recommended path.
+
+## 2026-08-07 — Players page: include free agents, but filter the 11k-player dump to "relevant"
+The Players page (formerly Data) only showed rostered players; relevant free agents were invisible.
+`players/nfl` (the full dump, ~11k, 5MB — Sleeper says fetch ≤ once/day; we cache it 24h) is too noisy to
+show whole. Decision: show rostered players + free agents that are **fantasy-relevant** = present in the
+ADP value list OR scored ≥50 fantasy points last season. That yields ~300 rows (204 rostered + ~96 FAs)
+— enough to cover pickups without the dead weight the user called out. Kept the page source-independent
+(no worth column). Added a **Trending** sub-tab from `players/nfl/trending/add` (most-added last 24h) as a
+lightweight waiver-buzz signal.

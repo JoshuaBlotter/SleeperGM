@@ -53,11 +53,13 @@ export {
   inflateBoard,
   loadRookieBoard,
   rookieProspects,
+  loadAllPlayers,
+  loadTrending,
   worthSource,
   worthSources,
   STREAMER_POSITIONS,
 } from "./app";
-export type { Ctx, KeeperData } from "./app";
+export type { Ctx, KeeperData, AllPlayerRow, TrendingRow } from "./app";
 
 // Value sources (§13.3): importable/ADP/expert auction values + overrides.
 export { parseValueCsv, matchValues, normalizeName } from "./values/valueSheet";

@@ -108,27 +108,37 @@ export interface TradeResp {
   swaps: Swap[];
 }
 
-// Raw player facts for the Data page — deliberately worth/surplus-free (source-independent).
+// Player facts for the Players page — rostered players + relevant free agents (source-independent).
 export interface PlayerRow {
-  teamId: number;
-  teamName: string;
   playerId: string;
   name: string;
   position: string;
   nflTeam: string | null;
-  acquiredVia: string;
-  rookiePick?: { round: number; slot: number };
-  acquisitionSeason: string | null;
-  baseCost: number;
-  costKnown: boolean;
-  keeperCostNextYear: number;
-  salarySource: "sheet" | "computed";
-  approximate: boolean;
+  rostered: boolean;
+  teamId: number | null;
+  teamName: string | null; // fantasy team, or null for a free agent
   lastSeasonPoints: number | null;
   yearsInLeague: number | null;
+  keeperCostNextYear: number | null;
+  baseCost: number | null;
+  costKnown: boolean;
+  salarySource: "sheet" | "computed" | null;
+  approximate: boolean;
+  acquiredVia: string | null;
+}
+export interface TrendingRow {
+  playerId: string;
+  name: string;
+  position: string;
+  nflTeam: string | null;
+  count: number;
+  rostered: boolean;
+  teamName: string | null;
+  lastSeasonPoints: number | null;
 }
 export interface PlayersResp {
   players: PlayerRow[];
+  trending: TrendingRow[];
 }
 
 export interface RulesResp {
@@ -266,7 +276,16 @@ export const api = {
     const query = [partner ? `partner=${encodeURIComponent(partner)}` : "", qs(source)].filter(Boolean).join("&");
     return get<TradeResp>(`/api/trades/${id}${query ? `?${query}` : ""}`);
   },
-  players: async () => (await getBundle())?.players ?? get<PlayersResp>("/api/players"),
+  players: async (): Promise<PlayerRow[]> => {
+    const b = await getBundle();
+    if (b) return b.players.players;
+    return (await get<{ players: PlayerRow[] }>("/api/players")).players;
+  },
+  trending: async (): Promise<TrendingRow[]> => {
+    const b = await getBundle();
+    if (b) return b.players.trending ?? [];
+    return (await get<{ trending: TrendingRow[] }>("/api/trending")).trending;
+  },
   rules: async () => (await getBundle())?.rules ?? get<RulesResp>("/api/rules"),
   rookies: async () => (await getBundle())?.rookies ?? get<RookieBoard>("/api/rookies"),
   refresh: async () => {

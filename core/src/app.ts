@@ -302,6 +302,95 @@ interface RawTradedPick {
   previous_owner_id?: number;
 }
 
+/** A player row for the Players page — rostered players + relevant free agents (source-independent). */
+export interface AllPlayerRow {
+  playerId: string;
+  name: string;
+  position: string;
+  nflTeam: string | null;
+  rostered: boolean;
+  teamId: number | null;
+  teamName: string | null; // fantasy team, or null for a free agent
+  lastSeasonPoints: number | null;
+  yearsInLeague: number | null; // rostered only
+  keeperCostNextYear: number | null; // rostered only
+  baseCost: number | null;
+  costKnown: boolean;
+  salarySource: "sheet" | "computed" | null;
+  approximate: boolean;
+  acquiredVia: string | null;
+}
+
+export interface TrendingRow {
+  playerId: string;
+  name: string;
+  position: string;
+  nflTeam: string | null;
+  count: number; // adds in the lookback window (Sleeper trending)
+  rostered: boolean;
+  teamName: string | null;
+  lastSeasonPoints: number | null;
+}
+
+const round1 = (n: number) => Math.round(n * 10) / 10;
+
+/**
+ * Every fantasy-relevant player: all rostered players (rich keeper data) PLUS relevant free agents.
+ * "Relevant" = appears in the ADP value list OR scored ≥50 last season — this trims the ~11k-player
+ * NFL dump (players/nfl, cached 24h) down to the couple hundred that matter. Source-independent.
+ */
+export async function loadAllPlayers(ctx: Ctx, data: KeeperData): Promise<AllPlayerRow[]> {
+  const rows: AllPlayerRow[] = [];
+  const rosteredIds = new Set<string>();
+  for (const t of ctx.registry) {
+    for (const l of teamKeeperLines(ctx, data, t)) {
+      rosteredIds.add(l.playerId);
+      rows.push({
+        playerId: l.playerId, name: l.name, position: l.position, nflTeam: l.nflTeam,
+        rostered: true, teamId: t.rosterId, teamName: t.teamName,
+        lastSeasonPoints: l.lastSeasonPoints, yearsInLeague: l.yearsInLeague,
+        keeperCostNextYear: l.keeperCostNextYear, baseCost: l.baseCost, costKnown: l.costKnown,
+        salarySource: l.salarySource, approximate: l.approximate, acquiredVia: l.acquiredVia,
+      });
+    }
+  }
+
+  const players = (await sleeper.getPlayers()) ?? {};
+  const source = valueSourceExists("adp") ? "adp" : getActiveSource();
+  const relevant = new Set<string>();
+  if (source !== "vorp") for (const id of loadValueMap(source, players).byId.keys()) relevant.add(id);
+  for (const [id, pts] of data.points) if (pts >= 50) relevant.add(id);
+
+  for (const id of relevant) {
+    if (rosteredIds.has(id)) continue;
+    const pl = ctx.resolve(id);
+    rows.push({
+      playerId: id, name: pl.name, position: pl.position, nflTeam: pl.team,
+      rostered: false, teamId: null, teamName: null,
+      lastSeasonPoints: data.points.has(id) ? round1(data.points.get(id) as number) : null,
+      yearsInLeague: null, keeperCostNextYear: null, baseCost: null, costKnown: false,
+      salarySource: null, approximate: false, acquiredVia: null,
+    });
+  }
+  return rows;
+}
+
+/** Sleeper's trending adds (most-added players in the last 24h), resolved + tagged with ownership. */
+export async function loadTrending(ctx: Ctx, data: KeeperData, limit = 25): Promise<TrendingRow[]> {
+  const trend = (await sleeper.getTrendingAdds()) ?? [];
+  const teamOf = new Map<string, string>();
+  const rosteredIds = new Set<string>();
+  for (const t of ctx.registry) for (const id of t.players) { teamOf.set(id, t.teamName); rosteredIds.add(id); }
+  return trend.slice(0, limit).map((x) => {
+    const pl = ctx.resolve(x.player_id);
+    return {
+      playerId: x.player_id, name: pl.name, position: pl.position, nflTeam: pl.team,
+      count: x.count, rostered: rosteredIds.has(x.player_id), teamName: teamOf.get(x.player_id) ?? null,
+      lastSeasonPoints: data.points.has(x.player_id) ? round1(data.points.get(x.player_id) as number) : null,
+    };
+  });
+}
+
 const ROOKIE_POSITIONS = new Set(["QB", "RB", "WR", "TE"]);
 
 /**

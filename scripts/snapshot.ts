@@ -14,12 +14,13 @@ import {
   inflateBoard,
   leagueInflation,
   leagueRules,
+  loadAllPlayers,
   loadContext,
   loadKeeperData,
   loadRookieBoard,
+  loadTrending,
   outstandingRules,
   STREAMER_POSITIONS,
-  teamKeeperLines,
   teamSurplusBoard,
   withValueSource,
   worthSource,
@@ -73,11 +74,8 @@ async function main() {
   const sources = worthSources();
   const defaultSource = worthSource();
 
-  // Source-independent: raw player rows (the Data page shows facts, not worth) + the team list.
-  const playerRows: unknown[] = [];
-  for (const t of ctx.registry) {
-    for (const l of teamKeeperLines(ctx, data, t)) playerRows.push({ teamId: t.rosterId, teamName: t.teamName, ...l });
-  }
+  // Source-independent: all fantasy-relevant players (rostered + free agents) and trending adds.
+  const [playerRows, trending] = await Promise.all([loadAllPlayers(ctx, data), loadTrending(ctx, data)]);
 
   const league = {
     season: ctx.season,
@@ -110,7 +108,7 @@ async function main() {
     generatedAt: new Date().toISOString(),
     league,
     bySource,
-    players: { players: playerRows },
+    players: { players: playerRows, trending },
     rules: { rules: leagueRules, outstanding: outstandingRules() },
     rookies,
   };

@@ -10,12 +10,13 @@ import {
   inflateBoard,
   leagueInflation,
   leagueRules,
+  loadAllPlayers,
   loadContext,
   loadKeeperData,
   loadRookieBoard,
+  loadTrending,
   outstandingRules,
   STREAMER_POSITIONS,
-  teamKeeperLines,
   teamSurplusBoard,
   withValueSource,
   worthSource,
@@ -123,15 +124,17 @@ app.get(
 app.get(
   "/api/players",
   api(async () => {
-    // Raw player facts — source-independent, so no worth/surplus and no ?source needed.
+    // All fantasy-relevant players (rostered + free agents) — source-independent.
     const { ctx, data } = await getState();
-    const players = [];
-    for (const t of ctx.registry) {
-      for (const l of teamKeeperLines(ctx, data, t)) {
-        players.push({ teamId: t.rosterId, teamName: t.teamName, ...l });
-      }
-    }
-    return { players };
+    return { players: await loadAllPlayers(ctx, data) };
+  }),
+);
+
+app.get(
+  "/api/trending",
+  api(async () => {
+    const { ctx, data } = await getState();
+    return { trending: await loadTrending(ctx, data) };
   }),
 );
 

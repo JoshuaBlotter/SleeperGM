@@ -75,6 +75,19 @@ section > h2 { margin: 0 0 16px; }
 h3 { margin: 22px 0 8px; color: var(--dim); font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; }
 
 .head-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+
+/* Definition/info cards (e.g. Rules → value-source glossary). Prose wraps; no horizontal scroll. */
+.deck { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; margin: 8px 0 4px; }
+.info-card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; }
+.info-card h4 { margin: 0 0 6px; font-size: 14px; font-weight: 650; display: flex; align-items: center; gap: 8px; text-transform: none; letter-spacing: 0; color: var(--text); }
+.info-card p { margin: 0; color: var(--dim); font-size: 13px; line-height: 1.55; }
+.pill-active { font-size: 10px; text-transform: uppercase; letter-spacing: 0.04em; background: var(--accent-dim); color: var(--accent); padding: 2px 7px; border-radius: 999px; font-weight: 700; }
+
+/* Sub-tab toggle (e.g. Players → All / Trending) */
+.subtabs { display: inline-flex; gap: 4px; background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 3px; }
+.subtabs button { background: transparent; color: var(--dim); border: 0; padding: 6px 14px; border-radius: 8px; cursor: pointer; font-size: 13px; }
+.subtabs button:hover { color: var(--text); }
+.subtabs button.active { background: var(--accent-dim); color: var(--text); }
 .toggle { color: var(--dim); font-size: 13px; display: flex; align-items: center; gap: 6px; cursor: pointer; }
 
 .cards { display: flex; gap: 12px; flex-wrap: wrap; margin: 4px 0 8px; }

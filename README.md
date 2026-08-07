@@ -39,10 +39,10 @@ client-side (the snapshot bakes each source under `data.json → bySource`); on 
 Views: **Dashboard**, **Team** (keeper board with an interactive keeper-simulation — check rows to see
 live cap/surplus — plus an inflation-adjusted toggle), **Inflation**, **Trades** (partner selector +
 mutual-fit/sharky toggle), **Rookies** (derived rookie draft board — order, pick ownership, slot cost,
-draft capital), **Data** (raw player info — last-season points, years in the league, cost; filter by
-fantasy team / NFL team / position), **Rules** (rulebook + value-source glossary).
-API: `/api/league`, `/api/team/:id`, `/api/players`, `/api/inflation`, `/api/trades/:id`, `/api/rookies`,
-`/api/rules`, `POST /api/refresh` (value-dependent routes accept `?source=<name>`).
+draft capital), **Players** (All = rostered + relevant free agents, filter/sort; Trending = Sleeper's
+most-added last 24h), **Rules** (rulebook + value-source glossary).
+API: `/api/league`, `/api/team/:id`, `/api/players`, `/api/trending`, `/api/inflation`, `/api/trades/:id`,
+`/api/rookies`, `/api/rules`, `POST /api/refresh` (value-dependent routes accept `?source=<name>`).
 
 ## Commands
 | Command | What |

@@ -121,38 +121,30 @@ export function RulesView() {
         the header switches which source drives worth, surplus, inflation, and trades. Manual overrides (if any)
         always win. {activeSource ? <>Currently active: <strong>{activeSource}</strong>.</> : null}
       </p>
-      <table className="grid" style={{ maxWidth: 720 }}>
-        <thead>
-          <tr>
-            <th>Source</th>
-            <th>What it is</th>
-          </tr>
-        </thead>
-        <tbody>
-          {sources.map((src) => {
-            const info = SOURCE_INFO[src];
-            return (
-              <tr key={src}>
-                <td className="strong">
-                  {info?.label ?? src}
-                  {src === activeSource ? <span className="dim"> (active)</span> : null}
-                </td>
-                <td className="dim">
-                  {info?.blurb ??
-                    `Imported value list (config/values/${src}.csv). Paste a site's auction values into that file and it appears here.`}
-                </td>
-              </tr>
-            );
-          })}
-          <tr>
-            <td className="strong">overrides</td>
-            <td className="dim">
-              Your manual per-player fixes in <code>config/values/overrides.csv</code> — these win over whatever
-              source is selected.
-            </td>
-          </tr>
-        </tbody>
-      </table>
+      <div className="deck">
+        {sources.map((src) => {
+          const info = SOURCE_INFO[src];
+          return (
+            <div className="info-card" key={src}>
+              <h4>
+                {info?.label ?? src}
+                {src === activeSource && <span className="pill-active">active</span>}
+              </h4>
+              <p>
+                {info?.blurb ??
+                  `Imported value list (config/values/${src}.csv) — paste a site's auction values into that file and it appears here.`}
+              </p>
+            </div>
+          );
+        })}
+        <div className="info-card">
+          <h4>overrides</h4>
+          <p>
+            Your manual per-player fixes in <code>config/values/overrides.csv</code> — these win over whatever
+            source is selected.
+          </p>
+        </div>
+      </div>
 
       <h3>Other rules</h3>
       <ul className="rules-list">

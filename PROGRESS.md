@@ -91,6 +91,13 @@
   **Refresh button** was misleading on the static site (data is baked; it just reloaded) → now static
   shows an **"updated <date>"** stamp (snapshot `generatedAt`); server mode keeps a real Refresh
   (clears cache). `LeagueResp.updatedAt`, `api.staticMode()`.
+- **Players page** (2026-08-07, was "Data"): renamed **Data → Players**, now two sub-tabs:
+  - **All players** — rostered players PLUS relevant **free agents** (previously missing). Relevance =
+    in the ADP list OR ≥50 points last season, trimming the ~11k `players/nfl` dump (cached 24h) to
+    ~300. FAs show an "FA" badge; Keep $/In-league blank for them. `core loadAllPlayers(ctx,data)`.
+  - **Trending** — Sleeper's most-added players last 24h (`/players/nfl/trending/add`), with add counts +
+    owner/FA tags. `core loadTrending(ctx,data)`. New `/api/trending`; snapshot bakes `players.trending`.
+  - Source-independent (no worth shown). `AllPlayerRow`/`TrendingRow` in core; web `PlayersView`.
 
 ## Static hosting
 - `scripts/snapshot.ts` → `web/public/data.json` (all view models from the real engines).
