@@ -52,6 +52,7 @@ export {
   leagueInflation,
   inflateBoard,
   loadRookieBoard,
+  rookieProspects,
   worthSource,
   worthSources,
   STREAMER_POSITIONS,
@@ -64,8 +65,8 @@ export type { ValueRow, MatchResult } from "./values/valueSheet";
 export { adpToAuctionValues } from "./values/adp";
 export type { AdpPlayer } from "./values/adp";
 export { listValueSources, getActiveSource, valueSourceExists, loadValueMap, loadValueRows, loadOverrides } from "./values/load";
-export { computeRookieBoard } from "./engines/rookies";
-export type { RookieBoard, RookiePick, BaseSlot, TeamCapital, StandingRow, TradedPick } from "./engines/rookies";
+export { computeRookieBoard, rankRookieProspects } from "./engines/rookies";
+export type { RookieBoard, RookiePick, BaseSlot, TeamCapital, StandingRow, TradedPick, RookieProspect } from "./engines/rookies";
 export { computeInflation } from "./engines/inflation";
 export type { InflationPlayer, InflationResult, TeamSurplus, DiscountLine } from "./engines/inflation";
 export { computeTrades } from "./engines/trades";

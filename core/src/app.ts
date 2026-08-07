@@ -8,7 +8,7 @@ import { buildDraftIndex } from "./history/prices";
 import { buildFaabIndex } from "./history/waivers";
 import { buildProvenance } from "./history/provenance";
 import { computeInflation, type InflationPlayer, type InflationResult } from "./engines/inflation";
-import { computeRookieBoard, type RookieBoard, type StandingRow, type TradedPick } from "./engines/rookies";
+import { computeRookieBoard, rankRookieProspects, type RookieBoard, type RookieProspect, type StandingRow, type TradedPick } from "./engines/rookies";
 import { findTeam, loadRegistry } from "./registry/teams";
 import { recommendation, toSurplusLines } from "./engines/surplus";
 import { loadSalarySheet, sheetSalary, sheetSupersededByReacquire } from "./config/salaries";
@@ -17,7 +17,7 @@ import { loadResolver } from "./sleeper/players";
 import { seasonPoints } from "./engines/points";
 import { sleeper } from "./sleeper/client";
 import { valuePlayers } from "./engines/valuation";
-import { getActiveSource, listValueSources, loadOverrides, loadValueMap } from "./values/load";
+import { getActiveSource, listValueSources, loadOverrides, loadValueMap, valueSourceExists } from "./values/load";
 import type { KeeperLine, PlayerLite, Provenance, SeasonLink, SurplusLine, Team, ValueLine } from "./types";
 
 export interface Ctx {
@@ -275,7 +275,7 @@ export async function loadRookieBoard(ctx: Ctx): Promise<RookieBoard> {
   const regName = new Map(ctx.registry.map((t) => [t.rosterId, t.teamName] as const));
   const nameOf = (rosterId: number) => regName.get(rosterId) ?? prevName.get(rosterId) ?? `roster ${rosterId}`;
 
-  return computeRookieBoard({
+  const board = computeRookieBoard({
     season: ctx.season,
     standings,
     tradedPicks,
@@ -285,6 +285,13 @@ export async function loadRookieBoard(ctx: Ctx): Promise<RookieBoard> {
     nameOf,
     costFor: (slot, round) => rookieSlotCost(slot, round),
   });
+
+  // Rank the incoming class by ADP if present (the natural draft-market signal), else the active source.
+  const prospectSource = valueSourceExists("adp") ? "adp" : getActiveSource();
+  const values = await loadValues(ctx, prospectSource, await loadLastSeasonPoints(ctx));
+  board.prospects = await rookieProspects(ctx, values);
+  board.prospectSource = prospectSource;
+  return board;
 }
 
 interface RawTradedPick {
@@ -293,6 +300,33 @@ interface RawTradedPick {
   roster_id: number;
   owner_id: number;
   previous_owner_id?: number;
+}
+
+const ROOKIE_POSITIONS = new Set(["QB", "RB", "WR", "TE"]);
+
+/**
+ * The incoming rookie class (Sleeper `years_exp === 0`) ranked by a value source. Value-dependent, so
+ * the caller passes the active source's value map. Returns more than the 12 first-round slots so you
+ * can see stretch prospects who might sneak into round 1.
+ */
+export async function rookieProspects(ctx: Ctx, values: Map<string, ValueLine>, limit = 60): Promise<RookieProspect[]> {
+  void ctx;
+  const players = (await sleeper.getPlayers()) ?? {};
+  const rows = [];
+  for (const [id, p] of Object.entries(players)) {
+    if (p.years_exp !== 0) continue;
+    const pos = (p.position ?? "").toUpperCase();
+    if (!ROOKIE_POSITIONS.has(pos)) continue;
+    if (!p.team || p.active === false) continue;
+    rows.push({
+      playerId: id,
+      name: p.full_name || [p.first_name, p.last_name].filter(Boolean).join(" ") || id,
+      position: pos,
+      nflTeam: p.team ?? null,
+      value: values.get(id)?.value ?? 0,
+    });
+  }
+  return rankRookieProspects(rows, limit);
 }
 
 /** Re-rank a surplus board with inflation-adjusted worth (skill worth × multiplier; streamers unchanged). */

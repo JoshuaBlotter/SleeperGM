@@ -46,4 +46,20 @@ export async function rookies(): Promise<void> {
       { header: "Points for", get: (s) => s.pointsFor.toFixed(2), align: "right" },
     ]),
   );
+
+  // Rookie prospects — the incoming class ranked by value (deeper than 12 so stretch picks show).
+  console.log(heading(`Rookie prospects — ranked by ${board.prospectSource || "value"} (${board.prospects.length})`));
+  if (!board.prospects.length) {
+    console.log(` No rookie values from '${board.prospectSource}'.`);
+  } else {
+    console.log(
+      table(board.prospects, [
+        { header: "#", get: (p) => String(p.rank), align: "right" },
+        { header: "Player", get: (p) => p.name },
+        { header: "Pos", get: (p) => p.position },
+        { header: "NFL", get: (p) => p.nflTeam ?? "—" },
+        { header: "Value", get: (p) => money(p.value), align: "right" },
+      ]),
+    );
+  }
 }

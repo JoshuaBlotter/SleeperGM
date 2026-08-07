@@ -76,6 +76,11 @@
     CLI `sgm rookies`, `/api/rookies`, snapshot `bundle.rookies`, web **Rookies** tab. 5 engine tests.
   - Verified live: Kupp holds 1.01/1.03(via Jarhead)/1.07(via Comedor) = +2; CTESPN 1.02/1.12(via
     KrespoKreme) = +1; the 3 sellers at −1.
+  - **Rookie prospects list** (user ask: see more than 12 so stretch picks show): the incoming class
+    (Sleeper `years_exp === 0`, skill positions) ranked by **ADP value** (the draft-market signal),
+    source-independent, baked into `board.prospects` (+ `prospectSource`). `rankRookieProspects` pure
+    helper. Depth is bounded by ADP coverage (~19 valued 2026 rookies); import a rookie-specific
+    ranking for more. Shown on the CLI + web Rookies tab above the 12 pick slots.
 - **Data page tweak** (2026-08-07): columns reordered to Player · Pos · NFL · Fantasy team · Last pts ·
   In league · Base $ · Keep $ · Src (name first; fantasy team kept but demoted).
 

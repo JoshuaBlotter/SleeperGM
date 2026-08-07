@@ -22,6 +22,7 @@ export function RookiesView() {
   if (s.loading) return <Loading what="rookie draft board" />;
   if (s.error) return <ErrorBox message={s.error} />;
   const b = s.data!;
+  const rookies = b.prospects ?? [];
 
   return (
     <section>
@@ -37,9 +38,34 @@ export function RookiesView() {
         ownership is applied from Sleeper's traded-picks.
       </div>
 
-      <div className="two-col">
+      <div className="head-row" style={{ marginBottom: 4 }}>
+        <h3 style={{ margin: 0 }}>
+          Rookie prospects <span className="dim">· ranked by {b.prospectSource || "value"} · {rookies.length} shown</span>
+        </h3>
+      </div>
+      <p className="dim" style={{ marginTop: 0 }}>
+        The incoming rookie class (Sleeper first-year players), ranked by draft-market value — shown deeper than the 12
+        first-round slots so you can eyeball the stretch prospects who might sneak into round 1.
+      </p>
+      {rookies.length === 0 ? (
+        <p className="notice">No rookie values available from the {b.prospectSource || "value"} source.</p>
+      ) : (
+        <div className="prospect-grid">
+          {rookies.map((r) => (
+            <div className="prospect" key={r.playerId}>
+              <span className="prospect-rank">{r.rank}</span>
+              <span className="prospect-name strong">{r.name}</span>
+              <span className={"pos pos-" + r.position}>{r.position}</span>
+              <span className="dim">{r.nflTeam ?? "—"}</span>
+              <span className="r strong">{money(r.value)}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="two-col" style={{ marginTop: 24 }}>
         <div>
-          <h3>Picks</h3>
+          <h3>Pick slots (round 1)</h3>
           <table className="grid">
             <thead>
               <tr>

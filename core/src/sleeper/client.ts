@@ -179,4 +179,6 @@ export interface RawPlayer {
   last_name?: string;
   position?: string | null;
   team?: string | null;
+  years_exp?: number | null; // 0 = incoming rookie
+  active?: boolean;
 }

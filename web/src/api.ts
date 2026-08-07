@@ -157,6 +157,14 @@ export interface RookiePick {
   viaTeam: string | null;
   cost: Record<string, number>;
 }
+export interface RookieProspect {
+  rank: number;
+  playerId: string;
+  name: string;
+  position: string;
+  nflTeam: string | null;
+  value: number;
+}
 export interface RookieBoard {
   season: string;
   rounds: number;
@@ -166,6 +174,8 @@ export interface RookieBoard {
   baseOrder: { slot: number; rosterId: number; teamName: string; wins: number; losses: number; ties: number; pointsFor: number }[];
   picks: RookiePick[];
   byTeam: { rosterId: number; teamName: string; picks: string[]; extra: number }[];
+  prospects: RookieProspect[];
+  prospectSource: string;
 }
 
 async function get<T>(url: string): Promise<T> {

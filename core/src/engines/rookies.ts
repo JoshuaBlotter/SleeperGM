@@ -63,6 +63,33 @@ export interface RookieBoard {
   baseOrder: BaseSlot[];
   picks: RookiePick[];
   byTeam: TeamCapital[];
+  prospects: RookieProspect[]; // incoming class ranked by value (filled by loadRookieBoard)
+  prospectSource: string; // which value source ranked the prospects
+}
+
+export interface RookieProspect {
+  rank: number;
+  playerId: string;
+  name: string;
+  position: string;
+  nflTeam: string | null;
+  value: number; // worth from the active value source ($)
+}
+
+/**
+ * Rank the incoming rookie class by value (a forward-looking source like ADP/FantasyPros). Only rows
+ * with value > 0 are kept (a source like VORP can't value rookies → empty, and the UI notes that).
+ * Deliberately returns MORE than the 12 first-round slots so stretch/late prospects are visible.
+ */
+export function rankRookieProspects(
+  rows: { playerId: string; name: string; position: string; nflTeam: string | null; value: number }[],
+  limit = 60,
+): RookieProspect[] {
+  return rows
+    .filter((r) => r.value > 0)
+    .sort((a, b) => b.value - a.value || a.name.localeCompare(b.name))
+    .slice(0, limit)
+    .map((r, i) => ({ rank: i + 1, ...r }));
 }
 
 const pad2 = (n: number) => String(n).padStart(2, "0");
@@ -140,5 +167,6 @@ export function computeRookieBoard(input: {
   for (const cap of byTeamMap.values()) cap.extra = cap.picks.length - rounds;
   const byTeam = [...byTeamMap.values()].sort((a, b) => b.picks.length - a.picks.length || a.teamName.localeCompare(b.teamName));
 
-  return { season, rounds, snake, derived: true, orderBasis, baseOrder, picks, byTeam };
+  // prospects filled by the orchestration layer (needs the players DB + a value map); empty here.
+  return { season, rounds, snake, derived: true, orderBasis, baseOrder, picks, byTeam, prospects: [], prospectSource: "" };
 }
