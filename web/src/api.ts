@@ -17,6 +17,7 @@ export interface LeagueResp {
   multiplier: number;
   valueSource?: string;
   sources?: string[];
+  updatedAt?: string; // ISO — snapshot build time (static) or cache time (server)
   teams: TeamRow[];
 }
 
@@ -200,6 +201,7 @@ interface SourceData {
   trades: Record<string, TradeResp>;
 }
 interface Bundle {
+  generatedAt?: string;
   league: { season: string; capBudget: number; sources: string[]; defaultSource: string; teams: TeamRow[] };
   bySource: Record<string, SourceData>;
   players: PlayersResp;
@@ -236,11 +238,12 @@ function filterTrades(t: TradeResp, partner?: string): TradeResp {
 }
 
 export const api = {
+  staticMode: async (): Promise<boolean> => !!(await getBundle()),
   league: async (source?: string): Promise<LeagueResp> => {
     const b = await getBundle();
     if (b) {
       const sd = pickSource(b, source);
-      return { season: b.league.season, capBudget: b.league.capBudget, teams: b.league.teams, sources: b.league.sources, valueSource: sd.valueSource, multiplier: sd.multiplier };
+      return { season: b.league.season, capBudget: b.league.capBudget, teams: b.league.teams, sources: b.league.sources, valueSource: sd.valueSource, multiplier: sd.multiplier, updatedAt: b.generatedAt };
     }
     return get<LeagueResp>(`/api/league${qs(source) ? `?${qs(source)}` : ""}`);
   },

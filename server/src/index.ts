@@ -82,6 +82,7 @@ app.get(
       multiplier: infl.multiplier,
       valueSource: source,
       sources: worthSources(),
+      updatedAt: new Date(state?.at ?? Date.now()).toISOString(),
       teams: ctx.registry.map((t) => ({
         rosterId: t.rosterId,
         teamName: t.teamName,

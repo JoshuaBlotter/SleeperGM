@@ -83,6 +83,14 @@
     ranking for more. Shown on the CLI + web Rookies tab above the 12 pick slots.
 - **Data page tweak** (2026-08-07): columns reordered to Player · Pos · NFL · Fantasy team · Last pts ·
   In league · Base $ · Keep $ · Src (name first; fantasy team kept but demoted).
+- **Mobile pass 2** (2026-08-07, user-reported): root-caused the "wasted space on the right" — the header
+  nav button row (531px) + `align-items:stretch` forced every header child (incl. brand) to 531 on a
+  375 viewport → 168px page overflow. Fixes: nav **collapses to a full-width `<select>`** on ≤760px
+  (new `.nav-select`); header children get `min-width:0; max-width:100%`. Verified: 375px page overflow
+  168→0; tables fill width and scroll internally; desktop unchanged (button nav restored >760).
+  **Refresh button** was misleading on the static site (data is baked; it just reloaded) → now static
+  shows an **"updated <date>"** stamp (snapshot `generatedAt`); server mode keeps a real Refresh
+  (clears cache). `LeagueResp.updatedAt`, `api.staticMode()`.
 
 ## Static hosting
 - `scripts/snapshot.ts` → `web/public/data.json` (all view models from the real engines).

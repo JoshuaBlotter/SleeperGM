@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { api } from "./api";
 import { useAsync } from "./ui";
 import { Dashboard } from "./views/Dashboard";
@@ -20,15 +20,27 @@ const TABS: { id: Tab; label: string }[] = [
   { id: "rules", label: "Rules" },
 ];
 
+function fmtUpdated(iso?: string): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+}
+
 export function App() {
   const [source, setSource] = useState<string>("");
   const league = useAsync(() => api.league(source || undefined), [source]);
   const [tab, setTab] = useState<Tab>("dashboard");
   const [teamId, setTeamId] = useState<number | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [isStatic, setIsStatic] = useState(false);
+  useEffect(() => {
+    api.staticMode().then(setIsStatic);
+  }, []);
   const teams = league.data?.teams ?? [];
   const sources = league.data?.sources ?? [];
   const activeSource = source || league.data?.valueSource || "";
+  const updated = fmtUpdated(league.data?.updatedAt);
 
   function openTeam(id: number) {
     setTeamId(id);
@@ -60,6 +72,14 @@ export function App() {
             </button>
           ))}
         </nav>
+        {/* Mobile: the tab row collapses to a dropdown (see .nav-select in styles.css). */}
+        <select className="nav-select" value={tab} onChange={(e) => setTab(e.target.value as Tab)} aria-label="Section">
+          {TABS.map((t) => (
+            <option key={t.id} value={t.id}>
+              {t.label}
+            </option>
+          ))}
+        </select>
         <div className="controls">
           {(tab === "team" || tab === "trades") && (
             <select value={teamId ?? ""} onChange={(e) => setTeamId(Number(e.target.value))}>
@@ -87,9 +107,15 @@ export function App() {
               ))}
             </select>
           )}
-          <button className="refresh" onClick={refresh} disabled={refreshing}>
-            {refreshing ? "…" : "↻ Refresh"}
-          </button>
+          {isStatic ? (
+            <span className="updated" title="This is a static snapshot; data refreshes when the nightly build runs.">
+              updated {updated || "—"}
+            </span>
+          ) : (
+            <button className="refresh" onClick={refresh} disabled={refreshing} title="Clear the server cache and reload with fresh Sleeper data">
+              {refreshing ? "…" : "↻ Refresh"}
+            </button>
+          )}
         </div>
       </header>
 

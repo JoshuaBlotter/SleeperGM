@@ -107,6 +107,7 @@ async function main() {
 
   const bundle = {
     generatedFor: ctx.season,
+    generatedAt: new Date().toISOString(),
     league,
     bySource,
     players: { players: playerRows },
