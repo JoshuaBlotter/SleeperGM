@@ -50,6 +50,23 @@
   - Data page is now "just player info": dropped Via/Season/Yrs-kept; added **Last pts** (last
     season's total fantasy points) and **In league** (seasons rostered by any manager). Still filter
     by fantasy team / NFL team / position. `/api/players` returns raw keeper lines (no worth).
+- **M10** Value sources — clarity + real named slots + manual override (user feedback):
+  - **VORP defined** in-app: Rules page has a "Player value — how worth is calculated" glossary
+    (VORP, ADP-with-provenance = FFC public ADP, overrides, imported sources) that lists whichever
+    sources are present and flags the active one.
+  - **Named import slots** for the expert sites (can't be scraped — JS/login-gated): pre-made
+    `config/values/{fantasypros,cbs,draftsharks,footballguys}.csv` with headers + paste instructions.
+    `listValueSources()` now **hides header-only (unfilled) CSVs**, so a slot appears in the dropdown
+    only once you paste real rows and re-snapshot. Fill → `npm run web:static` → shows up.
+  - **Manual override editor (in-browser):** click any Worth on the Team board to set a custom value
+    (persists in `localStorage`, key `sgm.overrides.v1`); ↺ resets one, "Reset all" clears them. Worth
+    → surplus → keep/hold/cut recompute live and feed the keeper sim. Verified end-to-end in the
+    browser. Note: overrides overlay the Team board only; Inflation/Trades keep baked values until a
+    re-snapshot (or use the durable `config/values/overrides.csv`, which still wins everywhere).
+  - **FantasyPros imported** (2026-08-07): pasted the site's 12-team/$200/PPR auction list into
+    `config/values/fantasypros.csv` via `scratchpad/clean-fp.mjs` (rank/`Name (TEAM - POS)`/`$val` →
+    `name,position,team,value`; JAC→JAX; "WR,CB"→WR; Hollywood→Marquise Brown). 314/315 matched (only
+    FB Kyle Juszczyk unmatchable). Snapshot now bakes 3 sources: vorp, adp, **fantasypros** (default adp).
 
 ## Static hosting (done)
 - `scripts/snapshot.ts` → `web/public/data.json` (all view models from the real engines).

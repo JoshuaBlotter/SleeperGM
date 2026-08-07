@@ -230,3 +230,20 @@ and **years in league** = `currentSeason − leagueEntrySeason + 1`, where `leag
 OLDEST season the player appears in the acquisition index (any manager). **Why:** "years kept" resets on
 trade and is owner-specific; "years in league" answers "how long has this player been in Los Socios?"
 Horizon is the season chain (2022+), so a 2022-or-earlier arrival reads as the max (5 in 2026).
+
+## 2026-08-07 — Named expert sources = import slots (not scraping); manual override = in-browser
+User wanted FantasyPros/CBS/DraftSharks/Footballguys as selectable sources. Those sites gate auction
+values behind JS/login, so scraping is fragile/ToS-murky. Decision: ship pre-made **import-slot CSVs**
+(`config/values/<site>.csv`) with headers + paste instructions; `listValueSources()` hides any CSV that
+has only a header/comments, so an empty slot never shows in the dropdown until filled + re-snapshotted.
+ADP (the one auto source) stays, sourced from Fantasy Football Calculator's PUBLIC ADP API and now
+labeled as such on the Rules page. **Why:** honest and reliable — you see exactly that site's numbers,
+no scraper to break.
+
+Manual overrides: shipped as an **in-browser editor** (localStorage `sgm.overrides.v1`) on the Team
+board — click a Worth to set/reset a custom value; worth→surplus→recommendation recompute client-side
+(recommendation thresholds duplicated in `web/src/overrides.ts`, kept in sync with
+`engines/surplus.ts`). **Why:** the primary deployment is the static Pages site (no backend to persist
+to), and keeper decisions happen on the Team board. Trade-off: overrides overlay the Team board only;
+league Inflation and Trades use baked snapshot values. The durable, everywhere-applied path remains
+`config/values/overrides.csv` (baked at snapshot time, wins over any source).
