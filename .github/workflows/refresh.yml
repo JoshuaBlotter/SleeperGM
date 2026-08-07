@@ -1,0 +1,51 @@
+name: Refresh data + deploy
+
+# Re-runs the snapshot (fetches Sleeper + recomputes values) and deploys the fresh static site to
+# GitHub Pages using the official Pages deploy (build + deploy in ONE job — no committing docs/ back,
+# no reliance on a second trigger). Runs nightly and on demand via the "Run workflow" button.
+#
+# REQUIRES: Settings → Pages → "Build and deployment" → Source = "GitHub Actions".
+on:
+  schedule:
+    - cron: "0 11 * * *" # 11:00 UTC daily (~early morning US). Cron is UTC; GitHub may delay under load.
+  workflow_dispatch: {}
+
+# Least-privilege token scopes needed to publish to Pages.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Only one Pages deployment at a time; let a newer run cancel an in-progress one.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - run: npm ci
+
+      # refresh ADP values, then snapshot Sleeper data -> web/public/data.json and build web/dist.
+      # fantasypros.csv (and any other imported source) is committed, so it bakes in automatically.
+      - run: npm run values:adp
+      - run: npm run web:static
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: web/dist
+
+      - id: deploy
+        uses: actions/deploy-pages@v4
