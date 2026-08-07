@@ -12,6 +12,7 @@ import {
   leagueRules,
   loadContext,
   loadKeeperData,
+  loadRookieBoard,
   outstandingRules,
   STREAMER_POSITIONS,
   teamKeeperLines,
@@ -161,6 +162,14 @@ app.get(
 app.get(
   "/api/rules",
   api(async () => ({ rules: leagueRules, outstanding: outstandingRules() })),
+);
+
+app.get(
+  "/api/rookies",
+  api(async () => {
+    const { ctx } = await getState();
+    return loadRookieBoard(ctx);
+  }),
 );
 
 app.post(

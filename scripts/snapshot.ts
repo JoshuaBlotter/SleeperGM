@@ -16,6 +16,7 @@ import {
   leagueRules,
   loadContext,
   loadKeeperData,
+  loadRookieBoard,
   outstandingRules,
   STREAMER_POSITIONS,
   teamKeeperLines,
@@ -102,12 +103,15 @@ async function main() {
     bySource[src] = buildForSource(ctx, d, src);
   }
 
+  const rookies = await loadRookieBoard(ctx);
+
   const bundle = {
     generatedFor: ctx.season,
     league,
     bySource,
     players: { players: playerRows },
     rules: { rules: leagueRules, outstanding: outstandingRules() },
+    rookies,
   };
 
   const outDir = path.join(process.cwd(), "web", "public");

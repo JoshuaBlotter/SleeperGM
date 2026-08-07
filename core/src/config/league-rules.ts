@@ -26,6 +26,16 @@ export const RookieCostSchema = z.object({
   placeholder: z.boolean().default(false),
 });
 
+export const RookieDraftSchema = z.object({
+  // Number of rounds in the rookie draft. Only round 1 has a known salary table (§6.4); default 1 until
+  // the real round count is confirmed. Bumping this generates later rounds (costs shown as "—").
+  rounds: z.number().int().positive().default(1),
+  snake: z.boolean().default(true),
+  // How the base pick order is derived (Sleeper doesn't publish the 2026 rookie order).
+  orderBasis: z.literal("reverseRegularSeason").default("reverseRegularSeason"),
+  roundsAssumed: z.boolean().default(true), // surfaced by the rulebook until confirmed
+});
+
 export const LeagueRulesSchema = z.object({
   capBudget: z.number().int().positive(),
   maxKeepers: z.number().int().positive(),
@@ -33,6 +43,7 @@ export const LeagueRulesSchema = z.object({
   waiverKeeperCost: z.object({ source: z.literal("faabBid") }),
   resetCostOnReacquire: z.boolean(),
   rookieCost: RookieCostSchema,
+  rookieDraft: RookieDraftSchema,
   taxiCountsAgainstCap: z.boolean(),
   irCountsAgainstCap: z.boolean(),
 });
@@ -81,6 +92,15 @@ export const leagueRules: LeagueRules = LeagueRulesSchema.parse({
     placeholder: false,
   },
 
+  // Rookie draft: snake order derived from reverse 2025 regular-season standings (Sleeper doesn't
+  // publish the 2026 order). Confirmed by the commissioner: 1 round (matches the §6.4 cost table).
+  rookieDraft: {
+    rounds: 1,
+    snake: true,
+    orderBasis: "reverseRegularSeason",
+    roundsAssumed: false,
+  },
+
   // §6.5 ✅ taxi + IR count against cap; priced like everyone else (no special case).
   taxiCountsAgainstCap: true,
   irCountsAgainstCap: true,
@@ -91,6 +111,16 @@ export function rookieBaseCost(slot: number, position: string, rules: LeagueRule
   const row = rules.rookieCost.table[String(slot)];
   const v = row?.[position];
   return v ?? rules.rookieCost.floor;
+}
+
+/**
+ * The full position→salary map for a rookie pick. Only round 1 has a known table (§6.4); other rounds
+ * return an empty map (cost unknown → shown as "—"). Used by the rookie draft board.
+ */
+export function rookieSlotCost(slot: number, round: number, rules: LeagueRules = leagueRules): Record<string, number> {
+  if (round !== 1) return {};
+  const row = rules.rookieCost.table[String(slot)];
+  return row ? { ...row } : {};
 }
 
 /** Human-readable flags for anything still faked, surfaced by `sgm rulebook`. */

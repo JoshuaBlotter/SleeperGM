@@ -6,6 +6,9 @@ export function money(n: number): string {
 export function signed(n: number): string {
   return n > 0 ? `+$${n}` : n < 0 ? `-$${Math.abs(n)}` : "$0";
 }
+export function record(w: number, l: number, t: number): string {
+  return t > 0 ? `${w}-${l}-${t}` : `${w}-${l}`;
+}
 
 export function useAsync<T>(fn: () => Promise<T>, deps: unknown[]): { data?: T; error?: string; loading: boolean } {
   const [state, setState] = useState<{ data?: T; error?: string; loading: boolean }>({ loading: true });

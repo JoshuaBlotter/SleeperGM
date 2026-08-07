@@ -247,3 +247,21 @@ board — click a Worth to set/reset a custom value; worth→surplus→recommend
 to), and keeper decisions happen on the Team board. Trade-off: overrides overlay the Team board only;
 league Inflation and Trades use baked snapshot values. The durable, everywhere-applied path remains
 `config/values/overrides.csv` (baked at snapshot time, wins over any source).
+
+## 2026-08-07 — Rookie draft order derived from reverse regular-season standings
+Sleeper doesn't publish the upcoming rookie order (the only 2026 draft is the auction; draft_order null,
+slot_to_roster_id identity). The playoff bracket covers only 4 of 12 teams, so there's no clean final
+1–12 ranking to reverse. Decision: base order = reverse of last season's **regular-season** standings
+(wins asc, then points-for asc), then apply `/league/{id}/traded_picks` for current ownership. Flagged
+as "derived" in every surface. `rookieDraft.rounds` defaults to 1 (the only round with a §6.4 cost
+table) and is marked assumed; the engine (snake order + traded-pick resolution) generalizes to N rounds,
+with later-round costs shown as "—" until a table exists. Roster_ids are stable 2025↔2026 in this league,
+so picks map directly; names resolve via the current registry.
+
+## 2026-08-07 — Nightly deploy switched to the official GitHub Pages Actions deploy
+The old `refresh.yml` committed `web/dist` into `docs/` and relied on the legacy "deploy from branch"
+Pages build. Two problems: it was never pushed (so never ran), and GITHUB_TOKEN pushes don't reliably
+re-trigger the legacy Pages build under the repo's read-only default workflow permissions. Rewrote it to
+build + deploy in one job via `actions/configure-pages` + `upload-pages-artifact` + `deploy-pages`
+(permissions: pages: write, id-token: write). Requires Pages Source = "GitHub Actions" (one-time settings
+flip). This removes the `docs/` round-trip entirely and is GitHub's current recommended path.

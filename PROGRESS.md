@@ -26,12 +26,11 @@
   `npm run fixtures` (snapshot live data).
 
 ## Next up (in order)
-1. **M6 — Rookie draft board** (issue #1): reverse-2025-standings + traded_picks → round.slot → team;
-   per-team draft capital; slot cost. CLI `sgm rookies` + web Rookies tab. (Sleeper doesn't expose the
-   2026 order → derive it.) Only remaining post-v1 item.
-2. Optional M8 follow-ups: import a premium source CSV (FantasyPros export); web live source-switch
-   (bake multiple sources into the snapshot); tune the ADP→$ curve (tau) if the top feels high.
-3. Redeploy the static site so the ADP values show live (push docs/ or run the Action).
+1. **Confirm rookie-draft round count** — `rookieDraft.rounds` defaults to 1 (only round with a known
+   §6.4 cost table); bump it in `league-rules.ts` once confirmed (snake order + traded-pick logic already
+   generalize to N rounds; later-round costs show "—" until a table exists).
+2. **Fix the nightly deploy** (see "Static hosting" below) — needs a push + one Pages setting flip.
+3. Optional: fill the other import slots (cbs/draftsharks/footballguys); tune ADP→$ tau.
 
 ## Shipped 2026-08-07
 - **M7** Data page = raw (NFL team col + filter; removed worth/surplus/call).
@@ -67,12 +66,34 @@
     `config/values/fantasypros.csv` via `scratchpad/clean-fp.mjs` (rank/`Name (TEAM - POS)`/`$val` →
     `name,position,team,value`; JAC→JAX; "WR,CB"→WR; Hollywood→Marquise Brown). 314/315 matched (only
     FB Kyle Juszczyk unmatchable). Snapshot now bakes 3 sources: vorp, adp, **fantasypros** (default adp).
+- **M6** Rookie draft prep board (issue #1) — DONE:
+  - Confirmed Sleeper does NOT publish the 2026 rookie order (only the auction; `slot_to_roster_id`
+    identity). Derived: base = **reverse 2025 regular-season standings** (wins asc, then points-for);
+    playoff bracket only covers 4 teams so no clean 1–12 final rank. Traded picks applied from
+    `/league/{id}/traded_picks` (roster_ids stable 2025↔2026).
+  - Pure engine `engines/rookies.ts` (`computeRookieBoard`) + `loadRookieBoard(ctx)` orchestration;
+    `rookieDraft` config (`rounds` default 1 + assumed flag, `snake`); `rookieSlotCost(slot,round)`.
+    CLI `sgm rookies`, `/api/rookies`, snapshot `bundle.rookies`, web **Rookies** tab. 5 engine tests.
+  - Verified live: Kupp holds 1.01/1.03(via Jarhead)/1.07(via Comedor) = +2; CTESPN 1.02/1.12(via
+    KrespoKreme) = +1; the 3 sellers at −1.
+- **Data page tweak** (2026-08-07): columns reordered to Player · Pos · NFL · Fantasy team · Last pts ·
+  In league · Base $ · Keep $ · Src (name first; fantasy team kept but demoted).
 
-## Static hosting (done)
+## Static hosting
 - `scripts/snapshot.ts` → `web/public/data.json` (all view models from the real engines).
 - `web/src/api.ts` runtime mode: static (data.json) or server (/api). Views unchanged.
 - `npm run web:static` = snapshot + build → `web/dist` (GitHub-Pages-ready, `base:"./"`).
 - Mobile layout pass done (@media ≤760px).
+- Pages live at **https://joshuablotter.github.io/SleeperGM/** (custom domain gotfomo.me removed; cname null).
+
+### ⚠ Nightly deploy — NOT working yet (diagnosed 2026-08-07)
+Root causes: (1) `refresh.yml` was **never pushed** to the default branch, so it isn't registered and
+has never run — the only Action on GitHub is the built-in `pages-build-deployment` (fires on manual
+`docs/` pushes). (2) Repo "Workflow permissions" default is **read-only**, and GITHUB_TOKEN pushes don't
+reliably re-trigger the legacy `/docs` Pages build. **Fix applied locally:** rewrote `refresh.yml` to
+GitHub's official Pages deploy (`configure-pages` + `upload-pages-artifact` + `deploy-pages`, one job,
+no docs/ commit). **Still needs (user/one-time):** push the repo, and set **Settings → Pages → Source =
+"GitHub Actions"** (was "Deploy from branch /docs"). After that, nightly + manual "Run workflow" deploy.
 
 ## M5 done (web)
 - Orchestration lifted from `cli/src/lib.ts` → `core/src/app.ts` (shared by CLI + server).

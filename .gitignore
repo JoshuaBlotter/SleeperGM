@@ -1,3 +1,8 @@
+# The user's GLOBAL gitignore (~/.gitignore_global) ignores `.github/`, which hid the deploy workflow
+# from every repo. Re-include it here (repo rules override global) so refresh.yml is committable.
+!.github/
+!.github/**
+
 node_modules/
 .cache/
 scripts/snapshots/

@@ -87,10 +87,10 @@ export function DataView() {
       <table className="grid">
         <thead>
           <tr>
-            <th>Fantasy team</th>
             {th("name", "Player")}
             <th>Pos</th>
             <th>NFL</th>
+            <th>Fantasy team</th>
             {th("lastSeasonPoints", "Last pts", true)}
             {th("yearsInLeague", "In league", true)}
             {th("baseCost", "Base $", true)}
@@ -101,12 +101,12 @@ export function DataView() {
         <tbody>
           {rows.map((p: PlayerRow) => (
             <tr key={`${p.teamId}-${p.playerId}`}>
-              <td className="dim">{p.teamName}</td>
               <td className="strong">{p.name}</td>
               <td>
                 <span className={"pos pos-" + p.position}>{p.position}</span>
               </td>
               <td className="dim">{p.nflTeam ?? "—"}</td>
+              <td className="dim">{p.teamName}</td>
               <td className="r">{p.lastSeasonPoints == null ? "—" : p.lastSeasonPoints.toFixed(1)}</td>
               <td className="r">{p.yearsInLeague == null ? "—" : `${p.yearsInLeague} yr${p.yearsInLeague === 1 ? "" : "s"}`}</td>
               <td className="r">{p.costKnown ? money(p.baseCost) : "—"}</td>

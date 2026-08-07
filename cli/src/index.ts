@@ -8,6 +8,7 @@ import { simulate } from "./commands/simulate";
 import { inflation } from "./commands/inflation";
 import { trades } from "./commands/trades";
 import { values } from "./commands/values";
+import { rookies } from "./commands/rookies";
 import { refresh } from "./commands/refresh";
 
 const program = new Command();
@@ -59,6 +60,11 @@ program
   .option("-t, --team <query>", "also show worth for one team")
   .description("Value sources: active source, coverage, unmatched players")
   .action(run(values));
+
+program
+  .command("rookies")
+  .description("Rookie draft board: derived order, pick ownership (traded picks), slot cost, draft capital")
+  .action(run(rookies));
 
 program.command("refresh").description("Clear the API cache").action(run(refresh));
 

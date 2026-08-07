@@ -38,10 +38,11 @@ client-side (the snapshot bakes each source under `data.json → bySource`); on 
 
 Views: **Dashboard**, **Team** (keeper board with an interactive keeper-simulation — check rows to see
 live cap/surplus — plus an inflation-adjusted toggle), **Inflation**, **Trades** (partner selector +
-mutual-fit/sharky toggle), **Data** (raw player info — last-season points, years in the league, cost;
-filter by fantasy team / NFL team / position), **Rules** (rulebook).
-API: `/api/league`, `/api/team/:id`, `/api/players`, `/api/inflation`, `/api/trades/:id`, `/api/rules`,
-`POST /api/refresh` (value-dependent routes accept `?source=<name>`).
+mutual-fit/sharky toggle), **Rookies** (derived rookie draft board — order, pick ownership, slot cost,
+draft capital), **Data** (raw player info — last-season points, years in the league, cost; filter by
+fantasy team / NFL team / position), **Rules** (rulebook + value-source glossary).
+API: `/api/league`, `/api/team/:id`, `/api/players`, `/api/inflation`, `/api/trades/:id`, `/api/rookies`,
+`/api/rules`, `POST /api/refresh` (value-dependent routes accept `?source=<name>`).
 
 ## Commands
 | Command | What |
@@ -54,6 +55,7 @@ API: `/api/league`, `/api/team/:id`, `/api/players`, `/api/inflation`, `/api/tra
 | `npm run sgm -- values [--team X]` | active value source, coverage, unmatched players |
 | `npm run values:adp` | refresh ADP-derived auction values → config/values/adp.csv |
 | `npm run sgm -- trades <team> [--partner X] [--sharky]` | chips, targets, mutual-fit swaps (`--sharky` = surplus-max) |
+| `npm run sgm -- rookies` | rookie draft board: derived order, pick ownership (traded picks), slot cost, draft capital |
 | `npm run sgm -- simulate --team X --keep a,b,c` | cap impact of a keeper set |
 | `npm run sgm -- refresh` | clear the API cache |
 

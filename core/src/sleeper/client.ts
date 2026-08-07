@@ -78,7 +78,7 @@ export interface RawRoster {
   starters: string[] | null;
   taxi: string[] | null;
   reserve: string[] | null;
-  settings: { wins?: number; losses?: number; ties?: number } | null;
+  settings: { wins?: number; losses?: number; ties?: number; fpts?: number; fpts_decimal?: number } | null;
 }
 export interface RawUser {
   user_id: string;

@@ -8,10 +8,11 @@ import { buildDraftIndex } from "./history/prices";
 import { buildFaabIndex } from "./history/waivers";
 import { buildProvenance } from "./history/provenance";
 import { computeInflation, type InflationPlayer, type InflationResult } from "./engines/inflation";
+import { computeRookieBoard, type RookieBoard, type StandingRow, type TradedPick } from "./engines/rookies";
 import { findTeam, loadRegistry } from "./registry/teams";
 import { recommendation, toSurplusLines } from "./engines/surplus";
 import { loadSalarySheet, sheetSalary, sheetSupersededByReacquire } from "./config/salaries";
-import { leagueRules } from "./config/league-rules";
+import { leagueRules, rookieSlotCost } from "./config/league-rules";
 import { loadResolver } from "./sleeper/players";
 import { seasonPoints } from "./engines/points";
 import { sleeper } from "./sleeper/client";
@@ -233,6 +234,65 @@ export function leagueInflation(ctx: Ctx, data: KeeperData): InflationResult {
     }
   }
   return computeInflation(players, leagueRules.capBudget, ctx.registry.length);
+}
+
+/**
+ * Rookie draft prep board (M6). Base order = reverse of last season's regular-season standings; current
+ * ownership from this season's traded_picks. Sleeper doesn't publish the order, so this is derived.
+ * Independent of value source and keeper data.
+ */
+export async function loadRookieBoard(ctx: Ctx): Promise<RookieBoard> {
+  const prev = ctx.chain.find((c) => c.leagueId !== ctx.leagueId) ?? ctx.chain[0];
+  const prevLeagueId = prev?.leagueId ?? ctx.leagueId;
+
+  const [prevRosters, prevUsers, rawTraded] = await Promise.all([
+    sleeper.getRosters(prevLeagueId),
+    sleeper.getUsers(prevLeagueId),
+    sleeper.getTradedPicks(ctx.leagueId),
+  ]);
+
+  // Prev-season display names (fallback if a roster isn't in the current registry).
+  const prevName = new Map<number, string>();
+  const userName = new Map(
+    (prevUsers ?? []).map((u) => [u.user_id, u.metadata?.team_name || u.display_name] as const),
+  );
+  for (const r of prevRosters ?? []) if (r.owner_id) prevName.set(r.roster_id, userName.get(r.owner_id) ?? `roster ${r.roster_id}`);
+
+  const standings: StandingRow[] = (prevRosters ?? []).map((r) => ({
+    rosterId: r.roster_id,
+    teamName: prevName.get(r.roster_id) ?? `roster ${r.roster_id}`,
+    wins: r.settings?.wins ?? 0,
+    losses: r.settings?.losses ?? 0,
+    ties: r.settings?.ties ?? 0,
+    pointsFor: (r.settings?.fpts ?? 0) + (r.settings?.fpts_decimal ?? 0) / 100,
+  }));
+
+  const tradedPicks: TradedPick[] = ((rawTraded ?? []) as RawTradedPick[])
+    .filter((t) => String(t.season) === ctx.season)
+    .map((t) => ({ round: t.round, season: String(t.season), rosterId: t.roster_id, ownerId: t.owner_id, previousOwnerId: t.previous_owner_id }));
+
+  // Current ownership → current team names.
+  const regName = new Map(ctx.registry.map((t) => [t.rosterId, t.teamName] as const));
+  const nameOf = (rosterId: number) => regName.get(rosterId) ?? prevName.get(rosterId) ?? `roster ${rosterId}`;
+
+  return computeRookieBoard({
+    season: ctx.season,
+    standings,
+    tradedPicks,
+    rounds: leagueRules.rookieDraft.rounds,
+    snake: leagueRules.rookieDraft.snake,
+    orderBasis: leagueRules.rookieDraft.orderBasis,
+    nameOf,
+    costFor: (slot, round) => rookieSlotCost(slot, round),
+  });
+}
+
+interface RawTradedPick {
+  round: number;
+  season: string | number;
+  roster_id: number;
+  owner_id: number;
+  previous_owner_id?: number;
 }
 
 /** Re-rank a surplus board with inflation-adjusted worth (skill worth × multiplier; streamers unchanged). */

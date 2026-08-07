@@ -143,6 +143,31 @@ export interface RulesResp {
   outstanding: string[];
 }
 
+export interface RookiePick {
+  round: number;
+  pickInRound: number;
+  overall: number;
+  label: string;
+  slot: number;
+  originalRosterId: number;
+  originalTeam: string;
+  ownerRosterId: number;
+  ownerTeam: string;
+  traded: boolean;
+  viaTeam: string | null;
+  cost: Record<string, number>;
+}
+export interface RookieBoard {
+  season: string;
+  rounds: number;
+  snake: boolean;
+  derived: boolean;
+  orderBasis: string;
+  baseOrder: { slot: number; rosterId: number; teamName: string; wins: number; losses: number; ties: number; pointsFor: number }[];
+  picks: RookiePick[];
+  byTeam: { rosterId: number; teamName: string; picks: string[]; extra: number }[];
+}
+
 async function get<T>(url: string): Promise<T> {
   const res = await fetch(url);
   if (!res.ok) {
@@ -169,6 +194,7 @@ interface Bundle {
   bySource: Record<string, SourceData>;
   players: PlayersResp;
   rules: RulesResp;
+  rookies: RookieBoard;
 }
 let bundle: Bundle | null | undefined;
 
@@ -229,6 +255,7 @@ export const api = {
   },
   players: async () => (await getBundle())?.players ?? get<PlayersResp>("/api/players"),
   rules: async () => (await getBundle())?.rules ?? get<RulesResp>("/api/rules"),
+  rookies: async () => (await getBundle())?.rookies ?? get<RookieBoard>("/api/rookies"),
   refresh: async () => {
     if (await getBundle()) return; // static snapshot — re-run `npm run snapshot` to update
     await fetch("/api/refresh", { method: "POST" });
