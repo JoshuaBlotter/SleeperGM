@@ -26,9 +26,30 @@
   `npm run fixtures` (snapshot live data).
 
 ## Next up (in order)
-1. Deploy the static build to the user's GitHub Pages (see web/DEPLOY.md) — `npm run web:static`.
-2. Optional: nightly GitHub Action to auto-refresh data.json.
-3. Rookie-pick valuator (uses traded_picks).
+1. **M6 — Rookie draft board** (issue #1): reverse-2025-standings + traded_picks → round.slot → team;
+   per-team draft capital; slot cost. CLI `sgm rookies` + web Rookies tab. (Sleeper doesn't expose the
+   2026 order → derive it.) Only remaining post-v1 item.
+2. Optional M8 follow-ups: import a premium source CSV (FantasyPros export); web live source-switch
+   (bake multiple sources into the snapshot); tune the ADP→$ curve (tau) if the top feels high.
+3. Redeploy the static site so the ADP values show live (push docs/ or run the Action).
+
+## Shipped 2026-08-07
+- **M7** Data page = raw (NFL team col + filter; removed worth/surplus/call).
+- **M8** Pluggable value sources: ADP-derived `config/values/adp.csv` (real, auto-refresh) overlaying
+  VORP, + custom CSV import + `overrides.csv`; `SGM_VALUE_SOURCE` selects; `sgm values`; shown in web
+  header. Fixed the bad values (Chase $87, A.J. Brown $47). CLI + server + snapshot all use it.
+- **M9** Web value-source dropdown + Data-page refinement (user feedback):
+  - Snapshot now bakes value-dependent view models (teams/inflation/trades) **per source** under
+    `data.json → bySource[src]`; source-independent facts (team list, raw player rows) baked once.
+    Web has a header **dropdown** (shown when >1 source) that switches everything client-side — no
+    server. Server path mirrors this via `?source=` on `/api/league|team|inflation|trades` (raw
+    `/api/players` is source-independent). Verified live: adp ×1.78 ⇄ vorp ×2.46.
+  - New core helpers: `withValueSource(ctx,data,src)` (swap values on the same indexes),
+    `worthSources()`, `leagueEntrySeason()`; `loadValues(ctx, source?, points?)` parameterized; last
+    season's points computed once (`KeeperData.points`).
+  - Data page is now "just player info": dropped Via/Season/Yrs-kept; added **Last pts** (last
+    season's total fantasy points) and **In league** (seasons rostered by any manager). Still filter
+    by fantasy team / NFL team / position. `/api/players` returns raw keeper lines (no worth).
 
 ## Static hosting (done)
 - `scripts/snapshot.ts` → `web/public/data.json` (all view models from the real engines).

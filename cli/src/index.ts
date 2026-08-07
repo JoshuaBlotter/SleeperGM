@@ -7,6 +7,7 @@ import { keepers } from "./commands/keepers";
 import { simulate } from "./commands/simulate";
 import { inflation } from "./commands/inflation";
 import { trades } from "./commands/trades";
+import { values } from "./commands/values";
 import { refresh } from "./commands/refresh";
 
 const program = new Command();
@@ -52,6 +53,12 @@ program
   .option("-k, --keep <names>", "comma-separated player names/ids to keep")
   .description("Cap impact of a chosen keeper set")
   .action(run(simulate));
+
+program
+  .command("values")
+  .option("-t, --team <query>", "also show worth for one team")
+  .description("Value sources: active source, coverage, unmatched players")
+  .action(run(values));
 
 program.command("refresh").description("Clear the API cache").action(run(refresh));
 

@@ -1,0 +1,12 @@
+# Draft Sharks auction values — import slot.
+# HOW TO FILL:
+#   1. On Draft Sharks, open the auction values for a 12-team, $200, PPR league.
+#   2. Copy the player + auction value columns.
+#   3. Paste rows below the header as:  name,position,team,value   (position & team optional).
+#   4. Re-run `npm run web:static` (or the nightly Action) to bake it; it appears as `draftsharks`.
+# HIDDEN from the dropdown until at least one data row exists below.
+#
+# Example rows (delete the leading '#' and replace with real data):
+# Jahmyr Gibbs,RB,DET,60
+# Puka Nacua,WR,LAR,55
+name,position,team,value

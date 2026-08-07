@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { ownerTenureStart, type AcquisitionIndex } from "../history/tenure";
+import { leagueEntrySeason, ownerTenureStart, type AcquisitionIndex } from "../history/tenure";
 import type { SeasonLink } from "../types";
 
 const chain: SeasonLink[] = ["2026", "2025", "2024", "2023", "2022"].map((s) => ({
@@ -34,4 +34,13 @@ test("returns null when the owner never acquired the player", () => {
 
 test("null owner yields null (caller falls back to cost-basis season)", () => {
   expect(ownerTenureStart("ajb", null, chain, acqIndex())).toBeNull();
+});
+
+test("leagueEntrySeason returns the oldest season the player appears (any owner)", () => {
+  // A.J. Brown first appears in 2022 even though the current owner acquired him in 2024.
+  expect(leagueEntrySeason("ajb", chain, acqIndex())).toBe("2022");
+});
+
+test("leagueEntrySeason returns null for a player never seen in the index", () => {
+  expect(leagueEntrySeason("ghost", chain, acqIndex())).toBeNull();
 });

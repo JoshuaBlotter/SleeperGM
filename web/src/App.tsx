@@ -19,11 +19,14 @@ const TABS: { id: Tab; label: string }[] = [
 ];
 
 export function App() {
-  const league = useAsync(() => api.league(), []);
+  const [source, setSource] = useState<string>("");
+  const league = useAsync(() => api.league(source || undefined), [source]);
   const [tab, setTab] = useState<Tab>("dashboard");
   const [teamId, setTeamId] = useState<number | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const teams = league.data?.teams ?? [];
+  const sources = league.data?.sources ?? [];
+  const activeSource = source || league.data?.valueSource || "";
 
   function openTeam(id: number) {
     setTeamId(id);
@@ -43,7 +46,8 @@ export function App() {
           <div>
             <h1>Sleeper GM</h1>
             <div className="sub">
-              Los Socios · {league.data?.season ?? "…"} · inflation ×{league.data?.multiplier?.toFixed(2) ?? "…"}
+              Los Socios · {league.data?.season ?? "…"} · inflation ×{league.data?.multiplier?.toFixed(2) ?? "…"} ·
+              values: {league.data?.valueSource ?? "…"}
             </div>
           </div>
         </div>
@@ -67,6 +71,20 @@ export function App() {
               ))}
             </select>
           )}
+          {sources.length > 1 && (
+            <select
+              value={activeSource}
+              onChange={(e) => setSource(e.target.value)}
+              title="Player value source"
+              aria-label="Player value source"
+            >
+              {sources.map((src) => (
+                <option key={src} value={src}>
+                  values: {src}
+                </option>
+              ))}
+            </select>
+          )}
           <button className="refresh" onClick={refresh} disabled={refreshing}>
             {refreshing ? "…" : "↻ Refresh"}
           </button>
@@ -75,9 +93,9 @@ export function App() {
 
       <main>
         {tab === "dashboard" && <Dashboard league={league} onOpenTeam={openTeam} />}
-        {tab === "team" && <TeamView teamId={teamId} />}
-        {tab === "inflation" && <InflationView />}
-        {tab === "trades" && <TradesView teamId={teamId} teams={teams} />}
+        {tab === "team" && <TeamView teamId={teamId} source={activeSource || undefined} />}
+        {tab === "inflation" && <InflationView source={activeSource || undefined} />}
+        {tab === "trades" && <TradesView teamId={teamId} teams={teams} source={activeSource || undefined} />}
         {tab === "data" && <DataView />}
         {tab === "rules" && <RulesView />}
       </main>

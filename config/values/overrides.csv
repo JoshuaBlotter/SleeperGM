@@ -1,0 +1,6 @@
+# Manual per-player value overrides — always win over the active source.
+# Columns: name, value  (position/team optional to disambiguate). Delete rows you don't need.
+# Example:
+# name,position,team,value
+# Ja'Marr Chase,WR,CIN,70
+name,position,team,value

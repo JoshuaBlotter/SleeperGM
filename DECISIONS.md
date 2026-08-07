@@ -19,6 +19,21 @@ retry, made worse by rebuilding the full history indexes per team (12×). Fixes:
 draft/FAAB/acquisition indexes + valuation ONCE via `loadKeeperData` and reuses across teams. Per-team
 functions (`teamKeeperLines`, `teamSurplusBoard`) are now sync over prebuilt data.
 
+## 2026-08-07 — Pluggable value sources (M8, issue #2) + Data page raw (M7)
+**M7:** Data page is now raw facts only — dropped worth/surplus/call, added an NFL-team column + filter
+(added `nflTeam` to KeeperLine, flows through /api/players + snapshot).
+**M8:** worth is now source-driven, not just VORP. `config/values/<name>.csv` sources overlay the VORP
+fallback; `overrides.csv` always wins; one active source via `SGM_VALUE_SOURCE` (default `adp` if present
+else `vorp`). Pure `matchValues` maps names→Sleeper ids (strip punctuation/suffixes; DEF by team code;
+tiebreak pos+team; reports unmatched). Shipped a real automated source: `scripts/fetch-adp-values.ts`
+pulls Fantasy Football Calculator's public ADP and `adpToAuctionValues` (convex ADP→$ curve) writes
+`config/values/adp.csv` — 255/256 matched. Premium sites (FantasyPros/DraftSharks/FootballGuys) gate
+values behind JS/login so we don't scrape them; users drop in a CSV export instead (config/values/README).
+`loadValues` in core/app.ts does the overlay, so CLI + server + snapshot all use it automatically;
+`worthSource()` surfaced in /api/league, snapshot, and the web header. New `sgm values` command; nightly
+Action refreshes ADP before snapshotting. Result: Chase $87, A.J. Brown $47 — the mis-values are fixed.
+57 tests green. (Web live source-switching deferred — static bakes one active source.)
+
 ## 2026-08-06 — Static build for GitHub Pages via a data snapshot (T35), + mobile pass
 **Static hosting:** rather than refactor the Node core to run in the browser (fs cache/config/env make
 that messy), chose a snapshot approach: `scripts/snapshot.ts` runs the SAME engines the server uses and
@@ -198,3 +213,20 @@ offline now; swap in real projections later behind the same interface.
 ## 2026-08-05 — tsx + moduleResolution "bundler", no build step for dev
 Run TS directly with `tsx`; typecheck with `tsc --noEmit`. **Why:** zero build friction for a small
 personal tool; extensionless ESM imports resolve cleanly.
+
+## 2026-08-07 — Snapshot bakes value-dependent view models PER source (static source-switching)
+The static site has no backend, so to let the web switch value sources (adp/vorp/imported) live,
+`scripts/snapshot.ts` writes `data.json → bySource[src]` (teams/inflation/trades per source) plus one
+source-independent block (team list + raw player rows). The web picks the source client-side; the
+server mirrors it with `?source=` on the value-dependent routes. **Why:** a dropdown that feels like the
+team selector, with zero hosting cost. Cost: `data.json` grows ~linearly per source (594 KB for 2) —
+fine for 2–4 sources. `withValueSource(ctx, data, src)` re-overlays values on the SAME league indexes,
+so extra sources are cheap (no re-fetch of history).
+
+## 2026-08-07 — Data page shows "years in league" + "last-season points", not fantasy tenure
+User feedback: the Data page should be "just player info", not fantasy-team specific. Dropped
+Via/Season/Yrs-kept. Added **last-season points** (already computed as the VORP proxy — `KeeperData.points`)
+and **years in league** = `currentSeason − leagueEntrySeason + 1`, where `leagueEntrySeason` is the
+OLDEST season the player appears in the acquisition index (any manager). **Why:** "years kept" resets on
+trade and is owner-specific; "years in league" answers "how long has this player been in Los Socios?"
+Horizon is the season chain (2022+), so a 2022-or-earlier arrival reads as the max (5 in 2026).

@@ -72,12 +72,12 @@ function swapTable(swaps: Swap[], sharky: boolean) {
   );
 }
 
-export function TradesView({ teamId, teams }: { teamId: number | null; teams: TeamRow[] }) {
+export function TradesView({ teamId, teams, source }: { teamId: number | null; teams: TeamRow[]; source?: string }) {
   const [partner, setPartner] = useState("");
   const [sharky, setSharky] = useState(false);
   const s = useAsync(
-    () => (teamId ? api.trades(teamId, partner || undefined) : Promise.reject(new Error("Pick a team above"))),
-    [teamId, partner],
+    () => (teamId ? api.trades(teamId, partner || undefined, source) : Promise.reject(new Error("Pick a team above"))),
+    [teamId, partner, source],
   );
   if (teamId == null) return <div className="notice">Pick a team from the selector above.</div>;
 

@@ -15,6 +15,8 @@ export interface LeagueResp {
   season: string;
   capBudget: number;
   multiplier: number;
+  valueSource?: string;
+  sources?: string[];
   teams: TeamRow[];
 }
 
@@ -22,6 +24,7 @@ export interface KeeperLine {
   playerId: string;
   name: string;
   position: string;
+  nflTeam: string | null;
   acquiredVia: string;
   rookiePick?: { round: number; slot: number };
   baseCost: number;
@@ -104,10 +107,24 @@ export interface TradeResp {
   swaps: Swap[];
 }
 
-export interface PlayerRow extends KeeperLine {
+// Raw player facts for the Data page — deliberately worth/surplus-free (source-independent).
+export interface PlayerRow {
   teamId: number;
   teamName: string;
+  playerId: string;
+  name: string;
+  position: string;
+  nflTeam: string | null;
+  acquiredVia: string;
+  rookiePick?: { round: number; slot: number };
   acquisitionSeason: string | null;
+  baseCost: number;
+  costKnown: boolean;
+  keeperCostNextYear: number;
+  salarySource: "sheet" | "computed";
+  approximate: boolean;
+  lastSeasonPoints: number | null;
+  yearsInLeague: number | null;
 }
 export interface PlayersResp {
   players: PlayerRow[];
@@ -138,15 +155,28 @@ async function get<T>(url: string): Promise<T> {
 // Two modes, decided once at runtime:
 //  - "static": a prebuilt ./data.json is present (GitHub Pages) — everything is served from it, no server.
 //  - "server": no snapshot — talk to the live Express API at /api/* (local dev).
-interface Bundle {
-  league: LeagueResp;
+// Value-dependent view models are baked per value source under `bySource`; the active source is chosen
+// client-side (see the source dropdown), defaulting to `league.defaultSource`.
+interface SourceData {
+  multiplier: number;
+  valueSource: string;
   teams: Record<string, { base: TeamResp; inflated: TeamResp }>;
   inflation: InflationResp;
-  players: PlayersResp;
-  rules: RulesResp;
   trades: Record<string, TradeResp>;
 }
+interface Bundle {
+  league: { season: string; capBudget: number; sources: string[]; defaultSource: string; teams: TeamRow[] };
+  bySource: Record<string, SourceData>;
+  players: PlayersResp;
+  rules: RulesResp;
+}
 let bundle: Bundle | null | undefined;
+
+/** Pick the source block from the bundle, falling back to the default when an unknown source is asked. */
+function pickSource(b: Bundle, source?: string): SourceData {
+  return b.bySource[source ?? b.league.defaultSource] ?? b.bySource[b.league.defaultSource]!;
+}
+const qs = (source?: string) => (source ? `source=${encodeURIComponent(source)}` : "");
 async function getBundle(): Promise<Bundle | null> {
   if (bundle !== undefined) return bundle;
   try {
@@ -170,17 +200,32 @@ function filterTrades(t: TradeResp, partner?: string): TradeResp {
 }
 
 export const api = {
-  league: async () => (await getBundle())?.league ?? get<LeagueResp>("/api/league"),
-  team: async (id: number, inflated: boolean) => {
+  league: async (source?: string): Promise<LeagueResp> => {
     const b = await getBundle();
-    if (b) return inflated ? b.teams[id]!.inflated : b.teams[id]!.base;
-    return get<TeamResp>(`/api/team/${id}?inflated=${inflated ? 1 : 0}`);
+    if (b) {
+      const sd = pickSource(b, source);
+      return { season: b.league.season, capBudget: b.league.capBudget, teams: b.league.teams, sources: b.league.sources, valueSource: sd.valueSource, multiplier: sd.multiplier };
+    }
+    return get<LeagueResp>(`/api/league${qs(source) ? `?${qs(source)}` : ""}`);
   },
-  inflation: async () => (await getBundle())?.inflation ?? get<InflationResp>("/api/inflation"),
-  trades: async (id: number, partner?: string) => {
+  team: async (id: number, inflated: boolean, source?: string) => {
     const b = await getBundle();
-    if (b) return filterTrades(b.trades[id]!, partner);
-    return get<TradeResp>(`/api/trades/${id}${partner ? `?partner=${encodeURIComponent(partner)}` : ""}`);
+    if (b) {
+      const t = pickSource(b, source).teams[id]!;
+      return inflated ? t.inflated : t.base;
+    }
+    return get<TeamResp>(`/api/team/${id}?inflated=${inflated ? 1 : 0}&${qs(source)}`);
+  },
+  inflation: async (source?: string) => {
+    const b = await getBundle();
+    if (b) return pickSource(b, source).inflation;
+    return get<InflationResp>(`/api/inflation${qs(source) ? `?${qs(source)}` : ""}`);
+  },
+  trades: async (id: number, partner?: string, source?: string) => {
+    const b = await getBundle();
+    if (b) return filterTrades(pickSource(b, source).trades[id]!, partner);
+    const query = [partner ? `partner=${encodeURIComponent(partner)}` : "", qs(source)].filter(Boolean).join("&");
+    return get<TradeResp>(`/api/trades/${id}${query ? `?${query}` : ""}`);
   },
   players: async () => (await getBundle())?.players ?? get<PlayersResp>("/api/players"),
   rules: async () => (await getBundle())?.rules ?? get<RulesResp>("/api/rules"),

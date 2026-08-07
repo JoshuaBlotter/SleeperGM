@@ -1,8 +1,8 @@
 import { api } from "../api";
 import { ErrorBox, Loading, Surplus, money, useAsync } from "../ui";
 
-export function InflationView() {
-  const s = useAsync(() => api.inflation(), []);
+export function InflationView({ source }: { source?: string }) {
+  const s = useAsync(() => api.inflation(source), [source]);
   if (s.loading) return <Loading what="inflation" />;
   if (s.error) return <ErrorBox message={s.error} />;
   const d = s.data!;

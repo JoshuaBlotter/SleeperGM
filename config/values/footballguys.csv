@@ -1,0 +1,12 @@
+# Footballguys auction values — import slot.
+# HOW TO FILL:
+#   1. On Footballguys, open the auction values / Draft Dominator for a 12-team, $200, PPR league.
+#   2. Copy the player + auction value columns.
+#   3. Paste rows below the header as:  name,position,team,value   (position & team optional).
+#   4. Re-run `npm run web:static` (or the nightly Action) to bake it; it appears as `footballguys`.
+# HIDDEN from the dropdown until at least one data row exists below.
+#
+# Example rows (delete the leading '#' and replace with real data):
+# Amon-Ra St. Brown,WR,DET,52
+# Trey McBride,TE,ARI,30
+name,position,team,value

@@ -1,13 +1,64 @@
 import { useEffect, useMemo, useState } from "react";
 import { api, type KeeperLine } from "../api";
 import { Call, ErrorBox, Loading, Surplus, money, signed, useAsync } from "../ui";
+import { clearAllOverrides, clearOverride, recommendation, setOverride, useOverrides } from "../overrides";
 
-export function TeamView({ teamId }: { teamId: number | null }) {
+type Line = KeeperLine & { overridden?: boolean };
+
+/** An editable Worth cell: click to set a custom value; ↺ resets to the source value. */
+function WorthCell({ line, onSet, onReset }: { line: Line; onSet: (v: number) => void; onReset: () => void }) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState("");
+  if (editing) {
+    const commit = () => {
+      const v = Math.round(Number(draft));
+      if (draft.trim() !== "" && Number.isFinite(v) && v >= 0) onSet(v);
+      setEditing(false);
+    };
+    return (
+      <input
+        className="ov-input"
+        type="number"
+        min={0}
+        autoFocus
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={commit}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") commit();
+          else if (e.key === "Escape") setEditing(false);
+        }}
+      />
+    );
+  }
+  return (
+    <span className="ov-worth">
+      <button
+        className={"ov-edit" + (line.overridden ? " overridden" : "")}
+        title={line.overridden ? "Custom value — click to change" : "Click to set a custom value"}
+        onClick={() => {
+          setDraft(String(line.worth));
+          setEditing(true);
+        }}
+      >
+        {money(line.worth)}
+      </button>
+      {line.overridden && (
+        <button className="ov-reset" title="Reset to source value" onClick={onReset}>
+          ↺
+        </button>
+      )}
+    </span>
+  );
+}
+
+export function TeamView({ teamId, source }: { teamId: number | null; source?: string }) {
   const [inflated, setInflated] = useState(false);
   const s = useAsync(
-    () => (teamId ? api.team(teamId, inflated) : Promise.reject(new Error("Pick a team above"))),
-    [teamId, inflated],
+    () => (teamId ? api.team(teamId, inflated, source) : Promise.reject(new Error("Pick a team above"))),
+    [teamId, inflated, source],
   );
+  const ov = useOverrides();
 
   // Interactive keeper simulation: which players are "kept". Seeded from the keep/hold/cut call.
   const [kept, setKept] = useState<Set<string>>(new Set());
@@ -15,7 +66,16 @@ export function TeamView({ teamId }: { teamId: number | null }) {
     if (s.data) setKept(new Set(s.data.lines.filter((l) => l.recommendation === "keep").map((l) => l.playerId)));
   }, [s.data]);
 
-  const lines = s.data?.lines ?? [];
+  // Overlay manual overrides: replace worth, recompute surplus + recommendation live. Keep source order.
+  const lines: Line[] = useMemo(() => {
+    return (s.data?.lines ?? []).map((l): Line => {
+      if (ov[l.playerId] == null) return l;
+      const worth = ov[l.playerId]!;
+      const surplus = worth - l.keeperCostNextYear;
+      return { ...l, worth, surplus, recommendation: recommendation(surplus, worth), overridden: true };
+    });
+  }, [s.data, ov]);
+  const overrideCount = Object.keys(ov).length;
   const budget = s.data?.cap.budget ?? 200;
   const sim = useMemo(() => {
     const chosen = lines.filter((l) => kept.has(l.playerId));
@@ -81,6 +141,14 @@ export function TeamView({ teamId }: { teamId: number | null }) {
           Reset to recommended
         </button>
         <span className="dim">If all kept: {money(d.cap.used)} / ${d.cap.budget}</span>
+        {overrideCount > 0 && (
+          <span className="ov-note">
+            {overrideCount} custom value{overrideCount === 1 ? "" : "s"} ·{" "}
+            <button className="link" onClick={clearAllOverrides}>
+              Reset all
+            </button>
+          </span>
+        )}
       </div>
 
       <table className="grid">
@@ -99,7 +167,7 @@ export function TeamView({ teamId }: { teamId: number | null }) {
           </tr>
         </thead>
         <tbody>
-          {lines.map((l: KeeperLine) => (
+          {lines.map((l: Line) => (
             <tr key={l.playerId} className={kept.has(l.playerId) ? "kept" : ""}>
               <td>
                 <input type="checkbox" checked={kept.has(l.playerId)} onChange={() => toggle(l.playerId)} />
@@ -116,7 +184,9 @@ export function TeamView({ teamId }: { teamId: number | null }) {
                   ? `rookie ${l.rookiePick.round}.${String(l.rookiePick.slot).padStart(2, "0")}`
                   : l.acquiredVia}
               </td>
-              <td className="r">{money(l.worth)}</td>
+              <td className="r">
+                <WorthCell line={l} onSet={(v) => setOverride(l.playerId, v)} onReset={() => clearOverride(l.playerId)} />
+              </td>
               <td className="r">{money(l.keeperCostNextYear)}</td>
               <td className="r">
                 <Surplus value={l.surplus} />
@@ -130,7 +200,8 @@ export function TeamView({ teamId }: { teamId: number | null }) {
       </table>
       <div className="legend">
         <span className="mark">†</span> from league salary sheet · <span className="mark warn">≈</span> approximate
-        (traded / pre-2022 history)
+        (traded / pre-2022 history) · click a <strong>Worth</strong> to set a custom value (saved in this browser;
+        Inflation &amp; Trades keep the source values until re-snapshot)
       </div>
     </section>
   );

@@ -31,11 +31,17 @@ npm run web:static   # snapshot Sleeper data -> data.json, then build web/dist
 The app has two modes, decided at runtime: if a prebuilt `data.json` is present (static build) it reads
 that; otherwise it calls the live `/api/*` server. See **[web/DEPLOY.md](web/DEPLOY.md)** for GitHub Pages
 steps. The static site is a **snapshot** — re-run `npm run web:static` to refresh it.
+A header **value-source dropdown** (shown when more than one source exists) switches the player-value
+source everywhere — worth, surplus, inflation, and trades all recompute. On the static build this is
+client-side (the snapshot bakes each source under `data.json → bySource`); on the server it's the
+`?source=` query param.
+
 Views: **Dashboard**, **Team** (keeper board with an interactive keeper-simulation — check rows to see
 live cap/surplus — plus an inflation-adjusted toggle), **Inflation**, **Trades** (partner selector +
-mutual-fit/sharky toggle), **Data** (all rostered players, filterable + sortable), **Rules** (rulebook).
+mutual-fit/sharky toggle), **Data** (raw player info — last-season points, years in the league, cost;
+filter by fantasy team / NFL team / position), **Rules** (rulebook).
 API: `/api/league`, `/api/team/:id`, `/api/players`, `/api/inflation`, `/api/trades/:id`, `/api/rules`,
-`POST /api/refresh`.
+`POST /api/refresh` (value-dependent routes accept `?source=<name>`).
 
 ## Commands
 | Command | What |
@@ -45,6 +51,8 @@ API: `/api/league`, `/api/team/:id`, `/api/players`, `/api/inflation`, `/api/tra
 | `npm run sgm -- rulebook` | resolved house rules (flags the two outstanding ones) |
 | `npm run sgm -- keepers [team] [--inflated]` | keeper board by surplus; `--inflated` = market-adjusted worth |
 | `npm run sgm -- inflation` | league auction inflation from keeper surplus |
+| `npm run sgm -- values [--team X]` | active value source, coverage, unmatched players |
+| `npm run values:adp` | refresh ADP-derived auction values → config/values/adp.csv |
 | `npm run sgm -- trades <team> [--partner X] [--sharky]` | chips, targets, mutual-fit swaps (`--sharky` = surplus-max) |
 | `npm run sgm -- simulate --team X --keep a,b,c` | cap impact of a keeper set |
 | `npm run sgm -- refresh` | clear the API cache |

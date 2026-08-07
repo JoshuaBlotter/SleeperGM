@@ -141,9 +141,10 @@ test("toSurplusLines computes surplus, sorts desc, recommends", () => {
 
 function kl(id: string, acq: number, keep: number): KeeperLine {
   return {
-    playerId: id, name: id, position: "RB", acquiredVia: "auction", acquisitionCost: acq,
+    playerId: id, name: id, position: "RB", nflTeam: "SF", acquiredVia: "auction", acquisitionCost: acq,
     acquisitionSeason: "2025", yearsKept: 1, costKnown: true, baseCost: acq, keeperCostNextYear: keep,
     keeperCostIsPlaceholder: false, salarySource: "computed", approximate: false,
+    lastSeasonPoints: null, yearsInLeague: null,
   };
 }
 

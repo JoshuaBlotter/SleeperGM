@@ -47,6 +47,19 @@ export async function buildAcquisitionIndex(chain: SeasonLink[]): Promise<Acquis
 }
 
 /**
+ * The earliest (oldest) season ANY owner acquired the player in this league chain = when the player
+ * first entered the league. Used for "years in the league". Returns null if never seen in the index.
+ * `chain` is newest-first, so we keep overwriting and the last hit is the oldest season present.
+ */
+export function leagueEntrySeason(playerId: string, chain: SeasonLink[], acq: AcquisitionIndex): string | null {
+  let earliest: string | null = null;
+  for (const link of chain) {
+    if (acq.get(link.season)?.has(playerId)) earliest = link.season;
+  }
+  return earliest;
+}
+
+/**
  * The season the current owner most recently acquired the player = start of their tenure.
  * Returns null if no acquisition by that owner is found (caller falls back to cost-basis season).
  */

@@ -57,11 +57,14 @@ export type FaabIndex = Map<string, Map<string, number>>; // season -> player ->
 export interface KeeperLine extends Provenance {
   name: string;
   position: string;
+  nflTeam: string | null;
   baseCost: number; // origin salary basis (auction $, FAAB bid, or dollarized rookie pick)
   keeperCostNextYear: number;
   keeperCostIsPlaceholder: boolean;
   salarySource: "sheet" | "computed"; // "sheet" = from the authoritative salary override
   approximate: boolean; // true when the API can't fully reconstruct (traded and/or pre-2022 origin)
+  lastSeasonPoints: number | null; // total fantasy points last season (null if didn't score / not found)
+  yearsInLeague: number | null; // seasons this player has been in the league (any owner), null if unknown
 }
 
 export interface ValueLine {

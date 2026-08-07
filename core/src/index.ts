@@ -45,14 +45,24 @@ export {
   loadContext,
   pickTeam,
   loadKeeperData,
+  withValueSource,
   teamKeeperLines,
   loadValues,
   teamSurplusBoard,
   leagueInflation,
   inflateBoard,
+  worthSource,
+  worthSources,
   STREAMER_POSITIONS,
 } from "./app";
 export type { Ctx, KeeperData } from "./app";
+
+// Value sources (§13.3): importable/ADP/expert auction values + overrides.
+export { parseValueCsv, matchValues, normalizeName } from "./values/valueSheet";
+export type { ValueRow, MatchResult } from "./values/valueSheet";
+export { adpToAuctionValues } from "./values/adp";
+export type { AdpPlayer } from "./values/adp";
+export { listValueSources, getActiveSource, valueSourceExists, loadValueMap, loadValueRows, loadOverrides } from "./values/load";
 export { computeInflation } from "./engines/inflation";
 export type { InflationPlayer, InflationResult, TeamSurplus, DiscountLine } from "./engines/inflation";
 export { computeTrades } from "./engines/trades";

@@ -2,7 +2,7 @@
 // Network-touching glue lives here (not in the pure engines) and is shared by the CLI and the server.
 
 import { accumulatedSalary, baseSalary, yearIncrement } from "./engines/keepers";
-import { buildAcquisitionIndex, ownerTenureStart } from "./history/tenure";
+import { buildAcquisitionIndex, leagueEntrySeason, ownerTenureStart } from "./history/tenure";
 import { buildChain } from "./history/chain";
 import { buildDraftIndex } from "./history/prices";
 import { buildFaabIndex } from "./history/waivers";
@@ -16,6 +16,7 @@ import { loadResolver } from "./sleeper/players";
 import { seasonPoints } from "./engines/points";
 import { sleeper } from "./sleeper/client";
 import { valuePlayers } from "./engines/valuation";
+import { getActiveSource, listValueSources, loadOverrides, loadValueMap } from "./values/load";
 import type { KeeperLine, PlayerLite, Provenance, SeasonLink, SurplusLine, Team, ValueLine } from "./types";
 
 export interface Ctx {
@@ -60,28 +61,47 @@ export interface KeeperData {
   faab: Awaited<ReturnType<typeof buildFaabIndex>>;
   acq: Awaited<ReturnType<typeof buildAcquisitionIndex>>;
   values: Map<string, ValueLine>;
+  points: Map<string, number>; // last completed season's total fantasy points per player
   sheet: ReturnType<typeof loadSalarySheet>;
 }
 
 export async function loadKeeperData(ctx: Ctx): Promise<KeeperData> {
+  const points = await loadLastSeasonPoints(ctx);
   const [drafts, faab, acq, values] = await Promise.all([
     buildDraftIndex(ctx.chain),
     buildFaabIndex(ctx.chain),
     buildAcquisitionIndex(ctx.chain),
-    loadValues(ctx),
+    loadValues(ctx, getActiveSource(), points),
   ]);
-  return { drafts, faab, acq, values, sheet: loadSalarySheet() };
+  return { drafts, faab, acq, values, points, sheet: loadSalarySheet() };
+}
+
+/** Return the same KeeperData with values recomputed for a different value source (snapshot uses this). */
+export async function withValueSource(ctx: Ctx, data: KeeperData, source: string): Promise<KeeperData> {
+  return { ...data, values: await loadValues(ctx, source, data.points) };
+}
+
+/** Last completed season's fantasy points per player (the projection proxy the VORP model uses). */
+async function loadLastSeasonPoints(ctx: Ctx): Promise<Map<string, number>> {
+  const prevSeason = ctx.chain.find((c) => c.leagueId !== ctx.leagueId) ?? ctx.chain[0];
+  const isHistorical = prevSeason?.leagueId !== ctx.leagueId;
+  return seasonPoints(prevSeason?.leagueId ?? ctx.leagueId, 17, isHistorical);
 }
 
 /** Per-player keeper cost lines for a team (provenance + owner tenure + salary replay/override). */
 export function teamKeeperLines(ctx: Ctx, data: KeeperData, team: Team): KeeperLine[] {
-  const { drafts, faab, acq, sheet } = data;
+  const { drafts, faab, acq, sheet, points } = data;
   const prov = buildProvenance(team.players, ctx.chain, drafts, faab, ctx.season);
   const currentYear = Number(ctx.season);
   const oldestSeason = Number(ctx.chain[ctx.chain.length - 1]?.season);
 
   return prov.map((p): KeeperLine => {
     const pl = ctx.resolve(p.playerId);
+
+    const lastSeasonPoints = points.has(p.playerId) ? Math.round((points.get(p.playerId) as number) * 10) / 10 : null;
+    const entrySeason = leagueEntrySeason(p.playerId, ctx.chain, acq);
+    const yearsInLeague = entrySeason ? currentYear - Number(entrySeason) + 1 : null;
+    const facts = { lastSeasonPoints, yearsInLeague };
 
     const tenureStart = Number(ownerTenureStart(p.playerId, team.ownerUserId, ctx.chain, acq) ?? p.acquisitionSeason);
     const originSeason = Number(p.acquisitionSeason);
@@ -98,7 +118,7 @@ export function teamKeeperLines(ctx: Ctx, data: KeeperData, team: Team): KeeperL
         cost += yearIncrement(pl.position, yk, leagueRules);
       }
       cost = Math.max(leagueRules.keeperEscalation.floor, Math.round(cost));
-      return line(p, pl, { base: entry.salary, cost, yearsKept: yk, isPlaceholder: false, source: "sheet", approximate: false });
+      return line(p, pl, { base: entry.salary, cost, yearsKept: yk, isPlaceholder: false, source: "sheet", approximate: false, ...facts });
     }
 
     // 2) Compute: replay accumulated salary, carrying through the trade to the current owner.
@@ -116,43 +136,85 @@ export function teamKeeperLines(ctx: Ctx, data: KeeperData, team: Team): KeeperL
 
     const traded = tenureStart !== originSeason;
     const preSleeperRisk = p.acquiredVia === "auction" && originSeason === oldestSeason;
-    return line(p, pl, { base: acquiredSalary, cost, yearsKept, isPlaceholder, source: "computed", approximate: p.costKnown && (traded || preSleeperRisk) });
+    return line(p, pl, { base: acquiredSalary, cost, yearsKept, isPlaceholder, source: "computed", approximate: p.costKnown && (traded || preSleeperRisk), ...facts });
   });
 }
 
 function line(
   p: Provenance,
   pl: PlayerLite,
-  x: { base: number; cost: number; yearsKept: number; isPlaceholder: boolean; source: "sheet" | "computed"; approximate: boolean },
+  x: {
+    base: number;
+    cost: number;
+    yearsKept: number;
+    isPlaceholder: boolean;
+    source: "sheet" | "computed";
+    approximate: boolean;
+    lastSeasonPoints: number | null;
+    yearsInLeague: number | null;
+  },
 ): KeeperLine {
   return {
     ...p,
     yearsKept: x.yearsKept,
     name: pl.name,
     position: pl.position,
+    nflTeam: pl.team,
     baseCost: x.base,
     keeperCostNextYear: x.cost,
     keeperCostIsPlaceholder: x.isPlaceholder,
     salarySource: x.source,
     approximate: x.approximate,
+    lastSeasonPoints: x.lastSeasonPoints,
+    yearsInLeague: x.yearsInLeague,
   };
 }
 
-/** Valuation for all players, using the previous season's realized points as the projection. */
-export async function loadValues(ctx: Ctx): Promise<Map<string, ValueLine>> {
+/**
+ * Player "worth" ($). The VORP model is the always-available baseline; if a value SOURCE is active
+ * (e.g. an imported ADP/expert auction list in config/values/), its values overlay VORP, and manual
+ * overrides win over everything. `worthSource()` reports which source is in effect.
+ */
+export async function loadValues(
+  ctx: Ctx,
+  source: string = getActiveSource(),
+  points?: Map<string, number>,
+): Promise<Map<string, ValueLine>> {
   const league = await sleeper.getLeague(ctx.leagueId);
-  const prevSeason = ctx.chain.find((c) => c.leagueId !== ctx.leagueId) ?? ctx.chain[0];
-  const isHistorical = prevSeason?.leagueId !== ctx.leagueId;
-  const points = await seasonPoints(prevSeason?.leagueId ?? ctx.leagueId, 17, isHistorical);
+  const pts = points ?? (await loadLastSeasonPoints(ctx));
   const meta = new Map<string, PlayerLite>();
-  for (const id of points.keys()) meta.set(id, ctx.resolve(id));
-  return valuePlayers({
-    pointsByPlayer: points,
+  for (const id of pts.keys()) meta.set(id, ctx.resolve(id));
+  const vorp = valuePlayers({
+    pointsByPlayer: pts,
     meta,
     rosterPositions: league?.roster_positions ?? [],
     numTeams: league?.total_rosters ?? ctx.registry.length,
     budget: leagueRules.capBudget,
   });
+
+  const players = (await sleeper.getPlayers()) ?? {};
+  if (source === "vorp") return applyOverrides(vorp, players);
+
+  // Overlay the active source on the VORP fallback (source wins where it has a player).
+  const { byId } = loadValueMap(source, players);
+  const out = new Map(vorp);
+  for (const [id, value] of byId) out.set(id, { playerId: id, points: 0, par: 0, value });
+  return applyOverrides(out, players);
+}
+
+function applyOverrides(map: Map<string, ValueLine>, players: Record<string, import("./sleeper/client").RawPlayer>) {
+  for (const [id, value] of loadOverrides(players)) map.set(id, { playerId: id, points: 0, par: 0, value });
+  return map;
+}
+
+/** Which worth source is active (for display / default). */
+export function worthSource(): string {
+  return getActiveSource();
+}
+
+/** All selectable worth sources: the built-in "vorp" model plus every CSV in config/values/. */
+export function worthSources(): string[] {
+  return Array.from(new Set(["vorp", ...listValueSources()]));
 }
 
 export function teamSurplusBoard(ctx: Ctx, data: KeeperData, team: Team): SurplusLine[] {

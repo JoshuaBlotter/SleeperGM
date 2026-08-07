@@ -1,0 +1,12 @@
+# CBS Sports auction values — import slot.
+# HOW TO FILL:
+#   1. On CBS Sports, open the auction-values / draft-prep tool for a 12-team, $200, PPR league.
+#   2. Copy the player + salary/value columns.
+#   3. Paste rows below the header as:  name,position,team,value   (position & team optional).
+#   4. Re-run `npm run web:static` (or the nightly Action) to bake it; it appears in the dropdown as `cbs`.
+# HIDDEN from the dropdown until at least one data row exists below.
+#
+# Example rows (delete the leading '#' and replace with real data):
+# Ja'Marr Chase,WR,CIN,65
+# Christian McCaffrey,RB,SF,58
+name,position,team,value

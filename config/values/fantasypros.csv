@@ -1,0 +1,15 @@
+# FantasyPros auction values — import slot.
+# HOW TO FILL:
+#   1. On FantasyPros, open the Auction Value Calculator and set your league: 12 teams, $200 budget, PPR.
+#   2. Copy the player + auction value columns.
+#   3. Paste rows below the header as:  name,position,team,value   (position & team are optional but
+#      improve name matching for duplicate names / defenses).
+#   4. Re-run `npm run values:adp` is NOT needed for this file — just re-run `npm run web:static` (or the
+#      nightly Action) to bake it. It then appears in the app's "values" dropdown as `fantasypros`.
+# This source stays HIDDEN from the dropdown until at least one data row exists below.
+#
+# Example rows (delete the leading '#' and replace with real data):
+# Ja'Marr Chase,WR,CIN,68
+# Bijan Robinson,RB,ATL,62
+# San Francisco,DEF,SF,3
+name,position,team,value

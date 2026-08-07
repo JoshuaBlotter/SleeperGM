@@ -300,22 +300,91 @@ sleeper-gm/
 
 ## 11. Milestones (CLI-first)
 
-1. **M0 – Scaffold & pipe:** monorepo, Sleeper client + cache, players + **team registry** cache,
-   `sgm dashboard`. *(No house rules needed — proves the pipe end-to-end.)*
-2. **M1 – History & cost:** walk `previous_league_id`; extract auction prices + FAAB acquisition costs;
-   compute `yearsKept` + `acquisitionCost`; `sgm team`.
-3. **M2 – House rules & keeper cost:** encode §6 (with §6.1/§6.4 once the rules doc lands),
-   `keeperCostNextYear`, cap math, `sgm rulebook`.
-4. **M3 – Valuation:** last-season-points → \$ model, surplus, `sgm keepers` + `sgm simulate`.
-5. **M4 – Market:** inflation, trade explorer, rookie-pick valuator.
-6. **M5 – Web:** Express API over the core, then React UI. *(Pure add-on; engines unchanged.)*
+1. **M0 – Scaffold & pipe** ✅ — monorepo, Sleeper client + cache, players + team registry, `dashboard`.
+2. **M1 – History & cost** ✅ — chain walk; auction + FAAB costs; provenance; `team`.
+3. **M2 – House rules & keeper cost** ✅ — §6 encoded (real rules), `keeperCostNextYear`, cap, `rulebook`.
+4. **M3 – Valuation** ✅ — VORP→$ model, surplus, `keepers` + `simulate`.
+5. **M4 – Market** ✅ — inflation, trade explorer (mutual-fit + sharky). *(rookie-pick valuator → M6.)*
+6. **M5 – Web** ✅ — Express API + React/Vite UI; static GitHub Pages build (snapshot); mobile pass;
+   **deployed** at `joshuablotter.github.io/SleeperGM/` with a nightly refresh Action.
 
-Each milestone is decomposed into self-contained, independently-implementable tasks in
-**[tasks.md](tasks.md)**; user flows are mapped in **[diagrams.md](diagrams.md)**.
+**Shipped v1.** Full arc M0–M5 done: CLI + web on shared, tested engines with the real league rules and
+the commissioner's salary sheet. Post-v1 work is tracked in §13.
 
 ---
 
-## 12. Immediate next step
+## 12. Post-v1 roadmap (open GitHub issues)
 
-Build **M0** (needs no house rules) while I finish the **rules doc** for §6.1 + §6.4. The tasks in
-[tasks.md](tasks.md) are written so you can pick up M0/M1 and run independently.
+These are speced in §13. Milestones continue:
+
+7. **M6 – Rookie draft prep** (issue #1) — see §13.1.
+8. **M7 – Data page = raw data** (issue #2 thread / item) — see §13.2.
+9. **M8 – Pluggable value sources** (issue #2) — see §13.3. *The big one; replaces sole reliance on VORP.*
+
+---
+
+## 13. Post-v1 specs
+
+### 13.1 Rookie draft prep (M6 · issue #1)
+**Problem:** no way to see the incoming rookie draft — who picks when, what each pick costs.
+
+**FR**
+- FR1 Show the **rookie draft board** for the upcoming season: an ordered list of `round.slot` → owning team.
+- FR2 Resolve **traded picks** (`/league/{id}/traded_picks`) so a pick shows its *current* owner, and note who it came from.
+- FR3 Show each slot's **rookie salary** from the §6.4 table (by round+slot × position is player-dependent, so show the slot's baseline per position, or the flat slot cost).
+- FR4 Summarize **per team**: which rookie picks they own (their draft capital).
+- FR5 CLI `sgm rookies` + a web **Rookies** tab.
+
+**AC**
+- Given 2026 traded picks, a pick that was dealt shows the new owner and “via <old team>”.
+- The board lists all rounds×12 slots in order with the owning team.
+- Numbers reconcile with Sleeper's traded-picks data.
+
+**Open (needs the user):**
+- Base order (**confirmed**): use **Sleeper's draft order if the API exposes it** (a 2026 rookie/linear
+  draft's `draft_order` / `slot_to_roster_id`); otherwise derive **reverse of 2025 final standings** and
+  apply `traded_picks`. Investigate which is available.
+- How many rounds does the rookie draft have?
+- Scope: just the **ownership/order board + costs**, or also project **which rookies** land where (needs a rookie ranking/ADP source — overlaps M8)?
+
+### 13.2 Data page = raw data (M7 · quick)
+**Problem:** the Data page mixes analysis (worth/surplus/call) into what should be raw facts.
+
+**FR / AC** (fully specified — no open questions)
+- Remove the **Worth**, **Surplus**, and **Call** columns.
+- Add an **NFL team** column.
+- Add a **filter by NFL team** (alongside existing team/position/search).
+- Keep: league team, player, pos, via, season, base $, years kept, keep $, source marker. Sort still works.
+- Applies to the web Data page (and, if kept, the raw shape stays available via `/api/players`).
+
+### 13.3 Pluggable value sources (M8 · issue #2)
+**Problem:** the VORP→$ model is directionally OK but individually unreliable (e.g. Ja’Marr Chase / Kenneth Walker / Joe Burrow mis-valued). “Worth” drives keeper surplus, inflation, and trades — so bad values poison everything downstream.
+
+**Goal:** make **worth** come from a **selectable value provider**, not just VORP. Support importing external auction-value lists (FantasyPros calculator, DraftSharks, FootballGuys, ADP-derived) and manual per-player overrides. The engines that consume `worth` don’t change — only where `worth` comes from.
+
+**FR**
+- FR1 A **value provider** abstraction: `playerId → value ($)`. Multiple named providers.
+- FR2 Providers:
+  - `vorp` — the current computed model (kept as a baseline/fallback).
+  - `sheet:<name>` — an **imported CSV** of auction values (e.g. `config/values/fantasypros.csv`).
+  - `manual` — per-player overrides that win over everything.
+- FR3 **Import**: a CSV with `player_name` (and optional `position`,`team`,`value`) → matched to Sleeper `player_id` (fuzzy name match with a position/team tiebreak); report unmatched rows.
+- FR4 **Selection**: choose the active provider (config + web selector). Optionally **blend** (average of chosen providers).
+- FR5 **Override**: `config/values/overrides.csv` (`player_id|name → value`) always wins; editable in-app later.
+- FR6 Scale imported values to the league (12 teams × $200) if a source is for different settings (or import pre-scaled from a calculator set to our settings — preferred).
+- FR7 Surface the **active source** in the UI, and let unmatched/unknown players fall back to `vorp` (or $1).
+
+**AC**
+- With `fantasypros.csv` imported and selected, a team’s keeper board `worth` matches the imported values (spot-check Chase, Walker, Burrow look sane).
+- Switching provider re-derives worth/surplus/inflation/trades consistently everywhere.
+- An override for a player is reflected regardless of the selected source.
+- Unmatched import rows are listed so the user can fix names.
+
+**Decisions (confirmed):** ship **several pre-scraped static source CSVs** in `config/values/`
+(FantasyPros, DraftSharks, FootballGuys, ADP-derived — scraped once at build time, committed as data,
+not fetched live) **+ custom CSV import + manual per-player overrides**. **One active source** at a time
+(config/UI selectable); **overrides always win**. VORP stays as a built-in fallback source.
+
+**Design notes**
+- Mirrors the salary-sheet pattern (`config/salaries.csv`): value CSVs live in `config/values/`, parsed by a pure function, matched to ids via the players resolver. `loadValues` in `core/app.ts` becomes provider-driven instead of always VORP. The snapshot/`data.json` bakes in whichever provider is active at build time.
+- Name→id matching is the main risk; reuse the players DB, normalize (lowercase, strip Jr./III/punctuation), tiebreak by position+team, and always emit an “unmatched” report.

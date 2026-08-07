@@ -4,12 +4,35 @@ import { ErrorBox, Loading, useAsync } from "../ui";
 const SLOTS = Array.from({ length: 12 }, (_, i) => String(i + 1));
 const POS = ["QB", "RB", "WR", "TE"];
 
+// Human descriptions for each value source. Unknown names (your own imports) get a generic blurb.
+const SOURCE_INFO: Record<string, { label: string; blurb: string }> = {
+  vorp: {
+    label: "VORP (built-in)",
+    blurb:
+      "Value Over Replacement Player. Takes each player's ACTUAL fantasy points from last season, subtracts " +
+      "the points of a replacement-level player at that position (the best guy who'd go undrafted in a 12-team " +
+      "league), and converts those 'points above replacement' into auction dollars scaled to the 12×$200 pool. " +
+      "It's fully offline and needs no external site — but it's backward-looking (last year's points), so it " +
+      "under/over-rates players whose role changed.",
+  },
+  adp: {
+    label: "ADP-derived",
+    blurb:
+      "Average Draft Position from Fantasy Football Calculator's public API (12-team PPR, current season), " +
+      "converted to auction dollars via a convex ADP→$ curve scaled to the pool. This is a market/consensus " +
+      "signal (where people actually draft), not one expert's list.",
+  },
+};
+
 export function RulesView() {
   const s = useAsync(() => api.rules(), []);
+  const league = useAsync(() => api.league(), []);
   if (s.loading) return <Loading what="rules" />;
   if (s.error) return <ErrorBox message={s.error} />;
   const { rules, outstanding } = s.data!;
   const esc = rules.keeperEscalation;
+  const sources = league.data?.sources ?? [];
+  const activeSource = league.data?.valueSource;
 
   return (
     <section>
@@ -89,6 +112,45 @@ export function RulesView() {
               ))}
             </tr>
           ))}
+        </tbody>
+      </table>
+
+      <h3>Player value — how "worth" is calculated</h3>
+      <p className="dim" style={{ marginTop: 0 }}>
+        "Worth" is the auction dollars a player is projected to command. The <strong>values</strong> dropdown in
+        the header switches which source drives worth, surplus, inflation, and trades. Manual overrides (if any)
+        always win. {activeSource ? <>Currently active: <strong>{activeSource}</strong>.</> : null}
+      </p>
+      <table className="grid" style={{ maxWidth: 720 }}>
+        <thead>
+          <tr>
+            <th>Source</th>
+            <th>What it is</th>
+          </tr>
+        </thead>
+        <tbody>
+          {sources.map((src) => {
+            const info = SOURCE_INFO[src];
+            return (
+              <tr key={src}>
+                <td className="strong">
+                  {info?.label ?? src}
+                  {src === activeSource ? <span className="dim"> (active)</span> : null}
+                </td>
+                <td className="dim">
+                  {info?.blurb ??
+                    `Imported value list (config/values/${src}.csv). Paste a site's auction values into that file and it appears here.`}
+                </td>
+              </tr>
+            );
+          })}
+          <tr>
+            <td className="strong">overrides</td>
+            <td className="dim">
+              Your manual per-player fixes in <code>config/values/overrides.csv</code> — these win over whatever
+              source is selected.
+            </td>
+          </tr>
         </tbody>
       </table>
 

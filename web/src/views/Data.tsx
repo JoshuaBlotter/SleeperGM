@@ -1,34 +1,42 @@
 import { useMemo, useState } from "react";
 import { api, type PlayerRow } from "../api";
-import { Call, ErrorBox, Loading, Surplus, money, useAsync } from "../ui";
+import { ErrorBox, Loading, money, useAsync } from "../ui";
 
-type SortKey = "worth" | "keeperCostNextYear" | "surplus" | "yearsKept" | "name";
+type SortKey = "name" | "yearsInLeague" | "lastSeasonPoints" | "baseCost" | "keeperCostNextYear";
+
+// null numbers sort to the bottom regardless of direction.
+function numOf(v: number | null | undefined, asc: boolean): number {
+  if (v == null) return asc ? Infinity : -Infinity;
+  return v;
+}
 
 export function DataView() {
   const s = useAsync(() => api.players(), []);
   const [team, setTeam] = useState("");
+  const [nfl, setNfl] = useState("");
   const [pos, setPos] = useState("");
   const [q, setQ] = useState("");
-  const [sort, setSort] = useState<SortKey>("surplus");
+  const [sort, setSort] = useState<SortKey>("lastSeasonPoints");
   const [asc, setAsc] = useState(false);
 
   const rows = useMemo(() => {
     let r = s.data?.players ?? [];
     if (team) r = r.filter((p) => p.teamName === team);
+    if (nfl) r = r.filter((p) => (p.nflTeam ?? "") === nfl);
     if (pos) r = r.filter((p) => p.position === pos);
     if (q) r = r.filter((p) => p.name.toLowerCase().includes(q.toLowerCase()));
     const dir = asc ? 1 : -1;
     return [...r].sort((a, b) => {
-      const av = a[sort];
-      const bv = b[sort];
-      if (typeof av === "string" && typeof bv === "string") return av.localeCompare(bv) * dir;
-      return ((av as number) - (bv as number)) * dir;
+      if (sort === "name") return a.name.localeCompare(b.name) * dir;
+      return (numOf(a[sort], asc) - numOf(b[sort], asc)) * dir;
     });
-  }, [s.data, team, pos, q, sort, asc]);
+  }, [s.data, team, nfl, pos, q, sort, asc]);
 
   if (s.loading) return <Loading what="player data" />;
   if (s.error) return <ErrorBox message={s.error} />;
-  const teams = [...new Set((s.data?.players ?? []).map((p) => p.teamName))].sort();
+  const all = s.data?.players ?? [];
+  const teams = [...new Set(all.map((p) => p.teamName))].sort();
+  const nflTeams = [...new Set(all.map((p) => p.nflTeam).filter(Boolean) as string[])].sort();
 
   const th = (key: SortKey, label: string, right = false) => (
     <th
@@ -42,16 +50,24 @@ export function DataView() {
 
   return (
     <section>
-      <h2>Player Cost Data</h2>
+      <h2>Player Data</h2>
       <p className="dim" style={{ marginTop: 0 }}>
-        Every rostered player's raw cost basis, keeper salary, worth and surplus. Click a column to sort.
+        Every rostered player — filter by fantasy team, NFL team, or position; click a column to sort.
       </p>
 
       <div className="filters">
         <input placeholder="Search player…" value={q} onChange={(e) => setQ(e.target.value)} />
         <select value={team} onChange={(e) => setTeam(e.target.value)}>
-          <option value="">All teams</option>
+          <option value="">All fantasy teams</option>
           {teams.map((t) => (
+            <option key={t} value={t}>
+              {t}
+            </option>
+          ))}
+        </select>
+        <select value={nfl} onChange={(e) => setNfl(e.target.value)}>
+          <option value="">All NFL teams</option>
+          {nflTeams.map((t) => (
             <option key={t} value={t}>
               {t}
             </option>
@@ -71,17 +87,14 @@ export function DataView() {
       <table className="grid">
         <thead>
           <tr>
-            <th>Team</th>
+            <th>Fantasy team</th>
             {th("name", "Player")}
             <th>Pos</th>
-            <th>Via</th>
-            <th className="r">Season</th>
-            <th className="r">Base $</th>
-            {th("yearsKept", "Yrs", true)}
+            <th>NFL</th>
+            {th("lastSeasonPoints", "Last pts", true)}
+            {th("yearsInLeague", "In league", true)}
+            {th("baseCost", "Base $", true)}
             {th("keeperCostNextYear", "Keep $", true)}
-            {th("worth", "Worth", true)}
-            {th("surplus", "Surplus", true)}
-            <th>Call</th>
             <th>Src</th>
           </tr>
         </thead>
@@ -93,22 +106,11 @@ export function DataView() {
               <td>
                 <span className={"pos pos-" + p.position}>{p.position}</span>
               </td>
-              <td className="dim">
-                {p.acquiredVia === "rookie" && p.rookiePick
-                  ? `rookie ${p.rookiePick.round}.${String(p.rookiePick.slot).padStart(2, "0")}`
-                  : p.acquiredVia}
-              </td>
-              <td className="r dim">{p.acquisitionSeason ?? "—"}</td>
+              <td className="dim">{p.nflTeam ?? "—"}</td>
+              <td className="r">{p.lastSeasonPoints == null ? "—" : p.lastSeasonPoints.toFixed(1)}</td>
+              <td className="r">{p.yearsInLeague == null ? "—" : `${p.yearsInLeague} yr${p.yearsInLeague === 1 ? "" : "s"}`}</td>
               <td className="r">{p.costKnown ? money(p.baseCost) : "—"}</td>
-              <td className="r">{p.yearsKept}</td>
               <td className="r">{money(p.keeperCostNextYear)}</td>
-              <td className="r">{money(p.worth)}</td>
-              <td className="r">
-                <Surplus value={p.surplus} />
-              </td>
-              <td>
-                <Call rec={p.recommendation} />
-              </td>
               <td>
                 {p.salarySource === "sheet" ? (
                   <span className="mark">†</span>
@@ -122,6 +124,10 @@ export function DataView() {
           ))}
         </tbody>
       </table>
+      <div className="legend">
+        <span className="mark">†</span> salary from league sheet · <span className="mark warn">≈</span> approximate salary ·
+        <span className="dim"> Last pts = total fantasy points last season · In league = seasons rostered (any manager)</span>
+      </div>
     </section>
   );
 }
