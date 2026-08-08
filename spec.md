@@ -317,9 +317,13 @@ the commissioner's salary sheet. Post-v1 work is tracked in §13.
 
 These are speced in §13. Milestones continue:
 
-7. **M6 – Rookie draft prep** (issue #1) — see §13.1.
-8. **M7 – Data page = raw data** (issue #2 thread / item) — see §13.2.
-9. **M8 – Pluggable value sources** (issue #2) — see §13.3. *The big one; replaces sole reliance on VORP.*
+7. **M6 – Rookie draft prep** (issue #1) — see §13.1. ✅
+8. **M7 – Data page = raw data** (issue #2 thread / item) — see §13.2. ✅
+9. **M8 – Pluggable value sources** (issue #2) — see §13.3. ✅ *Replaced sole reliance on VORP.*
+
+**Draft-prep toolkit (v2)** — five features specced in **[specs/draft-toolkit.md](specs/draft-toolkit.md)**,
+build order #2 → #5 → #3 → #4 → #1: historical draft value, player drilldown, positional scarcity, tier
+board, draft target assistant.
 
 ---
 
@@ -388,3 +392,11 @@ not fetched live) **+ custom CSV import + manual per-player overrides**. **One a
 **Design notes**
 - Mirrors the salary-sheet pattern (`config/salaries.csv`): value CSVs live in `config/values/`, parsed by a pure function, matched to ids via the players resolver. `loadValues` in `core/app.ts` becomes provider-driven instead of always VORP. The snapshot/`data.json` bakes in whichever provider is active at build time.
 - Name→id matching is the main risk; reuse the players DB, normalize (lowercase, strip Jr./III/punctuation), tiebreak by position+team, and always emit an “unmatched” report.
+
+---
+
+## 14. Draft-prep toolkit (v2) → separate doc
+
+The five v2 draft-prep feature specs (historical draft value, player drilldown, positional scarcity, tier
+board, draft target assistant) live in their own doc to keep this spec lean:
+**[specs/draft-toolkit.md](specs/draft-toolkit.md)**. Build order: #2 → #5 → #3 → #4 → #1.

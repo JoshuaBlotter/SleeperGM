@@ -11,6 +11,7 @@ import {
   leagueInflation,
   leagueRules,
   loadAllPlayers,
+  loadDraftValue,
   loadContext,
   loadKeeperData,
   loadRookieBoard,
@@ -143,6 +144,14 @@ app.get(
   api(async (req) => {
     const { ctx, data } = await dataForSource(req);
     return leagueInflation(ctx, data);
+  }),
+);
+
+app.get(
+  "/api/draft-value",
+  api(async (req) => {
+    const { ctx, data } = await dataForSource(req);
+    return loadDraftValue(ctx, data);
   }),
 );
 

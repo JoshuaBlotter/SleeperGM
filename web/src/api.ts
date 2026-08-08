@@ -81,6 +81,27 @@ export interface InflationResp {
   topDiscounts: Discount[];
 }
 
+export interface DraftValueRow {
+  playerId: string;
+  name: string;
+  position: string;
+  nflTeam: string | null;
+  cost: number;
+  worth: number;
+  delta: number;
+  deltaPct: number | null;
+  kept: boolean;
+  ownerTeam: string | null;
+  keeperCost: number | null;
+}
+export interface DraftValueReport {
+  auctionSeason: string;
+  projectionSeason: string;
+  rows: DraftValueRow[];
+  totalCost: number;
+  totalWorth: number;
+}
+
 export interface TradePlayer {
   playerId: string;
   name: string;
@@ -209,6 +230,7 @@ interface SourceData {
   teams: Record<string, { base: TeamResp; inflated: TeamResp }>;
   inflation: InflationResp;
   trades: Record<string, TradeResp>;
+  draftValue: DraftValueReport;
 }
 interface Bundle {
   generatedAt?: string;
@@ -269,6 +291,11 @@ export const api = {
     const b = await getBundle();
     if (b) return pickSource(b, source).inflation;
     return get<InflationResp>(`/api/inflation${qs(source) ? `?${qs(source)}` : ""}`);
+  },
+  draftValue: async (source?: string): Promise<DraftValueReport> => {
+    const b = await getBundle();
+    if (b) return pickSource(b, source).draftValue;
+    return get<DraftValueReport>(`/api/draft-value${qs(source) ? `?${qs(source)}` : ""}`);
   },
   trades: async (id: number, partner?: string, source?: string) => {
     const b = await getBundle();

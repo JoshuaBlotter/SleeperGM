@@ -9,6 +9,7 @@ import { buildFaabIndex } from "./history/waivers";
 import { buildProvenance } from "./history/provenance";
 import { computeInflation, type InflationPlayer, type InflationResult } from "./engines/inflation";
 import { computeRookieBoard, rankRookieProspects, type RookieBoard, type RookieProspect, type StandingRow, type TradedPick } from "./engines/rookies";
+import { buildDraftValueReport, type AuctionBuy, type DraftValueReport } from "./engines/draftValue";
 import { findTeam, loadRegistry } from "./registry/teams";
 import { recommendation, toSurplusLines } from "./engines/surplus";
 import { loadSalarySheet, sheetSalary, sheetSupersededByReacquire } from "./config/salaries";
@@ -389,6 +390,41 @@ export async function loadTrending(ctx: Ctx, data: KeeperData, limit = 25): Prom
       lastSeasonPoints: data.points.has(x.player_id) ? round1(data.points.get(x.player_id) as number) : null,
     };
   });
+}
+
+/**
+ * Historical draft value (#2): last season's auction buys (excluding carried keepers + rookie picks) vs
+ * this season's projected worth. Value-dependent (worth comes from the active source in `data.values`).
+ */
+export function loadDraftValue(ctx: Ctx, data: KeeperData): DraftValueReport {
+  const prev = ctx.chain.find((c) => c.leagueId !== ctx.leagueId) ?? ctx.chain[0];
+  const auctionSeason = prev?.season ?? ctx.season;
+  const events = data.drafts.get(auctionSeason) ?? new Map();
+
+  // Who's currently rostered (a potential keeper) + their keeper cost this season.
+  const rostered = new Map<string, { teamName: string; keeperCost: number }>();
+  for (const t of ctx.registry) {
+    for (const l of teamKeeperLines(ctx, data, t)) rostered.set(l.playerId, { teamName: t.teamName, keeperCost: l.keeperCostNextYear });
+  }
+
+  const buys: AuctionBuy[] = [];
+  for (const [id, ev] of events) {
+    if (ev.source !== "auction" || ev.isKeeper) continue; // auction buys only; skip carried keepers & rookies
+    const pl = ctx.resolve(id);
+    const r = rostered.get(id);
+    buys.push({
+      playerId: id,
+      name: pl.name,
+      position: pl.position,
+      nflTeam: pl.team,
+      cost: ev.amount,
+      worth: data.values.get(id)?.value ?? 0,
+      kept: !!r,
+      ownerTeam: r?.teamName ?? null,
+      keeperCost: r?.keeperCost ?? null,
+    });
+  }
+  return buildDraftValueReport(buys, auctionSeason, ctx.season);
 }
 
 const ROOKIE_POSITIONS = new Set(["QB", "RB", "WR", "TE"]);

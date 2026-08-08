@@ -7,7 +7,8 @@ state.
 ## What this is
 A personal Sleeper fantasy-football GM tool for the keeper/dynasty league **"Los Socios"**
 (`LEAGUE_ID=1389689313502961664`). Goals, data model, and rules are in **`spec.md`**; user flows in
-**`diagrams.md`**; the task backlog in **`tasks.md`**.
+**`diagrams.md`**; the task backlog in **`tasks.md`**. Larger per-iteration feature specs live under
+**`specs/`** (e.g. `specs/draft-toolkit.md`) so `spec.md` stays lean.
 
 ## Golden rules
 1. **CLI-first.** All logic lives in `core/` as **pure, side-effect-free functions**. The CLI (`cli/`)

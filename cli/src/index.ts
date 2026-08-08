@@ -9,6 +9,7 @@ import { inflation } from "./commands/inflation";
 import { trades } from "./commands/trades";
 import { values } from "./commands/values";
 import { rookies } from "./commands/rookies";
+import { draftValue } from "./commands/draftValue";
 import { refresh } from "./commands/refresh";
 
 const program = new Command();
@@ -65,6 +66,11 @@ program
   .command("rookies")
   .description("Rookie draft board: derived order, pick ownership (traded picks), slot cost, draft capital")
   .action(run(rookies));
+
+program
+  .command("draft-value")
+  .description("Last year's auction buys vs this year's projected worth (historical draft value)")
+  .action(run(draftValue));
 
 program.command("refresh").description("Clear the API cache").action(run(refresh));
 

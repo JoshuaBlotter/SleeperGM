@@ -1,21 +1,21 @@
-import { api } from "../api";
-import { ErrorBox, Loading, Surplus, money, useAsync } from "../ui";
+import { useMemo, useState } from "react";
+import { api, type DraftValueRow } from "../api";
+import { ErrorBox, Loading, Surplus, money, signed, useAsync } from "../ui";
 
-export function InflationView({ source }: { source?: string }) {
+type Sub = "overview" | "auction";
+
+function Overview({ source }: { source?: string }) {
   const s = useAsync(() => api.inflation(source), [source]);
   if (s.loading) return <Loading what="inflation" />;
   if (s.error) return <ErrorBox message={s.error} />;
   const d = s.data!;
   const pct = Math.round((d.multiplier - 1) * 100);
-
   return (
-    <section>
-      <h2>League Auction Inflation</h2>
-      <p className="dim">
+    <>
+      <p className="dim" style={{ marginTop: 0 }}>
         Cheap keepers leave surplus cap in the economy, chasing a smaller pool of available players. Kickers &amp;
         defenses excluded (streamed for ~$0).
       </p>
-
       <div className="cards">
         <div className="card">
           <div className="k">Keeper surplus</div>
@@ -93,6 +93,135 @@ export function InflationView({ source }: { source?: string }) {
           </table>
         </div>
       </div>
+    </>
+  );
+}
+
+function LastYearAuction({ source }: { source?: string }) {
+  const s = useAsync(() => api.draftValue(source), [source]);
+  const [pos, setPos] = useState("");
+  const [sort, setSort] = useState<"cost" | "gap">("cost");
+
+  const rows = useMemo(() => {
+    let r = s.data?.rows ?? [];
+    if (pos) r = r.filter((x) => x.position === pos);
+    return [...r].sort((a, b) => (sort === "gap" ? a.delta - b.delta : b.cost - a.cost));
+  }, [s.data, pos, sort]);
+
+  if (s.loading) return <Loading what="last year's auction" />;
+  if (s.error) return <ErrorBox message={s.error} />;
+  const d = s.data!;
+  const net = d.totalWorth - d.totalCost;
+
+  return (
+    <>
+      <p className="dim" style={{ marginTop: 0 }}>
+        What last season's ({d.auctionSeason}) <strong>auction buys</strong> cost, vs their {d.projectionSeason}{" "}
+        projected worth. Carried keepers and rookie picks are excluded — this is only what actually went to auction.
+      </p>
+      <div className="cards">
+        <div className="card">
+          <div className="k">{d.auctionSeason} auction spend</div>
+          <div className="v">{money(d.totalCost)}</div>
+          <div className="k">{d.rows.length} players</div>
+        </div>
+        <div className="card">
+          <div className="k">{d.projectionSeason} projected worth</div>
+          <div className="v">{money(d.totalWorth)}</div>
+        </div>
+        <div className={"card " + (net >= 0 ? "good" : "bad")}>
+          <div className="k">Net vs last year</div>
+          <div className="v">{signed(net)}</div>
+          <div className="k">{net >= 0 ? "projecting higher" : "projecting lower"}</div>
+        </div>
+      </div>
+
+      <div className="filters">
+        <select value={pos} onChange={(e) => setPos(e.target.value)}>
+          <option value="">All positions</option>
+          {["QB", "RB", "WR", "TE", "K", "DEF"].map((p) => (
+            <option key={p} value={p}>
+              {p}
+            </option>
+          ))}
+        </select>
+        <div className="subtabs">
+          <button className={sort === "cost" ? "active" : ""} onClick={() => setSort("cost")}>
+            Priciest
+          </button>
+          <button className={sort === "gap" ? "active" : ""} onClick={() => setSort("gap")}>
+            Biggest drop
+          </button>
+        </div>
+        <span className="dim">{rows.length} players</span>
+      </div>
+
+      <div className="table-scroll">
+        <table className="grid">
+          <thead>
+            <tr>
+              <th>Player</th>
+              <th>Pos</th>
+              <th className="r">{d.auctionSeason} cost</th>
+              <th className="r">{d.projectionSeason} worth</th>
+              <th className="r">Δ</th>
+              <th>Now</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((p: DraftValueRow) => (
+              <tr key={p.playerId}>
+                <td className="strong">{p.name}</td>
+                <td>
+                  <span className={"pos pos-" + p.position}>{p.position}</span>
+                </td>
+                <td className="r">{money(p.cost)}</td>
+                <td className="r">{money(p.worth)}</td>
+                <td className="r">
+                  <span className={"num " + (p.delta > 0 ? "pos" : p.delta < 0 ? "neg" : "zero")}>
+                    {signed(p.delta)}
+                    {p.deltaPct == null ? "" : ` (${p.deltaPct > 0 ? "+" : ""}${p.deltaPct}%)`}
+                  </span>
+                </td>
+                <td>
+                  {p.kept ? (
+                    <span className="dim">
+                      kept {p.keeperCost == null ? "" : money(p.keeperCost)} · {p.ownerTeam}
+                    </span>
+                  ) : (
+                    <span className="badge hold">pool</span>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <div className="legend">
+        Δ = {d.projectionSeason} projected worth − {d.auctionSeason} auction cost. <span className="num neg">Red</span>{" "}
+        = we project them lower than last year's price (don't chase it); <span className="num pos">green</span> = value
+        has risen. "kept" players aren't back in the auction pool.
+      </div>
+    </>
+  );
+}
+
+export function InflationView({ source }: { source?: string }) {
+  const [sub, setSub] = useState<Sub>("overview");
+  return (
+    <section>
+      <div className="head-row">
+        <h2>Market</h2>
+        <div className="subtabs">
+          <button className={sub === "overview" ? "active" : ""} onClick={() => setSub("overview")}>
+            Inflation
+          </button>
+          <button className={sub === "auction" ? "active" : ""} onClick={() => setSub("auction")}>
+            Last-year auction
+          </button>
+        </div>
+      </div>
+      {sub === "overview" ? <Overview source={source} /> : <LastYearAuction source={source} />}
     </section>
   );
 }

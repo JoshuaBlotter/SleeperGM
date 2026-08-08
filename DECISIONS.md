@@ -274,3 +274,13 @@ ADP value list OR scored ≥50 fantasy points last season. That yields ~300 rows
 — enough to cover pickups without the dead weight the user called out. Kept the page source-independent
 (no worth column). Added a **Trending** sub-tab from `players/nfl/trending/add` (most-added last 24h) as a
 lightweight waiver-buzz signal.
+
+## 2026-08-07 — Historical draft value = last season's auction buys only (source-aware, baked per source)
+Feature #2 answers "are we projecting players as high as last year's actual auction price?" Scope: only
+**auction, non-keeper** picks from the previous season (`DraftIndex` entry `source==="auction" && !isKeeper`)
+— carried keepers and rookie-draft picks are excluded, matching the user's ask. Worth comes from the
+active value source, so the report is value-dependent and is **baked per source** under
+`bySource[src].draftValue` (like teams/inflation/trades) and served with `?source=` — switching the value
+dropdown re-computes it. Kept players stay in the list but are flagged (with their new keeper cost) rather
+than shown as re-auctionable. Home: the Inflation page was promoted to a **"Market" hub** with
+Inflation / Last-year auction sub-tabs (Scarcity #3 will join it).

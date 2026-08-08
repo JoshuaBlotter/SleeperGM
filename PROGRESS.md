@@ -26,11 +26,24 @@
   `npm run fixtures` (snapshot live data).
 
 ## Next up (in order)
-1. **Confirm rookie-draft round count** — `rookieDraft.rounds` defaults to 1 (only round with a known
-   §6.4 cost table); bump it in `league-rules.ts` once confirmed (snake order + traded-pick logic already
-   generalize to N rounds; later-round costs show "—" until a table exists).
+1. **Draft-prep toolkit (v2)** — specced in **`specs/draft-toolkit.md`**. Build order:
+   ~~#2 historical draft value~~ ✅ → **#5 player drilldown (NEXT)** → **#3 positional scarcity**, then
+   **#4 tier board** and **#1 draft target assistant** (capstone). Remaining shared enablers to build
+   once: per-week points grid (for #5), per-position value ranks + kept flags (for #3/#4/#1).
+   Availability stays approximate until keepers lock (degrade gracefully).
 2. **Fix the nightly deploy** (see "Static hosting" below) — needs a push + one Pages setting flip.
-3. Optional: fill the other import slots (cbs/draftsharks/footballguys); tune ADP→$ tau.
+3. **Confirm rookie-draft round count** — `rookieDraft.rounds` defaults to 1; bump in `league-rules.ts`
+   once confirmed (logic already generalizes to N rounds).
+4. Optional: fill the other import slots (cbs/draftsharks/footballguys); tune ADP→$ tau.
+
+## Shipped 2026-08-07 (draft toolkit #2)
+- **#2 Historical draft value** (`specs/draft-toolkit.md` §14.1): last season's **auction buys** (source =
+  auction, `!isKeeper`; carried keepers + rookie picks excluded) vs this season's projected worth, with
+  per-player Δ ($/%) and a kept/pool flag. Pure `engines/draftValue.ts` (`buildDraftValueReport`, 2 tests)
+  + `loadDraftValue(ctx,data)`. CLI `sgm draft-value`; `/api/draft-value?source=`; baked **per source**
+  under `bySource[src].draftValue`. Web: **Inflation page renamed "Market"** with **Inflation /
+  Last-year auction** sub-tabs; source-aware; mobile-clean (height-capped scroll). Live: 2025 spent $1122
+  for $567 of 2026 adp value (−$555) across 120 buys.
 
 ## Shipped 2026-08-07
 - **M7** Data page = raw (NFL team col + filter; removed worth/surplus/call).
