@@ -7,7 +7,7 @@
 import type { WeekScore } from "./points";
 
 export type Grade = "A" | "B" | "C";
-export type Archetype = "league-winner" | "consistent" | "steady" | "boom-bust" | "one-week-wonder" | "late-riser" | "injury-limited";
+export type Archetype = "league-winner" | "consistent" | "steady" | "boom-bust" | "one-week-wonder" | "bust" | "late-riser" | "injury-limited";
 
 export interface PlayerGrade {
   games: number;
@@ -84,8 +84,9 @@ export function gradePlayer(log: WeekScore[], position: string): PlayerGrade {
   // which is a "late riser", NOT an injury. A short log that starts early = actually lost weeks.
   if (games < 10) archetype = firstWeek >= 6 ? "late-riser" : "injury-limited";
   else if (grade === "A" && boomCount >= Math.ceil(games * 0.4)) archetype = "league-winner"; // elite floor + boomed ~half the weeks
-  else if (maxShare >= 0.25 && boomCount <= 1) archetype = "one-week-wonder"; // one spike carried the total
-  else if (cv >= 0.6) archetype = "boom-bust";
+  else if (boomCount === 0 && bustCount >= Math.ceil(games * 0.4)) archetype = "bust"; // never booms, mostly duds
+  else if (maxShare >= 0.3 && boomCount <= 1) archetype = "one-week-wonder"; // one spike carried the total
+  else if (cv >= 0.6 && boomCount >= 2) archetype = "boom-bust"; // real booms AND busts (must actually boom)
   else if (cv <= 0.35) archetype = "consistent";
   else archetype = "steady";
 

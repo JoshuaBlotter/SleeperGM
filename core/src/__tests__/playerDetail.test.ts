@@ -28,11 +28,19 @@ test("Kyle Pitts case → one-week-wonder, low grade despite a big week", () => 
   expect(g.best).toBe(40);
 });
 
-test("boom-bust → high variance, not carried by a single week", () => {
+test("boom-bust → high variance WITH real booms", () => {
   const g = gradePlayer(wk([22, 4, 25, 3, 20, 5, 21, 2, 24, 6, 19, 4, 23, 5]), "RB");
   expect(g.archetype).toBe("boom-bust");
   expect(g.cv).toBeGreaterThanOrEqual(0.6);
   expect(g.boomCount).toBeGreaterThan(1);
+});
+
+test("never booms + mostly busts → bust, not boom-bust (the Isaac TeSlaa case)", () => {
+  // WR: boom line 18, bust line 8. Zero weeks ≥18, most weeks ≤8.
+  const g = gradePlayer(wk([2, 5, 7, 3, 9, 4, 6, 2, 8, 5, 3, 12]), "WR");
+  expect(g.boomCount).toBe(0);
+  expect(g.bustCount).toBeGreaterThanOrEqual(Math.ceil(g.games * 0.4));
+  expect(g.archetype).toBe("bust");
 });
 
 test("late first week + short log → late-riser, NOT injury-limited (the Michael Wilson case)", () => {

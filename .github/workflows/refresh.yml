@@ -6,6 +6,8 @@ name: Refresh data + deploy
 #
 # REQUIRES: Settings → Pages → "Build and deployment" → Source = "GitHub Actions".
 on:
+  push:
+    branches: [main] # redeploy on every commit to main (rebuilds the snapshot + publishes)
   schedule:
     - cron: "0 11 * * *" # 11:00 UTC daily (~early morning US). Cron is UTC; GitHub may delay under load.
   workflow_dispatch: {}

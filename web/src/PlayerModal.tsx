@@ -7,8 +7,9 @@ const ARCHETYPE_BLURB: Record<string, string> = {
   "league-winner": "Elite floor AND ceiling — boomed most weeks. The guys you build around.",
   consistent: "Steady week to week — you knew what you'd get.",
   steady: "Fairly reliable with some week-to-week swing.",
-  "boom-bust": "High variance — league-winner weeks and duds in equal measure.",
+  "boom-bust": "High variance — real ceiling weeks and duds in equal measure.",
   "one-week-wonder": "One big week carried the season total; otherwise thin.",
+  bust: "Never really hit — mostly dud weeks, no boom games. Fade.",
   "late-riser": "Only rostered late (a mid-season breakout) — small, recent sample.",
   "injury-limited": "Rostered for few weeks — likely lost time.",
 };

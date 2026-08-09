@@ -7,11 +7,10 @@ import { useKept } from "../keptStore";
 // NOTE: mirrors core/engines/draftTargets.ts (computeDraftTargets + positionalNeeds). The static site
 // has no server, so scoring runs client-side against your live kept set. Keep the two in sync.
 const SKILL = ["QB", "RB", "WR", "TE"];
-const STARTABLE = 12;
 
 function needsFrom(kept: TargetCandidate[], starterSlots: Record<string, number>): Record<string, number> {
   const have: Record<string, number> = {};
-  for (const p of kept) if (SKILL.includes(p.position) && p.worth >= STARTABLE) have[p.position] = (have[p.position] ?? 0) + 1;
+  for (const p of kept) if (SKILL.includes(p.position)) have[p.position] = (have[p.position] ?? 0) + 1;
   const need: Record<string, number> = {};
   for (const pos of SKILL) need[pos] = (starterSlots[pos] ?? 0) - (have[pos] ?? 0);
   return need;
@@ -69,6 +68,7 @@ export function TargetsView({ teamId, source }: { teamId: number; source?: strin
   if (!result) return <ErrorBox message="No target data." />;
 
   const needChips = SKILL.map((pos) => ({ pos, need: result.needs[pos] ?? 0 }));
+  const teamName = new Map((league.data?.teams ?? []).map((t) => [t.rosterId, t.teamName] as const));
 
   return (
     <>
@@ -100,6 +100,7 @@ export function TargetsView({ teamId, source }: { teamId: number; source?: strin
               <th>Pos</th>
               <th>NFL</th>
               <th className="r">Worth</th>
+              <th>Avail</th>
               <th>Why</th>
             </tr>
           </thead>
@@ -115,6 +116,15 @@ export function TargetsView({ teamId, source }: { teamId: number; source?: strin
                 </td>
                 <td className="dim">{t.nflTeam ?? "—"}</td>
                 <td className="r">{money(t.worth)}</td>
+                <td>
+                  {t.ownerTeamId == null ? (
+                    <span className="badge keep">FA</span>
+                  ) : (
+                    <span className="badge hold" title="rostered but projected to be cut → back to the auction">
+                      cut? {teamName.get(t.ownerTeamId) ?? "?"}
+                    </span>
+                  )}
+                </td>
                 <td>
                   <span className="why">
                     {t.reasons.map((r, j) => (

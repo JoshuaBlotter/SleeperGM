@@ -7,17 +7,17 @@ const c = (id: string, position: string, worth: number, nflTeam: string | null =
 
 const slots = { QB: 1, RB: 2, WR: 2, TE: 1 };
 
-test("positionalNeeds: starterSlots minus kept startable (worth ≥ 12)", () => {
+test("positionalNeeds: starterSlots minus kept players at position (any worth counts)", () => {
   const kept = [
-    { position: "RB", worth: 40 },
-    { position: "RB", worth: 8 }, // below startable — doesn't fill a slot
-    { position: "WR", worth: 30 },
-    { position: "QB", worth: 25 },
+    { position: "RB" },
+    { position: "RB" },
+    { position: "WR" },
+    { position: "QB" }, // a cheap kept QB still fills the QB slot (ADP undervalues QBs)
   ];
   const n = positionalNeeds(kept, slots);
-  expect(n.RB).toBe(1); // 2 slots − 1 startable
+  expect(n.RB).toBe(0); // 2 slots − 2 kept
   expect(n.WR).toBe(1); // 2 − 1
-  expect(n.QB).toBe(0); // 1 − 1
+  expect(n.QB).toBe(0); // 1 − 1  ← keeping any QB zeroes the QB need
   expect(n.TE).toBe(1); // 1 − 0
 });
 

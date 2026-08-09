@@ -35,6 +35,20 @@
    once confirmed (logic already generalizes to N rounds).
 4. Optional: fill the other import slots (cbs/draftsharks/footballguys); tune ADP→$ tau.
 
+## Shipped 2026-08-07 (post-#1 fixes, user-reported)
+- **QB-need pill didn't update on keeper toggle:** `positionalNeeds` counted only kept players worth ≥$12,
+  so a cheap-in-ADP QB (Hurts $4) didn't fill the QB slot. Now it counts **any kept player** at a position
+  (you're keeping him → slot filled). Core + web mirror + test updated.
+- **Archetype "boom-bust" with 0 booms (Isaac TeSlaa):** added a **bust** archetype (0 booms + busts in
+  ≥40% of weeks); boom-bust now requires ≥2 real boom weeks. TeSlaa → "bust". (89 bust / 77 boom-bust live.)
+- **Targets availability made transparent:** added an **Avail** column — `FA` vs `cut? {team}` — so it's
+  clear that rostered-but-projected-cut players legitimately appear (they return to the auction). The list
+  still excludes your roster + projected keepers; "assume everyone available" overrides.
+- **Deploy on commit:** added `push: branches:[main]` to `refresh.yml` so every commit rebuilds+redeploys
+  (plus nightly + manual). Code is ready; still needs the one-time commit/push + Pages→Actions source flip.
+- ⚠ `data.json` now ~1.7 MB (targetPool ×3 sources + full player logs + finishes); ~400 KB gzipped, fine
+  for Pages but a candidate to trim later (cap pool depth / drop deep-scrub details).
+
 ## Shipped 2026-08-07 (draft toolkit #1 — CAPSTONE, toolkit complete)
 - **#1 Draft target assistant** (`specs/draft-toolkit.md` §14.5): the **Team page is now Keepers / Targets
   sub-tabs** sharing a per-team **kept set** (`keptStore`, localStorage, seeded from recommended keepers).

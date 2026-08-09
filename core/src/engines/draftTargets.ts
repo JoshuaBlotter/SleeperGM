@@ -6,7 +6,6 @@
 // mirrors this scoring for the static site — keep the two in sync.
 
 const SKILL = ["QB", "RB", "WR", "TE"];
-const STARTABLE = 12; // worth ≥ this counts as filling a starter slot
 
 export interface TargetCandidate {
   playerId: string;
@@ -35,14 +34,17 @@ export interface TargetInputs {
   limit?: number;
 }
 
-/** Positional need from a KEPT set: starterSlots − kept startable players, per skill position. Pure. */
+/**
+ * Positional need from a KEPT set: starterSlots − kept players at each skill position. Counts every kept
+ * player at the position (regardless of worth) — if you're keeping a QB, your QB slot is filled even if a
+ * value source prices him cheaply (ADP undervalues QBs). Pure.
+ */
 export function positionalNeeds(
-  kept: { position: string; worth: number }[],
+  kept: { position: string }[],
   starterSlots: Record<string, number>,
-  startable = STARTABLE,
 ): Record<string, number> {
   const have: Record<string, number> = {};
-  for (const p of kept) if (SKILL.includes(p.position) && p.worth >= startable) have[p.position] = (have[p.position] ?? 0) + 1;
+  for (const p of kept) if (SKILL.includes(p.position)) have[p.position] = (have[p.position] ?? 0) + 1;
   const need: Record<string, number> = {};
   for (const pos of SKILL) need[pos] = (starterSlots[pos] ?? 0) - (have[pos] ?? 0);
   return need;
