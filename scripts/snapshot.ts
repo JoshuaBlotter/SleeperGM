@@ -18,7 +18,9 @@ import {
   loadContext,
   loadDraftValue,
   loadKeeperData,
+  loadPlayerDetails,
   loadRookieBoard,
+  loadScarcity,
   loadTrending,
   outstandingRules,
   STREAMER_POSITIONS,
@@ -65,7 +67,7 @@ function buildForSource(ctx: Ctx, data: KeeperData, source: string) {
   const trades: Record<number, unknown> = {};
   for (const t of ctx.registry) trades[t.rosterId] = computeTrades(allPlayers, t.rosterId, { rosterPositions: ctx.rosterPositions });
 
-  return { multiplier: infl.multiplier, valueSource: source, inflation: infl, teams, trades, draftValue: loadDraftValue(ctx, data) };
+  return { multiplier: infl.multiplier, valueSource: source, inflation: infl, teams, trades, draftValue: loadDraftValue(ctx, data), scarcity: loadScarcity(ctx, data) };
 }
 
 async function main() {
@@ -102,7 +104,7 @@ async function main() {
     bySource[src] = buildForSource(ctx, d, src);
   }
 
-  const rookies = await loadRookieBoard(ctx);
+  const [rookies, playerDetails] = await Promise.all([loadRookieBoard(ctx), loadPlayerDetails(ctx, data)]);
 
   const bundle = {
     generatedFor: ctx.season,
@@ -110,6 +112,7 @@ async function main() {
     league,
     bySource,
     players: { players: playerRows, trending },
+    playerDetails,
     rules: { rules: leagueRules, outstanding: outstandingRules() },
     rookies,
   };

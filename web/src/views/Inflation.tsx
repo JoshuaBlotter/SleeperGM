@@ -1,8 +1,67 @@
 import { useMemo, useState } from "react";
-import { api, type DraftValueRow } from "../api";
+import { api, type DraftValueRow, type PositionScarcity } from "../api";
 import { ErrorBox, Loading, Surplus, money, signed, useAsync } from "../ui";
 
-type Sub = "overview" | "auction";
+type Sub = "overview" | "auction" | "scarcity";
+
+function scarcityBand(score: number): string {
+  return score >= 0.66 ? "hot" : score >= 0.4 ? "warm" : "cool";
+}
+
+function Scarcity({ source }: { source?: string }) {
+  const s = useAsync(() => api.scarcity(source), [source]);
+  if (s.loading) return <Loading what="positional scarcity" />;
+  if (s.error) return <ErrorBox message={s.error} />;
+  const positions = s.data ?? [];
+  return (
+    <>
+      <p className="dim" style={{ marginTop: 0 }}>
+        How much of each position's top tier is a projected <strong>keeper</strong> (off the auction board). Higher =
+        scarcer = expect a price run. "kept" = worth ≥ keeper cost (a rational keeper); overpriced roster players
+        count as likely cuts, so this firms up as managers actually lock their keepers.
+      </p>
+      <div className="deck">
+        {positions.map((pos: PositionScarcity) => (
+          <div className="info-card" key={pos.position}>
+            <h4>
+              <span className={"pos pos-" + pos.position}>{pos.position}</span>
+              <span style={{ marginLeft: "auto" }} className="dim">
+                {Math.round(pos.scarcityScore * 100)}% scarce
+              </span>
+            </h4>
+            <div className="scar-bar">
+              <div className={"scar-fill " + scarcityBand(pos.scarcityScore)} style={{ width: `${pos.scarcityScore * 100}%` }} />
+            </div>
+            <p>
+              <strong>{pos.keptCount}</strong> of top {pos.topN} kept · <strong>{pos.availableCount}</strong> available.
+              <br />
+              Best available:{" "}
+              {pos.bestAvailable ? (
+                <span className="strong">
+                  {pos.bestAvailable.name} <span className="dim">({money(pos.bestAvailable.value)})</span>
+                </span>
+              ) : (
+                "—"
+              )}
+            </p>
+            <details className="reveal">
+              <summary>top {pos.topN} by value</summary>
+              <div style={{ marginTop: 6 }}>
+                {pos.players.map((p) => (
+                  <div className="scar-row" key={p.playerId}>
+                    <span className={p.kept ? "dim" : "strong"}>{p.name}</span>
+                    <span className="r">{money(p.value)}</span>
+                    <span>{p.kept ? <span className="dim">kept</span> : <span className="badge keep">open</span>}</span>
+                  </div>
+                ))}
+              </div>
+            </details>
+          </div>
+        ))}
+      </div>
+    </>
+  );
+}
 
 function Overview({ source }: { source?: string }) {
   const s = useAsync(() => api.inflation(source), [source]);
@@ -216,12 +275,15 @@ export function InflationView({ source }: { source?: string }) {
           <button className={sub === "overview" ? "active" : ""} onClick={() => setSub("overview")}>
             Inflation
           </button>
+          <button className={sub === "scarcity" ? "active" : ""} onClick={() => setSub("scarcity")}>
+            Scarcity
+          </button>
           <button className={sub === "auction" ? "active" : ""} onClick={() => setSub("auction")}>
             Last-year auction
           </button>
         </div>
       </div>
-      {sub === "overview" ? <Overview source={source} /> : <LastYearAuction source={source} />}
+      {sub === "overview" ? <Overview source={source} /> : sub === "scarcity" ? <Scarcity source={source} /> : <LastYearAuction source={source} />}
     </section>
   );
 }

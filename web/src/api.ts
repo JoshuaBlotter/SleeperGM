@@ -102,6 +102,26 @@ export interface DraftValueReport {
   totalWorth: number;
 }
 
+export interface ScarcityPlayer {
+  playerId: string;
+  name: string;
+  position: string;
+  nflTeam: string | null;
+  value: number;
+  kept: boolean;
+}
+export interface PositionScarcity {
+  position: string;
+  topN: number;
+  players: ScarcityPlayer[];
+  keptCount: number;
+  availableCount: number;
+  keptValue: number;
+  availableValue: number;
+  scarcityScore: number;
+  bestAvailable: ScarcityPlayer | null;
+}
+
 export interface TradePlayer {
   playerId: string;
   name: string;
@@ -189,6 +209,36 @@ export interface RookiePick {
   viaTeam: string | null;
   cost: Record<string, number>;
 }
+export interface PlayerGrade {
+  games: number;
+  total: number;
+  ppg: number;
+  median: number;
+  best: number;
+  worst: number;
+  stdev: number;
+  cv: number;
+  boomCount: number;
+  bustCount: number;
+  boomLine: number;
+  bustLine: number;
+  maxShare: number;
+  grade: "A" | "B" | "C";
+  archetype: "consistent" | "steady" | "boom-bust" | "one-week-wonder" | "injury-limited";
+}
+export interface PlayerDetail {
+  playerId: string;
+  name: string;
+  position: string;
+  nflTeam: string | null;
+  season: string;
+  weekly: number[];
+  grade: PlayerGrade;
+  rostered: boolean;
+  teamName: string | null;
+  keeperCost: number | null;
+}
+
 export interface RookieProspect {
   rank: number;
   playerId: string;
@@ -231,12 +281,14 @@ interface SourceData {
   inflation: InflationResp;
   trades: Record<string, TradeResp>;
   draftValue: DraftValueReport;
+  scarcity: PositionScarcity[];
 }
 interface Bundle {
   generatedAt?: string;
   league: { season: string; capBudget: number; sources: string[]; defaultSource: string; teams: TeamRow[] };
   bySource: Record<string, SourceData>;
   players: PlayersResp;
+  playerDetails: Record<string, PlayerDetail>;
   rules: RulesResp;
   rookies: RookieBoard;
 }
@@ -297,6 +349,11 @@ export const api = {
     if (b) return pickSource(b, source).draftValue;
     return get<DraftValueReport>(`/api/draft-value${qs(source) ? `?${qs(source)}` : ""}`);
   },
+  scarcity: async (source?: string): Promise<PositionScarcity[]> => {
+    const b = await getBundle();
+    if (b) return pickSource(b, source).scarcity ?? [];
+    return (await get<{ positions: PositionScarcity[] }>(`/api/scarcity${qs(source) ? `?${qs(source)}` : ""}`)).positions;
+  },
   trades: async (id: number, partner?: string, source?: string) => {
     const b = await getBundle();
     if (b) return filterTrades(pickSource(b, source).trades[id]!, partner);
@@ -315,6 +372,11 @@ export const api = {
   },
   rules: async () => (await getBundle())?.rules ?? get<RulesResp>("/api/rules"),
   rookies: async () => (await getBundle())?.rookies ?? get<RookieBoard>("/api/rookies"),
+  playerDetails: async (): Promise<Record<string, PlayerDetail>> => {
+    const b = await getBundle();
+    if (b) return b.playerDetails ?? {};
+    return (await get<{ details: Record<string, PlayerDetail> }>("/api/player-details")).details;
+  },
   refresh: async () => {
     if (await getBundle()) return; // static snapshot — re-run `npm run snapshot` to update
     await fetch("/api/refresh", { method: "POST" });

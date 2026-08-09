@@ -56,11 +56,16 @@ export {
   loadAllPlayers,
   loadTrending,
   loadDraftValue,
+  loadScarcity,
+  loadPlayerDetails,
   worthSource,
   worthSources,
   STREAMER_POSITIONS,
 } from "./app";
-export type { Ctx, KeeperData, AllPlayerRow, TrendingRow } from "./app";
+export type { Ctx, KeeperData, AllPlayerRow, TrendingRow, PlayerDetail } from "./app";
+export { gradePlayer } from "./engines/playerDetail";
+export type { PlayerGrade, Grade, Archetype } from "./engines/playerDetail";
+export { seasonWeeklyPoints, weeklyPoints } from "./engines/points";
 
 // Value sources (§13.3): importable/ADP/expert auction values + overrides.
 export { parseValueCsv, matchValues, normalizeName } from "./values/valueSheet";
@@ -72,6 +77,8 @@ export { computeRookieBoard, rankRookieProspects } from "./engines/rookies";
 export type { RookieBoard, RookiePick, BaseSlot, TeamCapital, StandingRow, TradedPick, RookieProspect } from "./engines/rookies";
 export { buildDraftValueReport } from "./engines/draftValue";
 export type { DraftValueReport, DraftValueRow, AuctionBuy } from "./engines/draftValue";
+export { computeScarcity } from "./engines/scarcity";
+export type { PositionScarcity, ScarcityPlayer } from "./engines/scarcity";
 export { computeInflation } from "./engines/inflation";
 export type { InflationPlayer, InflationResult, TeamSurplus, DiscountLine } from "./engines/inflation";
 export { computeTrades } from "./engines/trades";

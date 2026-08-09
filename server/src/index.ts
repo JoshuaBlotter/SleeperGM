@@ -12,6 +12,8 @@ import {
   leagueRules,
   loadAllPlayers,
   loadDraftValue,
+  loadScarcity,
+  loadPlayerDetails,
   loadContext,
   loadKeeperData,
   loadRookieBoard,
@@ -140,6 +142,14 @@ app.get(
 );
 
 app.get(
+  "/api/player-details",
+  api(async () => {
+    const { ctx, data } = await getState();
+    return { details: await loadPlayerDetails(ctx, data) };
+  }),
+);
+
+app.get(
   "/api/inflation",
   api(async (req) => {
     const { ctx, data } = await dataForSource(req);
@@ -152,6 +162,14 @@ app.get(
   api(async (req) => {
     const { ctx, data } = await dataForSource(req);
     return loadDraftValue(ctx, data);
+  }),
+);
+
+app.get(
+  "/api/scarcity",
+  api(async (req) => {
+    const { ctx, data } = await dataForSource(req);
+    return { positions: loadScarcity(ctx, data) };
   }),
 );
 

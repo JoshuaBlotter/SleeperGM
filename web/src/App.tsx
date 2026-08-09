@@ -8,6 +8,7 @@ import { TradesView } from "./views/Trades";
 import { RulesView } from "./views/Rules";
 import { PlayersView } from "./views/Players";
 import { RookiesView } from "./views/Rookies";
+import { PlayerModal } from "./PlayerModal";
 
 type Tab = "dashboard" | "team" | "inflation" | "trades" | "rookies" | "rules" | "players";
 const TABS: { id: Tab; label: string }[] = [
@@ -128,6 +129,8 @@ export function App() {
         {tab === "players" && <PlayersView />}
         {tab === "rules" && <RulesView />}
       </main>
+
+      <PlayerModal />
 
       <footer>
         Read-only · data from the Sleeper API + league salary sheet · keeper rules per <code>league-rules.ts</code>

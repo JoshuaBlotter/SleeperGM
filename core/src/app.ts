@@ -10,12 +10,14 @@ import { buildProvenance } from "./history/provenance";
 import { computeInflation, type InflationPlayer, type InflationResult } from "./engines/inflation";
 import { computeRookieBoard, rankRookieProspects, type RookieBoard, type RookieProspect, type StandingRow, type TradedPick } from "./engines/rookies";
 import { buildDraftValueReport, type AuctionBuy, type DraftValueReport } from "./engines/draftValue";
+import { computeScarcity, type PositionScarcity, type ScarcityPlayer } from "./engines/scarcity";
 import { findTeam, loadRegistry } from "./registry/teams";
 import { recommendation, toSurplusLines } from "./engines/surplus";
 import { loadSalarySheet, sheetSalary, sheetSupersededByReacquire } from "./config/salaries";
 import { leagueRules, rookieSlotCost } from "./config/league-rules";
 import { loadResolver } from "./sleeper/players";
-import { seasonPoints } from "./engines/points";
+import { seasonPoints, seasonWeeklyPoints } from "./engines/points";
+import { gradePlayer, type PlayerGrade } from "./engines/playerDetail";
 import { sleeper } from "./sleeper/client";
 import { valuePlayers } from "./engines/valuation";
 import { getActiveSource, listValueSources, loadOverrides, loadValueMap, valueSourceExists } from "./values/load";
@@ -88,6 +90,13 @@ async function loadLastSeasonPoints(ctx: Ctx): Promise<Map<string, number>> {
   const prevSeason = ctx.chain.find((c) => c.leagueId !== ctx.leagueId) ?? ctx.chain[0];
   const isHistorical = prevSeason?.leagueId !== ctx.leagueId;
   return seasonPoints(prevSeason?.leagueId ?? ctx.leagueId, 17, isHistorical);
+}
+
+/** Last completed season's per-player weekly game log (for the drilldown). */
+async function loadLastSeasonWeekly(ctx: Ctx): Promise<Map<string, number[]>> {
+  const prevSeason = ctx.chain.find((c) => c.leagueId !== ctx.leagueId) ?? ctx.chain[0];
+  const isHistorical = prevSeason?.leagueId !== ctx.leagueId;
+  return seasonWeeklyPoints(prevSeason?.leagueId ?? ctx.leagueId, 17, isHistorical);
 }
 
 /** Per-player keeper cost lines for a team (provenance + owner tenure + salary replay/override). */
@@ -425,6 +434,80 @@ export function loadDraftValue(ctx: Ctx, data: KeeperData): DraftValueReport {
     });
   }
   return buildDraftValueReport(buys, auctionSeason, ctx.season);
+}
+
+/** A player's last-season drilldown: weekly log + consistency grade/archetype + light context. */
+export interface PlayerDetail {
+  playerId: string;
+  name: string;
+  position: string;
+  nflTeam: string | null;
+  season: string; // the season the weekly log is from
+  weekly: number[]; // per-week fantasy points, in week order
+  grade: PlayerGrade;
+  rostered: boolean;
+  teamName: string | null;
+  keeperCost: number | null;
+}
+
+/**
+ * Per-player drilldown details for every relevant player with a last-season game log (source-independent:
+ * weekly points + grade + keeper cost don't depend on the value source). Baked whole so the web modal can
+ * look a player up with no round-trip. Relevant = rostered OR scored ≥40 last season.
+ */
+export async function loadPlayerDetails(ctx: Ctx, data: KeeperData): Promise<Record<string, PlayerDetail>> {
+  const weekly = await loadLastSeasonWeekly(ctx);
+  const prev = ctx.chain.find((c) => c.leagueId !== ctx.leagueId) ?? ctx.chain[0];
+  const season = prev?.season ?? ctx.season;
+
+  const rostered = new Map<string, { teamName: string; keeperCost: number }>();
+  for (const t of ctx.registry) {
+    for (const l of teamKeeperLines(ctx, data, t)) rostered.set(l.playerId, { teamName: t.teamName, keeperCost: l.keeperCostNextYear });
+  }
+
+  const out: Record<string, PlayerDetail> = {};
+  for (const [id, log] of weekly) {
+    if (!log.length) continue;
+    const total = log.reduce((s, x) => s + x, 0);
+    const r = rostered.get(id);
+    if (!r && total < 40) continue; // trim: keep rostered players + last season's relevant scorers
+    const pl = ctx.resolve(id);
+    out[id] = {
+      playerId: id,
+      name: pl.name,
+      position: pl.position,
+      nflTeam: pl.team,
+      season,
+      weekly: log,
+      grade: gradePlayer(log, pl.position),
+      rostered: !!r,
+      teamName: r?.teamName ?? null,
+      keeperCost: r?.keeperCost ?? null,
+    };
+  }
+  return out;
+}
+
+const SCARCITY_POSITIONS = ["QB", "RB", "WR", "TE"];
+
+/**
+ * Positional scarcity (#3): per-position, how much of the top tier is kept (off the board) vs available.
+ * Value-dependent (ranks come from the active source). "kept" = a **rational keeper** (rostered AND
+ * worth ≥ keeper cost, i.e. positive surplus) — same assumption the inflation model uses. This is a
+ * better proxy than raw "rostered" before managers lock keepers: overpriced roster players are treated
+ * as likely cuts (available), so the map differentiates positions instead of reading 100% everywhere.
+ */
+export function loadScarcity(ctx: Ctx, data: KeeperData, topN = 12): PositionScarcity[] {
+  const keptIds = new Set<string>();
+  for (const t of ctx.registry) for (const l of teamSurplusBoard(ctx, data, t)) if (l.surplus > 0) keptIds.add(l.playerId);
+
+  const players: ScarcityPlayer[] = [];
+  for (const [id, v] of data.values) {
+    const pl = ctx.resolve(id);
+    if (!SCARCITY_POSITIONS.includes(pl.position)) continue;
+    players.push({ playerId: id, name: pl.name, position: pl.position, nflTeam: pl.team, value: v.value, kept: keptIds.has(id) });
+  }
+  return computeScarcity(players, SCARCITY_POSITIONS, topN);
 }
 
 const ROOKIE_POSITIONS = new Set(["QB", "RB", "WR", "TE"]);

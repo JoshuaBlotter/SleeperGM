@@ -38,12 +38,14 @@ client-side (the snapshot bakes each source under `data.json → bySource`); on 
 
 Views: **Dashboard**, **Team** (keeper board with an interactive keeper-simulation — check rows to see
 live cap/surplus — plus an inflation-adjusted toggle), **Inflation**, **Trades** (partner selector +
-mutual-fit/sharky toggle), **Market** (Inflation + **Last-year auction** = 2025 auction cost vs 2026
-projected worth), **Rookies** (derived rookie draft board — order, pick ownership, slot cost, draft
-capital, prospects), **Players** (All = rostered + relevant free agents, filter/sort; Trending =
-Sleeper's most-added last 24h), **Rules** (rulebook + value-source glossary).
-API: `/api/league`, `/api/team/:id`, `/api/players`, `/api/trending`, `/api/inflation`, `/api/draft-value`,
-`/api/trades/:id`, `/api/rookies`, `/api/rules`, `POST /api/refresh` (value-dependent routes accept `?source=<name>`).
+mutual-fit/sharky toggle), **Market** (Inflation · **Scarcity** = per-position kept-vs-available ·
+**Last-year auction** = 2025 cost vs 2026 worth), **Rookies** (draft board — order, pick ownership, slot
+cost, capital, prospects), **Players** (All = rostered + relevant free agents; Trending = most-added last
+24h), **Rules** (rulebook + value glossary). Click any player name for a **drilldown** (weekly scores,
+consistency grade, archetype).
+API: `/api/league`, `/api/team/:id`, `/api/players`, `/api/trending`, `/api/player-details`, `/api/inflation`,
+`/api/scarcity`, `/api/draft-value`, `/api/trades/:id`, `/api/rookies`, `/api/rules`, `POST /api/refresh`
+(value-dependent routes accept `?source=<name>`).
 
 ## Commands
 | Command | What |
@@ -58,6 +60,7 @@ API: `/api/league`, `/api/team/:id`, `/api/players`, `/api/trending`, `/api/infl
 | `npm run sgm -- trades <team> [--partner X] [--sharky]` | chips, targets, mutual-fit swaps (`--sharky` = surplus-max) |
 | `npm run sgm -- rookies` | rookie draft board: derived order, pick ownership (traded picks), slot cost, draft capital |
 | `npm run sgm -- draft-value` | last year's auction buys vs this year's projected worth (historical draft value) |
+| `npm run sgm -- scarcity` | positional scarcity: how much of each position's top tier is kept vs available |
 | `npm run sgm -- simulate --team X --keep a,b,c` | cap impact of a keeper set |
 | `npm run sgm -- refresh` | clear the API cache |
 

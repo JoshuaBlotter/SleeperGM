@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { api, type KeeperLine } from "../api";
 import { Call, ErrorBox, Loading, Surplus, money, signed, useAsync } from "../ui";
 import { clearAllOverrides, clearOverride, recommendation, setOverride, useOverrides } from "../overrides";
+import { openPlayer } from "../playerModalStore";
 
 type Line = KeeperLine & { overridden?: boolean };
 
@@ -172,8 +173,8 @@ export function TeamView({ teamId, source }: { teamId: number | null; source?: s
               <td>
                 <input type="checkbox" checked={kept.has(l.playerId)} onChange={() => toggle(l.playerId)} />
               </td>
-              <td className="strong">
-                {l.name}
+              <td>
+                <button className="plink" onClick={() => openPlayer(l.playerId)}>{l.name}</button>
                 {l.salarySource === "sheet" ? <sup className="mark">†</sup> : l.approximate ? <sup className="mark warn">≈</sup> : null}
               </td>
               <td>

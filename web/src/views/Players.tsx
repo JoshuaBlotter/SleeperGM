@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { api, type PlayerRow, type TrendingRow } from "../api";
 import { ErrorBox, Loading, money, useAsync } from "../ui";
+import { openPlayer } from "../playerModalStore";
 
 type Sub = "all" | "trending";
 type SortKey = "name" | "yearsInLeague" | "lastSeasonPoints" | "keeperCostNextYear";
@@ -99,7 +100,9 @@ function AllPlayers() {
         <tbody>
           {rows.map((p: PlayerRow) => (
             <tr key={`${p.teamId ?? "fa"}-${p.playerId}`}>
-              <td className="strong">{p.name}</td>
+              <td>
+                <button className="plink" onClick={() => openPlayer(p.playerId)}>{p.name}</button>
+              </td>
               <td>
                 <span className={"pos pos-" + p.position}>{p.position}</span>
               </td>
@@ -148,7 +151,9 @@ function Trending() {
         <tbody>
           {rows.map((p: TrendingRow) => (
             <tr key={p.playerId}>
-              <td className="strong">{p.name}</td>
+              <td>
+                <button className="plink" onClick={() => openPlayer(p.playerId)}>{p.name}</button>
+              </td>
               <td>
                 <span className={"pos pos-" + p.position}>{p.position}</span>
               </td>

@@ -10,6 +10,7 @@ import { trades } from "./commands/trades";
 import { values } from "./commands/values";
 import { rookies } from "./commands/rookies";
 import { draftValue } from "./commands/draftValue";
+import { scarcity } from "./commands/scarcity";
 import { refresh } from "./commands/refresh";
 
 const program = new Command();
@@ -71,6 +72,11 @@ program
   .command("draft-value")
   .description("Last year's auction buys vs this year's projected worth (historical draft value)")
   .action(run(draftValue));
+
+program
+  .command("scarcity")
+  .description("Positional scarcity: how much of each position's top tier is kept vs available")
+  .action(run(scarcity));
 
 program.command("refresh").description("Clear the API cache").action(run(refresh));
 

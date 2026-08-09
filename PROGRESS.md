@@ -27,14 +27,28 @@
 
 ## Next up (in order)
 1. **Draft-prep toolkit (v2)** — specced in **`specs/draft-toolkit.md`**. Build order:
-   ~~#2 historical draft value~~ ✅ → **#5 player drilldown (NEXT)** → **#3 positional scarcity**, then
-   **#4 tier board** and **#1 draft target assistant** (capstone). Remaining shared enablers to build
-   once: per-week points grid (for #5), per-position value ranks + kept flags (for #3/#4/#1).
-   Availability stays approximate until keepers lock (degrade gracefully).
+   ~~#2 historical draft value~~ ✅ → ~~#5 player drilldown~~ ✅ → ~~#3 positional scarcity~~ ✅ →
+   **#4 tier board (NEXT)** → **#1 draft target assistant** (capstone). #1 will need the cross-tab
+   kept-set state (lift the Team keeper-sim selection to a shared container). Availability stays a
+   rational-keeper proxy until managers lock.
 2. **Fix the nightly deploy** (see "Static hosting" below) — needs a push + one Pages setting flip.
 3. **Confirm rookie-draft round count** — `rookieDraft.rounds` defaults to 1; bump in `league-rules.ts`
    once confirmed (logic already generalizes to N rounds).
 4. Optional: fill the other import slots (cbs/draftsharks/footballguys); tune ADP→$ tau.
+
+## Shipped 2026-08-07 (draft toolkit #5 + #3)
+- **#5 Player drilldown** (`specs/draft-toolkit.md` §14.2): click any player name (Players All+Trending,
+  Team board) → **modal** with last season's weekly bar chart (boom/bust colored), an **A/B/C
+  consistency grade off the median**, an **archetype** (consistent/steady/boom-bust/one-week-wonder/
+  injury-limited), stat chips + keeper context. Pure `engines/playerDetail.ts` (`gradePlayer`, 5 tests) +
+  per-week enabler `seasonWeeklyPoints`/`weeklyPoints`. Source-independent → baked whole as
+  `bundle.playerDetails` (247 players) + `/api/player-details`; opened via `playerModalStore`. Verified:
+  Pitts C/boom-bust (median 7.9 vs 199 total), McCaffrey A/steady. Web-only (no CLI).
+- **#3 Positional scarcity** (§14.3): **Market → Scarcity** sub-tab — per-position % of the top tier that's
+  a projected keeper (off the board), hot/warm/cool bars, kept/available counts, best-available. Pure
+  `engines/scarcity.ts` (`computeScarcity`, 3 tests) + `loadScarcity`; CLI `sgm scarcity`;
+  `/api/scarcity?source=`; baked per-source. **"kept" = rational keeper (worth ≥ keeper cost)**, not raw
+  rostered, so it differentiates before keepers lock. Live: RB 83% (9/12), WR 100%, QB 52%, TE 39%.
 
 ## Shipped 2026-08-07 (draft toolkit #2)
 - **#2 Historical draft value** (`specs/draft-toolkit.md` §14.1): last season's **auction buys** (source =

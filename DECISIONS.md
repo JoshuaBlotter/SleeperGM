@@ -284,3 +284,21 @@ active value source, so the report is value-dependent and is **baked per source*
 dropdown re-computes it. Kept players stay in the list but are flagged (with their new keeper cost) rather
 than shown as re-auctionable. Home: the Inflation page was promoted to a **"Market" hub** with
 Inflation / Last-year auction sub-tabs (Scarcity #3 will join it).
+
+## 2026-08-07 — Draft toolkit #5 (drilldown) + #3 (scarcity)
+**#5 Player drilldown:** grade consistency off the **median** weekly (not mean) so one 40-burger can't
+fake an A; archetype from coefficient-of-variation + max-week-share + games (one-week-wonder = a single
+spike ≥25% of the total with ≤1 boom week — the Kyle Pitts case). Weekly game log via a new
+`weeklyPoints`/`seasonWeeklyPoints` pair beside the existing summing `seasonPoints`. Details are
+source-independent (points + grade + keeper cost don't depend on the value source) so they're baked once
+top-level (`bundle.playerDetails`) and opened via a global `playerModalStore` (no prop-drilling). Grade/
+boom/bust thresholds live in `engines/playerDetail.ts` as tunable estimates. Web-only.
+
+**#3 Positional scarcity:** "kept" = **rational keeper** (rostered AND surplus > 0), matching the
+inflation model — NOT raw rostered. Before managers trim to keepers everyone is rostered, so raw-rostered
+reads 100% for every position; the surplus proxy treats overpriced roster players as likely cuts and
+differentiates positions (live: RB 83%, WR 100%, QB 52%, TE 39%). Value-dependent → baked per source. The
+Inflation page was promoted to a **"Market" hub** (Inflation / Scarcity / Last-year auction sub-tabs).
+
+Note: nothing committed yet, so parallel worktree subagents weren't viable (they'd branch off stale HEAD);
+built #5 and #3 sequentially in one working tree instead.
