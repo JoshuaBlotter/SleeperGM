@@ -14,8 +14,8 @@ a dependency chain, so build order matters. Kept the user's original numbering (
 1. **#2 Historical draft value** — full spec §14.1 — ✅ **shipped**
 2. **#5 Player drilldown** — full spec §14.2 — ✅ **shipped**
 3. **#3 Positional scarcity map** — full spec §14.3 — ✅ **shipped**
-4. **#4 Tier board builder** — light spec §14.4 *(next; feeds #1)*
-5. **#1 Draft target assistant** — light spec §14.5 *(capstone; consumes #3/#4/#5 + need engine)*
+4. **#4 Tier board builder** — light spec §14.4 — ✅ **shipped**
+5. **#1 Draft target assistant** — light spec §14.5 *(next / capstone; consumes #3/#4/#5 + need engine)*
 
 **Shared availability caveat (applies to #1 and #3):** "who's available in the auction" is unreliable
 until managers lock keepers (most haven't streamlined their rosters yet). Every feature that needs
@@ -143,7 +143,15 @@ to derive a real per-position multiplier or just a relative heat read for v1.
 
 ---
 
-### 14.4 Tier board builder (#4 · light)
+### 14.4 Tier board builder (#4 · light) — ✅ SHIPPED 2026-08-07
+Built: pure `engines/tiers.ts` — `tierize` (gap-cluster: new tier when the drop ≥ `max(minGap,
+min(gapPct×prev, absBreak))`; the absBreak cap splits smooth high-value curves) + `bandize` (fixed $
+bands for cross-position); 4 tests. `loadTiers(ctx,data)` → `{ byPosition (gap tiers), overall (bands) }`,
+baked per source. CLI `sgm tiers`; `/api/tiers?source=`; web **Tiers** tab (By position selector /
+Overall value bands; chips open the #5 drilldown). Verified: Josh Allen alone in QB Elite; McBride+Bowers
+top TE tier; McBride cross-position in the $14–21 band with Nabers/Higgins/Adams. Gap params live in the
+engine (tunable). Manual tier overrides = future.
+
 **Problem:** a flat value ranking hides tier cliffs. Josh Allen (~360) sits a tier above the Herbert/
 Mahomes/Goff/Prescott pack (~280); Trey McBride belongs with elite WRs (Amon-Ra, Chase) by value, not in
 "later-round TE." Drafting by tier (not rank) is how you exploit those gaps.

@@ -302,3 +302,13 @@ Inflation page was promoted to a **"Market" hub** (Inflation / Scarcity / Last-y
 
 Note: nothing committed yet, so parallel worktree subagents weren't viable (they'd branch off stale HEAD);
 built #5 and #3 sequentially in one working tree instead.
+
+## 2026-08-07 — Draft toolkit #4 (tier board): gap tiers per position, fixed $ bands cross-position
+Two different clusterings because one size doesn't fit: **per position** uses gap-clustering (`tierize`)
+so a tier ends at a real value cliff (Josh Allen alone in QB Elite; McBride+Bowers as top TE). Pure
+relative gaps leave fat top tiers on smooth high-value curves (17 "elite" RBs), so the break rule caps
+the required gap at an absolute `absBreak` ($6): `drop ≥ max(minGap, min(gapPct×prev, absBreak))`.
+**Cross-position** can't gap-cluster (a dense mixed list collapses to one tier), so it uses **fixed $
+bands** (`bandize`, edges [60,45,32,22,14,8]) — that's the right model for "is this TE worth a WR-tier
+price?" (McBride $20 lands in the $14–21 band beside Nabers/Higgins/Adams). Value-dependent → baked per
+source. Also renamed the nav tab Inflation → Market (the page became a hub in #2/#3).

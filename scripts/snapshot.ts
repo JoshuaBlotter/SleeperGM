@@ -21,6 +21,7 @@ import {
   loadPlayerDetails,
   loadRookieBoard,
   loadScarcity,
+  loadTiers,
   loadTrending,
   outstandingRules,
   STREAMER_POSITIONS,
@@ -67,7 +68,7 @@ function buildForSource(ctx: Ctx, data: KeeperData, source: string) {
   const trades: Record<number, unknown> = {};
   for (const t of ctx.registry) trades[t.rosterId] = computeTrades(allPlayers, t.rosterId, { rosterPositions: ctx.rosterPositions });
 
-  return { multiplier: infl.multiplier, valueSource: source, inflation: infl, teams, trades, draftValue: loadDraftValue(ctx, data), scarcity: loadScarcity(ctx, data) };
+  return { multiplier: infl.multiplier, valueSource: source, inflation: infl, teams, trades, draftValue: loadDraftValue(ctx, data), scarcity: loadScarcity(ctx, data), tiers: loadTiers(ctx, data) };
 }
 
 async function main() {

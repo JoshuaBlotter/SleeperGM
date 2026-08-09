@@ -28,13 +28,23 @@
 ## Next up (in order)
 1. **Draft-prep toolkit (v2)** — specced in **`specs/draft-toolkit.md`**. Build order:
    ~~#2 historical draft value~~ ✅ → ~~#5 player drilldown~~ ✅ → ~~#3 positional scarcity~~ ✅ →
-   **#4 tier board (NEXT)** → **#1 draft target assistant** (capstone). #1 will need the cross-tab
-   kept-set state (lift the Team keeper-sim selection to a shared container). Availability stays a
-   rational-keeper proxy until managers lock.
+   ~~#4 tier board~~ ✅ → **#1 draft target assistant (NEXT — capstone)**. #1 will need the cross-tab
+   kept-set state (lift the Team keeper-sim selection to a shared container) + can reuse tiers (#4),
+   scarcity (#3), archetypes (#5), and the trade-engine need calc. Availability stays a rational-keeper
+   proxy until managers lock.
 2. **Fix the nightly deploy** (see "Static hosting" below) — needs a push + one Pages setting flip.
 3. **Confirm rookie-draft round count** — `rookieDraft.rounds` defaults to 1; bump in `league-rules.ts`
    once confirmed (logic already generalizes to N rounds).
 4. Optional: fill the other import slots (cbs/draftsharks/footballguys); tune ADP→$ tau.
+
+## Shipped 2026-08-07 (draft toolkit #4)
+- **#4 Tier board** (`specs/draft-toolkit.md` §14.4): new **Tiers** tab. **By position** = gap-clustered
+  tiers (a new tier at a real value cliff — `tierize` breaks when the drop ≥ `max(minGap, min(gapPct×prev,
+  absBreak))`; the absBreak cap fixes fat top tiers on smooth RB/WR curves). **Overall value** = fixed $
+  **bands** (`bandize`) for cross-position comparison. Pure `engines/tiers.ts` (4 tests); `loadTiers` baked
+  per source; CLI `sgm tiers`; `/api/tiers?source=`; chips open the #5 drilldown. Live: Josh Allen alone in
+  QB Elite; McBride+Bowers top TE; McBride cross-position in the $14–21 band with Nabers/Higgins/Adams.
+- Also: renamed the nav tab **Inflation → Market** to match the hub (id stays `inflation` internally).
 
 ## Shipped 2026-08-07 (draft toolkit #5 + #3)
 - **#5 Player drilldown** (`specs/draft-toolkit.md` §14.2): click any player name (Players All+Trending,

@@ -8,13 +8,15 @@ import { TradesView } from "./views/Trades";
 import { RulesView } from "./views/Rules";
 import { PlayersView } from "./views/Players";
 import { RookiesView } from "./views/Rookies";
+import { TiersView } from "./views/Tiers";
 import { PlayerModal } from "./PlayerModal";
 
-type Tab = "dashboard" | "team" | "inflation" | "trades" | "rookies" | "rules" | "players";
+type Tab = "dashboard" | "team" | "inflation" | "trades" | "tiers" | "rookies" | "rules" | "players";
 const TABS: { id: Tab; label: string }[] = [
   { id: "dashboard", label: "Dashboard" },
   { id: "team", label: "Team" },
-  { id: "inflation", label: "Inflation" },
+  { id: "inflation", label: "Market" },
+  { id: "tiers", label: "Tiers" },
   { id: "trades", label: "Trades" },
   { id: "rookies", label: "Rookies" },
   { id: "players", label: "Players" },
@@ -125,6 +127,7 @@ export function App() {
         {tab === "team" && <TeamView teamId={teamId} source={activeSource || undefined} />}
         {tab === "inflation" && <InflationView source={activeSource || undefined} />}
         {tab === "trades" && <TradesView teamId={teamId} teams={teams} source={activeSource || undefined} />}
+        {tab === "tiers" && <TiersView source={activeSource || undefined} />}
         {tab === "rookies" && <RookiesView />}
         {tab === "players" && <PlayersView />}
         {tab === "rules" && <RulesView />}

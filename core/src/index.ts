@@ -57,12 +57,15 @@ export {
   loadTrending,
   loadDraftValue,
   loadScarcity,
+  loadTiers,
   loadPlayerDetails,
   worthSource,
   worthSources,
   STREAMER_POSITIONS,
 } from "./app";
-export type { Ctx, KeeperData, AllPlayerRow, TrendingRow, PlayerDetail } from "./app";
+export type { Ctx, KeeperData, AllPlayerRow, TrendingRow, PlayerDetail, TierBoard } from "./app";
+export { tierize, bandize } from "./engines/tiers";
+export type { Tier, TierPlayer } from "./engines/tiers";
 export { gradePlayer } from "./engines/playerDetail";
 export type { PlayerGrade, Grade, Archetype } from "./engines/playerDetail";
 export { seasonWeeklyPoints, weeklyPoints } from "./engines/points";

@@ -11,6 +11,7 @@ import { values } from "./commands/values";
 import { rookies } from "./commands/rookies";
 import { draftValue } from "./commands/draftValue";
 import { scarcity } from "./commands/scarcity";
+import { tiers } from "./commands/tiers";
 import { refresh } from "./commands/refresh";
 
 const program = new Command();
@@ -77,6 +78,11 @@ program
   .command("scarcity")
   .description("Positional scarcity: how much of each position's top tier is kept vs available")
   .action(run(scarcity));
+
+program
+  .command("tiers")
+  .description("Value tiers by position (gap-clustered draft tiers)")
+  .action(run(tiers));
 
 program.command("refresh").description("Clear the API cache").action(run(refresh));
 

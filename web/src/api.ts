@@ -122,6 +122,25 @@ export interface PositionScarcity {
   bestAvailable: ScarcityPlayer | null;
 }
 
+export interface TierPlayer {
+  playerId: string;
+  name: string;
+  position: string;
+  nflTeam: string | null;
+  value: number;
+}
+export interface Tier {
+  tier: number;
+  label: string;
+  minValue: number;
+  maxValue: number;
+  players: TierPlayer[];
+}
+export interface TierBoard {
+  byPosition: Record<string, Tier[]>;
+  overall: Tier[];
+}
+
 export interface TradePlayer {
   playerId: string;
   name: string;
@@ -282,6 +301,7 @@ interface SourceData {
   trades: Record<string, TradeResp>;
   draftValue: DraftValueReport;
   scarcity: PositionScarcity[];
+  tiers: TierBoard;
 }
 interface Bundle {
   generatedAt?: string;
@@ -353,6 +373,11 @@ export const api = {
     const b = await getBundle();
     if (b) return pickSource(b, source).scarcity ?? [];
     return (await get<{ positions: PositionScarcity[] }>(`/api/scarcity${qs(source) ? `?${qs(source)}` : ""}`)).positions;
+  },
+  tiers: async (source?: string): Promise<TierBoard> => {
+    const b = await getBundle();
+    if (b) return pickSource(b, source).tiers;
+    return get<TierBoard>(`/api/tiers${qs(source) ? `?${qs(source)}` : ""}`);
   },
   trades: async (id: number, partner?: string, source?: string) => {
     const b = await getBundle();

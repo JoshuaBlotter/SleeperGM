@@ -13,6 +13,7 @@ import {
   loadAllPlayers,
   loadDraftValue,
   loadScarcity,
+  loadTiers,
   loadPlayerDetails,
   loadContext,
   loadKeeperData,
@@ -170,6 +171,14 @@ app.get(
   api(async (req) => {
     const { ctx, data } = await dataForSource(req);
     return { positions: loadScarcity(ctx, data) };
+  }),
+);
+
+app.get(
+  "/api/tiers",
+  api(async (req) => {
+    const { ctx, data } = await dataForSource(req);
+    return loadTiers(ctx, data);
   }),
 );
 

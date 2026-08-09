@@ -11,6 +11,7 @@ import { computeInflation, type InflationPlayer, type InflationResult } from "./
 import { computeRookieBoard, rankRookieProspects, type RookieBoard, type RookieProspect, type StandingRow, type TradedPick } from "./engines/rookies";
 import { buildDraftValueReport, type AuctionBuy, type DraftValueReport } from "./engines/draftValue";
 import { computeScarcity, type PositionScarcity, type ScarcityPlayer } from "./engines/scarcity";
+import { bandize, tierize, type Tier, type TierPlayer } from "./engines/tiers";
 import { findTeam, loadRegistry } from "./registry/teams";
 import { recommendation, toSurplusLines } from "./engines/surplus";
 import { loadSalarySheet, sheetSalary, sheetSupersededByReacquire } from "./config/salaries";
@@ -489,6 +490,30 @@ export async function loadPlayerDetails(ctx: Ctx, data: KeeperData): Promise<Rec
 }
 
 const SCARCITY_POSITIONS = ["QB", "RB", "WR", "TE"];
+
+export interface TierBoard {
+  byPosition: Record<string, Tier[]>; // QB/RB/WR/TE each tiered independently
+  overall: Tier[]; // all skill players tiered by $ (cross-position — "is this TE worth a WR-tier price?")
+}
+
+/**
+ * Tier board (#4): gap-cluster the value-ranked pool into draft tiers, per-position and cross-position.
+ * Value-dependent (ranks come from the active source).
+ */
+export function loadTiers(ctx: Ctx, data: KeeperData): TierBoard {
+  const byPos: Record<string, TierPlayer[]> = { QB: [], RB: [], WR: [], TE: [] };
+  const all: TierPlayer[] = [];
+  for (const [id, v] of data.values) {
+    const pl = ctx.resolve(id);
+    if (!(pl.position in byPos)) continue;
+    const tp: TierPlayer = { playerId: id, name: pl.name, position: pl.position, nflTeam: pl.team, value: v.value };
+    byPos[pl.position]!.push(tp);
+    all.push(tp);
+  }
+  const byPosition: Record<string, Tier[]> = {};
+  for (const pos of SCARCITY_POSITIONS) byPosition[pos] = tierize(byPos[pos] ?? [], { limit: 24 });
+  return { byPosition, overall: bandize(all) }; // per-position = gap tiers; cross-position = fixed $ bands
+}
 
 /**
  * Positional scarcity (#3): per-position, how much of the top tier is kept (off the board) vs available.
