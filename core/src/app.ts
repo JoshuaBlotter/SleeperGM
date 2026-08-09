@@ -511,7 +511,7 @@ export async function loadPlayerDetails(ctx: Ctx, data: KeeperData): Promise<Rec
     if (!log.length) continue;
     const total = log.reduce((s, x) => s + x.points, 0);
     const r = rostered.get(id);
-    if (!r && total < 40) continue; // trim: keep rostered players + last season's relevant scorers
+    if (!r && total < 80) continue; // trim: rostered players + last season's real contributors (drop deep scrubs)
     const pl = ctx.resolve(id);
     out[id] = {
       playerId: id,
@@ -580,7 +580,7 @@ export function loadTargetPool(ctx: Ctx, data: KeeperData): TargetCandidate[] {
     }
   }
   for (const [id, v] of data.values) {
-    if (rosteredIds.has(id)) continue;
+    if (rosteredIds.has(id) || v.value < 3) continue; // cap depth: skip $0–2 free-agent scrubs (never real targets)
     const pl = ctx.resolve(id);
     if (!SCARCITY_POSITIONS.includes(pl.position)) continue;
     out.push({ playerId: id, name: pl.name, position: pl.position, nflTeam: pl.team, worth: v.value, tier: tierOf.get(id) ?? null, ownerTeamId: null, projectedKeeper: false });

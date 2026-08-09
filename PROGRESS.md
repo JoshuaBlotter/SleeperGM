@@ -46,8 +46,13 @@
   still excludes your roster + projected keepers; "assume everyone available" overrides.
 - **Deploy on commit:** added `push: branches:[main]` to `refresh.yml` so every commit rebuilds+redeploys
   (plus nightly + manual). Code is ready; still needs the one-time commit/push + Pages→Actions source flip.
-- ⚠ `data.json` now ~1.7 MB (targetPool ×3 sources + full player logs + finishes); ~400 KB gzipped, fine
-  for Pages but a candidate to trim later (cap pool depth / drop deep-scrub details).
+- **Players page regression (from the stats-source switch) — FIXED:** the stats endpoint returns
+  `TEAM_*` team-aggregate rows (huge `pts_ppr`) that leaked in as junk "players" (blank position, sorted
+  to the top). `seasonPoints`/`seasonWeeklyPoints` now skip `id.startsWith("TEAM_")`. Real player ids are
+  numeric; DEFs are 2–3-letter team codes (kept).
+- **`data.json` trimmed** 1.69 MB → **1.39 MB**: target pool skips $0–2 FA scrubs (657→187 per source);
+  player drilldowns require rostered OR ≥80 pts last season (412→296). Sorted Players top is correct again
+  (McCaffrey 416, Nacua 375, Allen 374…).
 
 ## Shipped 2026-08-07 (draft toolkit #1 — CAPSTONE, toolkit complete)
 - **#1 Draft target assistant** (`specs/draft-toolkit.md` §14.5): the **Team page is now Keepers / Targets

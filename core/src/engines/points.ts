@@ -19,7 +19,7 @@ export async function seasonPoints(season: string, throughWeek = REG_SEASON_WEEK
     const stats = await sleeper.getWeekStats(season, w);
     if (!stats) continue;
     for (const [id, st] of Object.entries(stats)) {
-      if (!st || (st.gp ?? 0) < 1) continue;
+      if (!st || (st.gp ?? 0) < 1 || id.startsWith("TEAM_")) continue; // TEAM_* are team aggregates, not players
       totals.set(id, (totals.get(id) ?? 0) + (st.pts_ppr ?? 0));
     }
   }
@@ -33,7 +33,7 @@ export async function seasonWeeklyPoints(season: string, throughWeek = REG_SEASO
     const stats = await sleeper.getWeekStats(season, w);
     if (!stats) continue;
     for (const [id, st] of Object.entries(stats)) {
-      if (!st || (st.gp ?? 0) < 1) continue;
+      if (!st || (st.gp ?? 0) < 1 || id.startsWith("TEAM_")) continue; // TEAM_* are team aggregates, not players
       if (!grid.has(id)) grid.set(id, []);
       grid.get(id)!.push({ week: w, points: Math.round((st.pts_ppr ?? 0) * 10) / 10 });
     }
