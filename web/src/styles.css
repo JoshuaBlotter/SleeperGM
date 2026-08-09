@@ -98,6 +98,7 @@ h3 { margin: 22px 0 8px; color: var(--dim); font-size: 13px; text-transform: upp
 .wk-bar.boom { background: var(--pos); }
 .wk-bar.bust { background: var(--neg); }
 .wk-bar.mid { background: var(--accent); }
+.wk-bar.gap { background: transparent; border-top: 1px dashed var(--border); }
 .wk-num { font-size: 9px; color: var(--dim); margin-top: 3px; }
 .wk-mid-key { color: var(--accent); font-weight: 600; }
 

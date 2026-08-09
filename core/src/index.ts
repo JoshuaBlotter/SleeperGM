@@ -69,6 +69,7 @@ export type { Tier, TierPlayer } from "./engines/tiers";
 export { gradePlayer } from "./engines/playerDetail";
 export type { PlayerGrade, Grade, Archetype } from "./engines/playerDetail";
 export { seasonWeeklyPoints, weeklyPoints } from "./engines/points";
+export type { WeekScore } from "./engines/points";
 
 // Value sources (§13.3): importable/ADP/expert auction values + overrides.
 export { parseValueCsv, matchValues, normalizeName } from "./values/valueSheet";

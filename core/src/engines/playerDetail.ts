@@ -4,8 +4,10 @@
 // otherwise unstartable. This grades a weekly game log for consistency and tags a draft archetype.
 // Thresholds are estimates (per the user) — tune here; they're the only "opinion" in the module.
 
+import type { WeekScore } from "./points";
+
 export type Grade = "A" | "B" | "C";
-export type Archetype = "league-winner" | "consistent" | "steady" | "boom-bust" | "one-week-wonder" | "injury-limited";
+export type Archetype = "league-winner" | "consistent" | "steady" | "boom-bust" | "one-week-wonder" | "late-riser" | "injury-limited";
 
 export interface PlayerGrade {
   games: number;
@@ -21,6 +23,8 @@ export interface PlayerGrade {
   boomLine: number; // the position's boom threshold (so the UI colors bars by the SAME rule)
   bustLine: number; // the position's bust threshold
   maxShare: number; // biggest week as a share of the season total (0..1)
+  firstWeek: number; // first league week with data (a late start ≈ waiver/breakout, not injury)
+  lastWeek: number;
   grade: Grade;
   archetype: Archetype;
 }
@@ -52,10 +56,13 @@ const median = (xs: number[]): number => {
   return s.length % 2 ? s[mid]! : (s[mid - 1]! + s[mid]!) / 2;
 };
 
-/** Grade a weekly game log for a position. `weekly` is points per week played (see weeklyPoints). */
-export function gradePlayer(weekly: number[], position: string): PlayerGrade {
+/** Grade a weekly game log for a position. `log` is the week-tagged game log (see weeklyPoints). */
+export function gradePlayer(log: WeekScore[], position: string): PlayerGrade {
   const pos = position.toUpperCase();
+  const weekly = log.map((w) => w.points);
   const games = weekly.length;
+  const firstWeek = games ? Math.min(...log.map((w) => w.week)) : 0;
+  const lastWeek = games ? Math.max(...log.map((w) => w.week)) : 0;
   const total = Math.round(weekly.reduce((s, x) => s + x, 0) * 10) / 10;
   const ppg = games ? total / games : 0;
   const med = median(weekly);
@@ -73,7 +80,9 @@ export function gradePlayer(weekly: number[], position: string): PlayerGrade {
   const grade: Grade = med >= floor.a ? "A" : med >= floor.b ? "B" : "C";
 
   let archetype: Archetype;
-  if (games < 10) archetype = "injury-limited";
+  // Small sample: a late FIRST week means they weren't rostered until mid-season (a waiver/breakout add),
+  // which is a "late riser", NOT an injury. A short log that starts early = actually lost weeks.
+  if (games < 10) archetype = firstWeek >= 6 ? "late-riser" : "injury-limited";
   else if (grade === "A" && boomCount >= Math.ceil(games * 0.4)) archetype = "league-winner"; // elite floor + boomed ~half the weeks
   else if (maxShare >= 0.25 && boomCount <= 1) archetype = "one-week-wonder"; // one spike carried the total
   else if (cv >= 0.6) archetype = "boom-bust";
@@ -94,6 +103,8 @@ export function gradePlayer(weekly: number[], position: string): PlayerGrade {
     boomLine: bb.boom,
     bustLine: bb.bust,
     maxShare: Math.round(maxShare * 100) / 100,
+    firstWeek,
+    lastWeek,
     grade,
     archetype,
   };

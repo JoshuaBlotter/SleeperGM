@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { api, type PlayerDetail } from "./api";
+import { api, type PlayerDetail, type WeekScore } from "./api";
 import { money, useAsync } from "./ui";
 import { closePlayer, useOpenPlayer } from "./playerModalStore";
 
@@ -9,20 +9,35 @@ const ARCHETYPE_BLURB: Record<string, string> = {
   steady: "Fairly reliable with some week-to-week swing.",
   "boom-bust": "High variance — league-winner weeks and duds in equal measure.",
   "one-week-wonder": "One big week carried the season total; otherwise thin.",
-  "injury-limited": "Missed significant time — small sample.",
+  "late-riser": "Only rostered late (a mid-season breakout) — small, recent sample.",
+  "injury-limited": "Rostered for few weeks — likely lost time.",
 };
 
-function WeekBars({ weekly, boomLine, bustLine }: { weekly: number[]; boomLine: number; bustLine: number }) {
-  const max = Math.max(1, ...weekly);
+function WeekBars({ weekly, boomLine, bustLine }: { weekly: WeekScore[]; boomLine: number; bustLine: number }) {
+  if (!weekly.length) return null;
+  const max = Math.max(1, ...weekly.map((w) => w.points));
+  const first = weekly[0]!.week;
+  const last = weekly[weekly.length - 1]!.week;
+  const byWeek = new Map(weekly.map((w) => [w.week, w.points]));
+  // Render the full week span so mid-season gaps (missed weeks) show as blanks with real week numbers.
+  const span = Array.from({ length: last - first + 1 }, (_, i) => first + i);
   return (
     <div className="wk-chart" role="img" aria-label="weekly fantasy points">
-      {weekly.map((pts, i) => {
-        // Same thresholds the boom/bust counts use, so bar colors match the header exactly.
+      {span.map((week) => {
+        const pts = byWeek.get(week);
+        if (pts === undefined) {
+          return (
+            <div className="wk-col" key={week} title={`Wk ${week}: no data`}>
+              <div className="wk-bar gap" style={{ height: "3px" }} />
+              <span className="wk-num">{week}</span>
+            </div>
+          );
+        }
         const band = pts >= boomLine ? "boom" : pts <= bustLine ? "bust" : "mid";
         return (
-          <div className="wk-col" key={i} title={`Wk ${i + 1}: ${pts}`}>
+          <div className="wk-col" key={week} title={`Wk ${week}: ${pts}`}>
             <div className={"wk-bar " + band} style={{ height: `${Math.max(3, (pts / max) * 100)}%` }} />
-            <span className="wk-num">{i + 1}</span>
+            <span className="wk-num">{week}</span>
           </div>
         );
       })}
@@ -83,6 +98,12 @@ function Detail({ d }: { d: PlayerDetail }) {
       </h4>
       <WeekBars weekly={d.weekly} boomLine={g.boomLine} bustLine={g.bustLine} />
       <div className="legend">
+        {(g.firstWeek > 1 || g.lastWeek - g.firstWeek + 1 > g.games) && (
+          <>
+            Only weeks <strong>rostered in the league</strong> are tracked, so earlier NFL weeks may be missing (this
+            log is wk {g.firstWeek}–{g.lastWeek}).<br />
+          </>
+        )}
         Bars: <span className="num pos">boom</span> (≥{g.boomLine}) · <span className="wk-mid-key">solid</span> = a
         startable week · <span className="num neg">bust</span> (≤{g.bustLine}), by {d.position} scoring. Grade is off
         the <strong>median</strong> week, so one huge game can't fake it.

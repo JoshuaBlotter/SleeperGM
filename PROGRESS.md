@@ -42,6 +42,12 @@
   booms in ≥40% of weeks (CMC's 12 booms now read league-winner, not steady). (2) Modal shows **positional
   finish every season in the league** — `loadSeasonFinishes(ctx)` ranks each completed season's totals
   within position, baked into `PlayerDetail.finishes` (e.g. CMC 2025 RB1 · 2024 RB52 · 2023 RB1 · 2022 RB2).
+- **Bugfix — weekly log is "weeks rostered", not NFL games.** The log only has weeks a player was rostered
+  in the league, so a mid-season waiver breakout looked injured. Now the log is **week-tagged**
+  (`WeekScore{week,points}`, via `weeklyPoints`/`seasonWeeklyPoints`): a short log that **starts late**
+  (firstWeek ≥ 6) is a **late-riser** archetype, not injury-limited; the chart labels real week numbers and
+  shows mid-season gaps; and the modal notes when data starts late. Michael Wilson: wk 12–17, grade A,
+  now **late-riser** (was "injury-limited").
 
 ## Shipped 2026-08-07 (draft toolkit #4)
 - **#4 Tier board** (`specs/draft-toolkit.md` §14.4): new **Tiers** tab. **By position** = gap-clustered

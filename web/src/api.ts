@@ -242,8 +242,14 @@ export interface PlayerGrade {
   boomLine: number;
   bustLine: number;
   maxShare: number;
+  firstWeek: number;
+  lastWeek: number;
   grade: "A" | "B" | "C";
-  archetype: "league-winner" | "consistent" | "steady" | "boom-bust" | "one-week-wonder" | "injury-limited";
+  archetype: "league-winner" | "consistent" | "steady" | "boom-bust" | "one-week-wonder" | "late-riser" | "injury-limited";
+}
+export interface WeekScore {
+  week: number;
+  points: number;
 }
 export interface SeasonFinish {
   season: string;
@@ -257,7 +263,7 @@ export interface PlayerDetail {
   position: string;
   nflTeam: string | null;
   season: string;
-  weekly: number[];
+  weekly: WeekScore[];
   grade: PlayerGrade;
   finishes: SeasonFinish[];
   rostered: boolean;

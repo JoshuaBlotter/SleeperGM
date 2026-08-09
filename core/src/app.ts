@@ -17,7 +17,7 @@ import { recommendation, toSurplusLines } from "./engines/surplus";
 import { loadSalarySheet, sheetSalary, sheetSupersededByReacquire } from "./config/salaries";
 import { leagueRules, rookieSlotCost } from "./config/league-rules";
 import { loadResolver } from "./sleeper/players";
-import { seasonPoints, seasonWeeklyPoints } from "./engines/points";
+import { seasonPoints, seasonWeeklyPoints, type WeekScore } from "./engines/points";
 import { gradePlayer, type PlayerGrade } from "./engines/playerDetail";
 import { sleeper } from "./sleeper/client";
 import { valuePlayers } from "./engines/valuation";
@@ -94,7 +94,7 @@ async function loadLastSeasonPoints(ctx: Ctx): Promise<Map<string, number>> {
 }
 
 /** Last completed season's per-player weekly game log (for the drilldown). */
-async function loadLastSeasonWeekly(ctx: Ctx): Promise<Map<string, number[]>> {
+async function loadLastSeasonWeekly(ctx: Ctx): Promise<Map<string, WeekScore[]>> {
   const prevSeason = ctx.chain.find((c) => c.leagueId !== ctx.leagueId) ?? ctx.chain[0];
   const isHistorical = prevSeason?.leagueId !== ctx.leagueId;
   return seasonWeeklyPoints(prevSeason?.leagueId ?? ctx.leagueId, 17, isHistorical);
@@ -452,7 +452,7 @@ export interface PlayerDetail {
   position: string;
   nflTeam: string | null;
   season: string; // the season the weekly log is from
-  weekly: number[]; // per-week fantasy points, in week order
+  weekly: WeekScore[]; // week-tagged game log (weeks rostered in the league)
   grade: PlayerGrade;
   finishes: SeasonFinish[]; // positional finish every season in the league (newest first)
   rostered: boolean;
@@ -510,7 +510,7 @@ export async function loadPlayerDetails(ctx: Ctx, data: KeeperData): Promise<Rec
   const out: Record<string, PlayerDetail> = {};
   for (const [id, log] of weekly) {
     if (!log.length) continue;
-    const total = log.reduce((s, x) => s + x, 0);
+    const total = log.reduce((s, x) => s + x.points, 0);
     const r = rostered.get(id);
     if (!r && total < 40) continue; // trim: keep rostered players + last season's relevant scorers
     const pl = ctx.resolve(id);
