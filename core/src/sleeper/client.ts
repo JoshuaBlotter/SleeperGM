@@ -154,6 +154,14 @@ export const sleeper = {
       fetchJson<RawMatchup[]>(`${BASE}/league/${leagueId}/matchups/${week}`),
     );
   },
+  // Per-week fantasy stats for EVERY player (not just rostered), incl. `pts_ppr` + `gp`. Completed
+  // seasons are immutable -> permanent cache. This is how we get true NFL game logs / season totals
+  // regardless of who was rostered in the league.
+  async getWeekStats(season: string, week: number) {
+    return cached(`stats_${season}_${week}`, TTL.permanent, () =>
+      fetchJson<Record<string, RawStat | null>>(`${BASE}/stats/nfl/regular/${season}/${week}`),
+    );
+  },
   async getTradedPicks(leagueId: string) {
     return cached(`tradedpicks_${leagueId}`, TTL.league, () =>
       fetchJson<unknown[]>(`${BASE}/league/${leagueId}/traded_picks`),
@@ -172,6 +180,10 @@ export const sleeper = {
   refresh: clearCache,
 };
 
+export interface RawStat {
+  pts_ppr?: number | null;
+  gp?: number | null; // games played that week (0 = did not play / bye)
+}
 export interface RawPlayer {
   player_id?: string;
   full_name?: string;

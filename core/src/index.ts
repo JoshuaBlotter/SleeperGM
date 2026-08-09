@@ -35,7 +35,7 @@ export { loadSalarySheet, sheetSalary, parseSalaryCsv, sheetSupersededByReacquir
 export type { SalarySheet } from "./config/salaries";
 export { summarizeCap } from "./engines/cap";
 export type { CapSummary } from "./engines/cap";
-export { sumPoints, seasonPoints } from "./engines/points";
+export { seasonPoints } from "./engines/points";
 export { valuePlayers } from "./engines/valuation";
 export type { ValuationInputs } from "./engines/valuation";
 export { toSurplusLines, recommendation } from "./engines/surplus";
@@ -68,7 +68,7 @@ export { tierize, bandize } from "./engines/tiers";
 export type { Tier, TierPlayer } from "./engines/tiers";
 export { gradePlayer } from "./engines/playerDetail";
 export type { PlayerGrade, Grade, Archetype } from "./engines/playerDetail";
-export { seasonWeeklyPoints, weeklyPoints } from "./engines/points";
+export { seasonWeeklyPoints } from "./engines/points";
 export type { WeekScore } from "./engines/points";
 
 // Value sources (§13.3): importable/ADP/expert auction values + overrides.

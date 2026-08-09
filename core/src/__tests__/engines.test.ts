@@ -1,7 +1,6 @@
 import { expect, test } from "vitest";
 import { accumulatedSalary, keeperCostNextYear } from "../engines/keepers";
 import { summarizeCap } from "../engines/cap";
-import { sumPoints } from "../engines/points";
 import { valuePlayers } from "../engines/valuation";
 import { toSurplusLines } from "../engines/surplus";
 import { leagueRules, outstandingRules, rookieBaseCost } from "../config/league-rules";
@@ -66,16 +65,6 @@ test("keeperCostNextYear uses rookie table for base, then escalates by position"
 test("summarizeCap totals against budget", () => {
   const cap = summarizeCap([40, 30, 10]);
   expect(cap).toMatchObject({ capBudget: 200, capUsed: 80, capAvailable: 120, count: 3 });
-});
-
-// --- points ---
-test("sumPoints accumulates across weeks", () => {
-  const totals = sumPoints([
-    [{ roster_id: 1, players_points: { a: 10, b: 5 } }],
-    [{ roster_id: 1, players_points: { a: 7 } }],
-  ]);
-  expect(totals.get("a")).toBe(17);
-  expect(totals.get("b")).toBe(5);
 });
 
 // --- valuation ---

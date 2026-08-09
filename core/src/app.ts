@@ -89,15 +89,13 @@ export async function withValueSource(ctx: Ctx, data: KeeperData, source: string
 /** Last completed season's fantasy points per player (the projection proxy the VORP model uses). */
 async function loadLastSeasonPoints(ctx: Ctx): Promise<Map<string, number>> {
   const prevSeason = ctx.chain.find((c) => c.leagueId !== ctx.leagueId) ?? ctx.chain[0];
-  const isHistorical = prevSeason?.leagueId !== ctx.leagueId;
-  return seasonPoints(prevSeason?.leagueId ?? ctx.leagueId, 17, isHistorical);
+  return seasonPoints(prevSeason?.season ?? ctx.season);
 }
 
 /** Last completed season's per-player weekly game log (for the drilldown). */
 async function loadLastSeasonWeekly(ctx: Ctx): Promise<Map<string, WeekScore[]>> {
   const prevSeason = ctx.chain.find((c) => c.leagueId !== ctx.leagueId) ?? ctx.chain[0];
-  const isHistorical = prevSeason?.leagueId !== ctx.leagueId;
-  return seasonWeeklyPoints(prevSeason?.leagueId ?? ctx.leagueId, 17, isHistorical);
+  return seasonWeeklyPoints(prevSeason?.season ?? ctx.season);
 }
 
 /** Per-player keeper cost lines for a team (provenance + owner tenure + salary replay/override). */
@@ -470,8 +468,7 @@ const FINISH_POSITIONS = new Set(["QB", "RB", "WR", "TE", "K", "DEF"]);
 async function loadSeasonFinishes(ctx: Ctx): Promise<Map<string, SeasonFinish[]>> {
   const out = new Map<string, SeasonFinish[]>();
   for (const link of ctx.chain) {
-    const isCurrent = link.leagueId === ctx.leagueId;
-    const totals = await seasonPoints(link.leagueId, 17, !isCurrent);
+    const totals = await seasonPoints(link.season);
     if (totals.size < 12) continue; // unplayed / current season with no games yet
     const byPos = new Map<string, { id: string; pts: number }[]>();
     for (const [id, pts] of totals) {

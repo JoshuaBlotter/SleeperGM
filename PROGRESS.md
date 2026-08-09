@@ -37,6 +37,19 @@
    once confirmed (logic already generalizes to N rounds).
 4. Optional: fill the other import slots (cbs/draftsharks/footballguys); tune ADP→$ tau.
 
+## Shipped 2026-08-07 (points source = Sleeper STATS, not matchups) — correctness fix
+- **Root cause the user caught:** weekly/season points came from league **matchups**, which only include
+  **rostered** players → free-agent/breakout weeks were missing (Michael Wilson looked "injury-limited"
+  because we only saw his rostered weeks 12–17). **Fix:** source all scoring from Sleeper's **stats**
+  endpoint (`/v1/stats/nfl/regular/{season}/{week}`, new `sleeper.getWeekStats`, permanent-cached), which
+  covers **every** player and whose `pts_ppr` matches this league's scoring **exactly** (vanilla PPR —
+  verified Chase 2025: 290 league = 290 stats). `seasonPoints`/`seasonWeeklyPoints` now take an NFL
+  **season year** and use `gp ≥ 1` so byes/DNPs are real gaps.
+  - Wilson now shows his true log: 17 games, wks 1–7 & 9–18 (missing only wk 8), boom-bust — as the user
+    said. Finishes now rank vs ALL players (Chase 2024 WR1 / 2025 WR4). VORP/Data "last pts" now cover FAs.
+  - Removed the old matchup-summing `sumPoints`/`weeklyPoints` pure helpers. `data.json` ~1.4 MB (full
+    game logs for 407 players + finishes; gzips to ~300 KB — fine for Pages).
+
 ## Shipped 2026-08-07 (drilldown refinements)
 - **Player drilldown (#5) upgrades** per user feedback: (1) new **league-winner** archetype — grade A AND
   booms in ≥40% of weeks (CMC's 12 booms now read league-winner, not steady). (2) Modal shows **positional

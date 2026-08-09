@@ -1,62 +1,42 @@
-import type { RawMatchup } from "../sleeper/client";
 import { sleeper } from "../sleeper/client";
 
-/** Sum a season's per-player fantasy points from matchup payloads. Pure. */
-export function sumPoints(weeks: RawMatchup[][]): Map<string, number> {
-  const totals = new Map<string, number>();
-  for (const week of weeks) {
-    for (const m of week) {
-      if (!m.players_points) continue;
-      for (const [pid, pts] of Object.entries(m.players_points)) {
-        totals.set(pid, (totals.get(pid) ?? 0) + (pts ?? 0));
-      }
-    }
-  }
-  return totals;
-}
-
-/** One week's fantasy points for a player (the real week number, so gaps/late starts are visible). */
+/** One week's fantasy points for a player (the real NFL week number, so gaps/byes are visible). */
 export interface WeekScore {
   week: number;
   points: number;
 }
 
-/** Live: pull a season's regular-season matchups and total points per player. */
-export async function seasonPoints(leagueId: string, throughWeek = 17, historical = false): Promise<Map<string, number>> {
-  return sumPoints((await fetchWeeks(leagueId, throughWeek, historical)).map((w) => w.matchups));
+// Source of truth for scoring: Sleeper's per-week STATS endpoint, which covers EVERY player (not just
+// those rostered in our league) and whose `pts_ppr` matches this league's scoring exactly (vanilla PPR,
+// verified). A player-week is counted only when `gp >= 1` (actually played), so byes/DNPs are real gaps.
+
+const REG_SEASON_WEEKS = 18;
+
+/** A season's total fantasy points per player (PPR), from stats — all players, real games only. */
+export async function seasonPoints(season: string, throughWeek = REG_SEASON_WEEKS): Promise<Map<string, number>> {
+  const totals = new Map<string, number>();
+  for (let w = 1; w <= throughWeek; w++) {
+    const stats = await sleeper.getWeekStats(season, w);
+    if (!stats) continue;
+    for (const [id, st] of Object.entries(stats)) {
+      if (!st || (st.gp ?? 0) < 1) continue;
+      totals.set(id, (totals.get(id) ?? 0) + (st.pts_ppr ?? 0));
+    }
+  }
+  return totals;
 }
 
-/**
- * Per-player weekly game log, tagged with the real week number. NOTE: a player only appears in a week's
- * matchups if they were ROSTERED in the league that week — so this is "weeks rostered", not NFL games
- * played. A late first week usually means a waiver/breakout add, not an injury.
- */
-export function weeklyPoints(weeks: { week: number; matchups: RawMatchup[] }[]): Map<string, WeekScore[]> {
+/** A season's per-player weekly game log (PPR), week-tagged; only weeks the player actually played. */
+export async function seasonWeeklyPoints(season: string, throughWeek = REG_SEASON_WEEKS): Promise<Map<string, WeekScore[]>> {
   const grid = new Map<string, WeekScore[]>();
-  for (const { week, matchups } of weeks) {
-    const scored = new Map<string, number>(); // a player appears in at most one matchup per week
-    for (const m of matchups) {
-      if (!m.players_points) continue;
-      for (const [pid, pts] of Object.entries(m.players_points)) scored.set(pid, pts ?? 0);
-    }
-    for (const [pid, pts] of scored) {
-      if (!grid.has(pid)) grid.set(pid, []);
-      grid.get(pid)!.push({ week, points: Math.round(pts * 10) / 10 });
+  for (let w = 1; w <= throughWeek; w++) {
+    const stats = await sleeper.getWeekStats(season, w);
+    if (!stats) continue;
+    for (const [id, st] of Object.entries(stats)) {
+      if (!st || (st.gp ?? 0) < 1) continue;
+      if (!grid.has(id)) grid.set(id, []);
+      grid.get(id)!.push({ week: w, points: Math.round((st.pts_ppr ?? 0) * 10) / 10 });
     }
   }
   return grid;
-}
-
-/** Live: a season's per-player weekly game log. */
-export async function seasonWeeklyPoints(leagueId: string, throughWeek = 17, historical = false): Promise<Map<string, WeekScore[]>> {
-  return weeklyPoints(await fetchWeeks(leagueId, throughWeek, historical));
-}
-
-async function fetchWeeks(leagueId: string, throughWeek: number, historical: boolean): Promise<{ week: number; matchups: RawMatchup[] }[]> {
-  const weeks: { week: number; matchups: RawMatchup[] }[] = [];
-  for (let w = 1; w <= throughWeek; w++) {
-    const m = await sleeper.getMatchups(leagueId, w, historical);
-    if (m && m.length) weeks.push({ week: w, matchups: m });
-  }
-  return weeks;
 }

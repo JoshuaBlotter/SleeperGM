@@ -312,3 +312,14 @@ the required gap at an absolute `absBreak` ($6): `drop ≥ max(minGap, min(gapPc
 bands** (`bandize`, edges [60,45,32,22,14,8]) — that's the right model for "is this TE worth a WR-tier
 price?" (McBride $20 lands in the $14–21 band beside Nabers/Higgins/Adams). Value-dependent → baked per
 source. Also renamed the nav tab Inflation → Market (the page became a hub in #2/#3).
+
+## 2026-08-07 — Scoring source: Sleeper STATS endpoint, not league matchups
+League matchups (`players_points`) only report rostered players, so any weekly/season points derived from
+them silently omit free-agent weeks (a mid-season breakout reads as injured — the Michael Wilson bug).
+Switched `seasonPoints`/`seasonWeeklyPoints` to Sleeper's per-week **stats** endpoint
+(`/v1/stats/nfl/regular/{season}/{week}` via `sleeper.getWeekStats`, permanent cache), which returns every
+player with `pts_ppr` + `gp`. Verified `pts_ppr` == this league's scoring exactly (vanilla PPR, `rec:1`, no
+bonuses; Chase 2025 290 == 290), so there's zero drift for rostered players and we gain full NFL game logs
+for everyone. Count a week only when `gp ≥ 1` (byes/DNPs are real gaps). Functions now take an NFL season
+YEAR, not a leagueId. This improves the drilldown (true logs/archetypes), positional finishes (ranked vs
+all players), and VORP/last-season coverage (free agents included).
