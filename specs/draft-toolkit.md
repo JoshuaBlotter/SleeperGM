@@ -75,7 +75,11 @@ Built: pure `engines/playerDetail.ts` (`gradePlayer`, 5 tests) + per-week enable
 (Players All+Trending, Team board) via a tiny `playerModalStore` — weekly bar chart (boom/bust colored),
 A/B/C grade **off the median**, archetype (consistent/steady/boom-bust/one-week-wonder/injury-limited),
 stat chips, keeper context. Verified: Kyle Pitts C / boom-bust (median 7.9 vs 199 total); McCaffrey A /
-steady (23.8 ppg). Thresholds live in the engine (estimates — tune there). No CLI (web-only feature).
+league-winner. Thresholds live in the engine (estimates — tune there). No CLI (web-only feature).
+- **Refinement 2026-08-07:** added a **league-winner** archetype (grade A AND booms in ≥40% of weeks) —
+  CMC's 12 boom weeks now read "league-winner," not "steady." And the modal shows **positional finish
+  every season** in the league (`loadSeasonFinishes` ranks each completed season's totals within
+  position): CMC → 2025 RB1 · 2024 RB52 (injury) · 2023 RB1 · 2022 RB2.
 
 **Problem:** a season total hides *how* it was scored. Kyle Pitts was a TE1 by total on the back of one
 record week but was otherwise unstartable; Ashton Jeanty is boom-bust. Total points alone mislead the draft.

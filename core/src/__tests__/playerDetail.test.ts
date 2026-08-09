@@ -9,6 +9,15 @@ test("consistent producer → A / consistent (flat log, high median)", () => {
   expect(g.cv).toBeLessThan(0.35);
 });
 
+test("elite + frequent booms → league-winner (the McCaffrey case, not 'steady')", () => {
+  // 17 games, high floor, boom (RB ≥18) most weeks
+  const weekly = [28, 22, 19, 31, 24, 18, 26, 20, 15, 33, 21, 19, 27, 16, 22, 18, 25];
+  const g = gradePlayer(weekly, "RB");
+  expect(g.grade).toBe("A");
+  expect(g.boomCount).toBeGreaterThanOrEqual(Math.ceil(g.games * 0.4));
+  expect(g.archetype).toBe("league-winner");
+});
+
 test("Kyle Pitts case → one-week-wonder, low grade despite a big week", () => {
   // one 40-burger, otherwise duds; total 76 over 14 games (~5.4 ppg, median low)
   const weekly = [40, 3, 2, 5, 4, 3, 2, 6, 3, 2, 1, 2, 3, 0];

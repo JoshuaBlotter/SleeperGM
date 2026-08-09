@@ -63,7 +63,7 @@ export {
   worthSources,
   STREAMER_POSITIONS,
 } from "./app";
-export type { Ctx, KeeperData, AllPlayerRow, TrendingRow, PlayerDetail, TierBoard } from "./app";
+export type { Ctx, KeeperData, AllPlayerRow, TrendingRow, PlayerDetail, SeasonFinish, TierBoard } from "./app";
 export { tierize, bandize } from "./engines/tiers";
 export type { Tier, TierPlayer } from "./engines/tiers";
 export { gradePlayer } from "./engines/playerDetail";

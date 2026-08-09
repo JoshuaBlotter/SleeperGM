@@ -37,6 +37,12 @@
    once confirmed (logic already generalizes to N rounds).
 4. Optional: fill the other import slots (cbs/draftsharks/footballguys); tune ADP→$ tau.
 
+## Shipped 2026-08-07 (drilldown refinements)
+- **Player drilldown (#5) upgrades** per user feedback: (1) new **league-winner** archetype — grade A AND
+  booms in ≥40% of weeks (CMC's 12 booms now read league-winner, not steady). (2) Modal shows **positional
+  finish every season in the league** — `loadSeasonFinishes(ctx)` ranks each completed season's totals
+  within position, baked into `PlayerDetail.finishes` (e.g. CMC 2025 RB1 · 2024 RB52 · 2023 RB1 · 2022 RB2).
+
 ## Shipped 2026-08-07 (draft toolkit #4)
 - **#4 Tier board** (`specs/draft-toolkit.md` §14.4): new **Tiers** tab. **By position** = gap-clustered
   tiers (a new tier at a real value cliff — `tierize` breaks when the drop ≥ `max(minGap, min(gapPct×prev,

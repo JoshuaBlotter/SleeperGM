@@ -243,7 +243,13 @@ export interface PlayerGrade {
   bustLine: number;
   maxShare: number;
   grade: "A" | "B" | "C";
-  archetype: "consistent" | "steady" | "boom-bust" | "one-week-wonder" | "injury-limited";
+  archetype: "league-winner" | "consistent" | "steady" | "boom-bust" | "one-week-wonder" | "injury-limited";
+}
+export interface SeasonFinish {
+  season: string;
+  position: string;
+  rank: number;
+  points: number;
 }
 export interface PlayerDetail {
   playerId: string;
@@ -253,6 +259,7 @@ export interface PlayerDetail {
   season: string;
   weekly: number[];
   grade: PlayerGrade;
+  finishes: SeasonFinish[];
   rostered: boolean;
   teamName: string | null;
   keeperCost: number | null;

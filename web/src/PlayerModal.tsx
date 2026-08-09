@@ -4,6 +4,7 @@ import { money, useAsync } from "./ui";
 import { closePlayer, useOpenPlayer } from "./playerModalStore";
 
 const ARCHETYPE_BLURB: Record<string, string> = {
+  "league-winner": "Elite floor AND ceiling — boomed most weeks. The guys you build around.",
   consistent: "Steady week to week — you knew what you'd get.",
   steady: "Fairly reliable with some week-to-week swing.",
   "boom-bust": "High variance — league-winner weeks and duds in equal measure.",
@@ -53,6 +54,18 @@ function Detail({ d }: { d: PlayerDetail }) {
       <div className="arch-line">
         <strong style={{ textTransform: "capitalize" }}>{g.archetype.replace("-", " ")}</strong> — {ARCHETYPE_BLURB[g.archetype]}
       </div>
+
+      {d.finishes.length > 0 && (
+        <div className="finish-line">
+          <span className="dim">Positional finish:</span>
+          {d.finishes.map((f) => (
+            <span className="finish-chip" key={f.season} title={`${f.points} pts`}>
+              <span className="dim">{f.season}</span> {f.position}
+              {f.rank}
+            </span>
+          ))}
+        </div>
+      )}
 
       <div className="stat-chips">
         <span><b>{g.total}</b> total</span>

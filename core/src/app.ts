@@ -437,6 +437,14 @@ export function loadDraftValue(ctx: Ctx, data: KeeperData): DraftValueReport {
   return buildDraftValueReport(buys, auctionSeason, ctx.season);
 }
 
+/** A player's positional finish in one season: e.g. RB3 in 2024. */
+export interface SeasonFinish {
+  season: string;
+  position: string;
+  rank: number; // 1 = best at the position that season
+  points: number; // season total
+}
+
 /** A player's last-season drilldown: weekly log + consistency grade/archetype + light context. */
 export interface PlayerDetail {
   playerId: string;
@@ -446,9 +454,42 @@ export interface PlayerDetail {
   season: string; // the season the weekly log is from
   weekly: number[]; // per-week fantasy points, in week order
   grade: PlayerGrade;
+  finishes: SeasonFinish[]; // positional finish every season in the league (newest first)
   rostered: boolean;
   teamName: string | null;
   keeperCost: number | null;
+}
+
+const FINISH_POSITIONS = new Set(["QB", "RB", "WR", "TE", "K", "DEF"]);
+
+/**
+ * Positional year-end finish for every player, every completed season in the league. Ranks by season
+ * total fantasy points within position (over the pool that scored in our league's matchups). Cached
+ * historical fetches, so cheap after the first snapshot.
+ */
+async function loadSeasonFinishes(ctx: Ctx): Promise<Map<string, SeasonFinish[]>> {
+  const out = new Map<string, SeasonFinish[]>();
+  for (const link of ctx.chain) {
+    const isCurrent = link.leagueId === ctx.leagueId;
+    const totals = await seasonPoints(link.leagueId, 17, !isCurrent);
+    if (totals.size < 12) continue; // unplayed / current season with no games yet
+    const byPos = new Map<string, { id: string; pts: number }[]>();
+    for (const [id, pts] of totals) {
+      const pos = ctx.resolve(id).position;
+      if (!FINISH_POSITIONS.has(pos)) continue;
+      if (!byPos.has(pos)) byPos.set(pos, []);
+      byPos.get(pos)!.push({ id, pts });
+    }
+    for (const [pos, arr] of byPos) {
+      arr.sort((a, b) => b.pts - a.pts);
+      arr.forEach((x, i) => {
+        if (!out.has(x.id)) out.set(x.id, []);
+        out.get(x.id)!.push({ season: link.season, position: pos, rank: i + 1, points: Math.round(x.pts * 10) / 10 });
+      });
+    }
+  }
+  for (const arr of out.values()) arr.sort((a, b) => Number(b.season) - Number(a.season));
+  return out;
 }
 
 /**
@@ -457,7 +498,7 @@ export interface PlayerDetail {
  * look a player up with no round-trip. Relevant = rostered OR scored ≥40 last season.
  */
 export async function loadPlayerDetails(ctx: Ctx, data: KeeperData): Promise<Record<string, PlayerDetail>> {
-  const weekly = await loadLastSeasonWeekly(ctx);
+  const [weekly, finishes] = await Promise.all([loadLastSeasonWeekly(ctx), loadSeasonFinishes(ctx)]);
   const prev = ctx.chain.find((c) => c.leagueId !== ctx.leagueId) ?? ctx.chain[0];
   const season = prev?.season ?? ctx.season;
 
@@ -481,6 +522,7 @@ export async function loadPlayerDetails(ctx: Ctx, data: KeeperData): Promise<Rec
       season,
       weekly: log,
       grade: gradePlayer(log, pl.position),
+      finishes: finishes.get(id) ?? [],
       rostered: !!r,
       teamName: r?.teamName ?? null,
       keeperCost: r?.keeperCost ?? null,

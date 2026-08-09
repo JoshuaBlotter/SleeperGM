@@ -86,7 +86,9 @@ h3 { margin: 22px 0 8px; color: var(--dim); font-size: 13px; text-transform: upp
 .modal-close:hover { color: var(--text); }
 .modal-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
 .grade-badge { text-align: center; flex-shrink: 0; }
-.arch-line { margin: 12px 0 10px; color: var(--dim); font-size: 13px; }
+.arch-line { margin: 12px 0 8px; color: var(--dim); font-size: 13px; }
+.finish-line { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-bottom: 10px; font-size: 13px; }
+.finish-chip { background: var(--panel-2); border: 1px solid var(--border); border-radius: 999px; padding: 2px 9px; font-weight: 600; }
 .stat-chips { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13px; color: var(--dim); }
 .stat-chips b { color: var(--text); }
 

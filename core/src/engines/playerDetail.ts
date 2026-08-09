@@ -5,7 +5,7 @@
 // Thresholds are estimates (per the user) — tune here; they're the only "opinion" in the module.
 
 export type Grade = "A" | "B" | "C";
-export type Archetype = "consistent" | "steady" | "boom-bust" | "one-week-wonder" | "injury-limited";
+export type Archetype = "league-winner" | "consistent" | "steady" | "boom-bust" | "one-week-wonder" | "injury-limited";
 
 export interface PlayerGrade {
   games: number;
@@ -74,6 +74,7 @@ export function gradePlayer(weekly: number[], position: string): PlayerGrade {
 
   let archetype: Archetype;
   if (games < 10) archetype = "injury-limited";
+  else if (grade === "A" && boomCount >= Math.ceil(games * 0.4)) archetype = "league-winner"; // elite floor + boomed ~half the weeks
   else if (maxShare >= 0.25 && boomCount <= 1) archetype = "one-week-wonder"; // one spike carried the total
   else if (cv >= 0.6) archetype = "boom-bust";
   else if (cv <= 0.35) archetype = "consistent";
