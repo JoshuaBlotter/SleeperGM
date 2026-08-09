@@ -123,7 +123,7 @@ export function App() {
       </header>
 
       <main>
-        {tab === "dashboard" && <Dashboard league={league} onOpenTeam={openTeam} />}
+        {tab === "dashboard" && <Dashboard league={league} source={activeSource || undefined} onOpenTeam={openTeam} />}
         {tab === "team" && <TeamView teamId={teamId} source={activeSource || undefined} />}
         {tab === "inflation" && <InflationView source={activeSource || undefined} />}
         {tab === "trades" && <TradesView teamId={teamId} teams={teams} source={activeSource || undefined} />}

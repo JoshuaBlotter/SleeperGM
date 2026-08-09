@@ -312,6 +312,42 @@ export interface RookieBoard {
   prospectSource: string;
 }
 
+// League Brain (v3) — team profiles + league superlatives (value-aware).
+export type BrainArchetype = "contender" | "win-now" | "balanced" | "retooling" | "rebuilding";
+export interface TeamProfile {
+  rosterId: number;
+  teamName: string;
+  manager: string;
+  lastSeasonWins: number;
+  rosterValue: number;
+  keeperSurplus: number;
+  posCounts: Record<string, number>;
+  spendByPos: Record<string, number>;
+  spendShare: Record<string, number>;
+  tradeCount: number;
+  rookiePicks: number;
+  avgYearsExp: number | null;
+  contenderIndex: number;
+  archetype: BrainArchetype;
+  tags: string[];
+  scouting: string;
+}
+export interface Superlative {
+  id: string;
+  emoji: string;
+  title: string;
+  rosterId: number;
+  teamName: string;
+  manager: string;
+  stat: string;
+  blurb: string;
+}
+export interface LeagueBrain {
+  profiles: TeamProfile[];
+  superlatives: Superlative[];
+  generatedNote: string;
+}
+
 async function get<T>(url: string): Promise<T> {
   const res = await fetch(url);
   if (!res.ok) {
@@ -336,6 +372,7 @@ interface SourceData {
   scarcity: PositionScarcity[];
   tiers: TierBoard;
   targetPool: TargetCandidate[];
+  brain: LeagueBrain;
 }
 interface Bundle {
   generatedAt?: string;
@@ -412,6 +449,11 @@ export const api = {
     const b = await getBundle();
     if (b) return pickSource(b, source).tiers;
     return get<TierBoard>(`/api/tiers${qs(source) ? `?${qs(source)}` : ""}`);
+  },
+  brain: async (source?: string): Promise<LeagueBrain> => {
+    const b = await getBundle();
+    if (b) return pickSource(b, source).brain;
+    return get<LeagueBrain>(`/api/brain${qs(source) ? `?${qs(source)}` : ""}`);
   },
   targetPool: async (source?: string): Promise<TargetCandidate[]> => {
     const b = await getBundle();

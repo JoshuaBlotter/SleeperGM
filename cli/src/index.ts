@@ -12,6 +12,7 @@ import { rookies } from "./commands/rookies";
 import { draftValue } from "./commands/draftValue";
 import { scarcity } from "./commands/scarcity";
 import { tiers } from "./commands/tiers";
+import { brain } from "./commands/brain";
 import { refresh } from "./commands/refresh";
 
 const program = new Command();
@@ -83,6 +84,11 @@ program
   .command("tiers")
   .description("Value tiers by position (gap-clustered draft tiers)")
   .action(run(tiers));
+
+program
+  .command("brain")
+  .description("League Brain: team profiles (archetype/tendencies/scouting) + league superlatives")
+  .action(run(brain));
 
 program.command("refresh").description("Clear the API cache").action(run(refresh));
 

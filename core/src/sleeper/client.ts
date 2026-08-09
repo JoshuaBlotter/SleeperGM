@@ -106,6 +106,7 @@ export interface RawTransaction {
   type: string; // "waiver" | "free_agent" | "trade"
   status: string; // "complete" | ...
   adds: Record<string, number> | null; // playerId -> rosterId
+  roster_ids?: number[]; // rosters party to the transaction (both sides of a trade)
   settings: { waiver_bid?: number } | null;
 }
 export interface RawMatchup {

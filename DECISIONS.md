@@ -335,3 +335,25 @@ available pool — a deliberate MIRROR of the tested core `computeDraftTargets`/
 NFL-team-diversity penalty, with a "why" per pick. Availability = rational-keeper proxy (worth ≥ keeper
 cost ⇒ assumed kept/off-board) with an "assume everyone available" override, since real availability isn't
 known until managers lock keepers. This completes the 5-feature draft-prep toolkit.
+
+## 2026-08-09 — League Brain (v3): manager profiling on the Dashboard
+A "GM scouting report" for the whole league — per-team profiles + league superlatives — answering the
+manager-behavior questions (who hoards RBs, drafts QBs early, waits on TE, has the most capital/best
+keepers/most trades/most value, who's rebuilding vs contending). Interpretation calls, stated in-UI so
+nothing is presented as fact it isn't:
+- **"Drafts QBs early" = auction $ SHARE by position.** This is an auction keeper league with a 1-round
+  rookie draft, so veterans have no snake-draft "early." Tendency = share of auction dollars spent per
+  position, **pooled across every auction season** in the chain (more seasons = steadier), **excluding
+  carried keepers** (a keeper's salary isn't a draft-day decision). A team with no observed auction spend
+  gets a BLANK tendency (we never fabricate one). The UI shows a confidence note ("pooled over N seasons").
+- **Trade count** = completed `type==="trade"` transactions a roster was party to, across ALL seasons
+  (roster_id is stable in this league). Required adding `roster_ids` to `RawTransaction` (read-only).
+- **Contender index (0–100)** = min-max-normalized blend, ready-to-win-now weighting: rosterValue 0.30,
+  keeperSurplus 0.30 (cheap studs = cap room), lastSeasonWins 0.25, small veteran nudge 0.15 (older roster
+  = win-now urgency, not rebuild). Archetype layers rebuild signals on top (youth via `years_exp` + rookie
+  capital): top third → contender/win-now, bottom third → rebuilding/retooling, else balanced.
+- **Value-dependent** (value/surplus/index shift with the source dropdown) → baked per source like
+  tiers/scarcity. Pure `computeLeagueBrain` does all league-relative math; `loadLeagueBrain` is the glue.
+  Humor is deterministic (template per dominant tag) — the workflow runtime forbids `Math.random`, and
+  determinism keeps snapshots stable. Future ideas (volatility, age cliffs, cap flex, FAAB, trade network,
+  regret, power ranking, trend) logged in specs/league-brain.md, not built.

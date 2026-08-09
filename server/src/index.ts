@@ -19,6 +19,7 @@ import {
   loadPlayerDetails,
   loadContext,
   loadKeeperData,
+  loadLeagueBrain,
   loadRookieBoard,
   loadTrending,
   outstandingRules,
@@ -207,6 +208,14 @@ app.get(
       }
     }
     return computeTrades(all, me.rosterId, { partnerTeamId: partner?.rosterId, rosterPositions: ctx.rosterPositions });
+  }),
+);
+
+app.get(
+  "/api/brain",
+  api(async (req) => {
+    const { ctx, data } = await dataForSource(req);
+    return loadLeagueBrain(ctx, data);
   }),
 );
 

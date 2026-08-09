@@ -14,6 +14,30 @@
   (A.J. Brown $45, Pickens $35, Hurts $29, Achane $25, McConkey $16). Sheet salaries show `†`; players
   not in the sheet fall back to computed (`≈`).
 
+## Shipped 2026-08-09 (League Brain v3)
+- **League Brain** (`specs/league-brain.md`): a "GM scouting report" on the **Dashboard**. Per-team
+  **profile** (contender index 0–100 + archetype + tendency tags + a one-line witty scouting take) and
+  league-wide **superlatives** (RB hoarder, pays up at QB, waits on TE, draft-capital baron, best keepers,
+  wheeler-dealer, most valuable roster, prime contender, deepest rebuild). Answers the manager-behavior
+  questions the user asked. Slight humor (deterministic templates, no RNG).
+  - Pure `engines/leagueBrain.ts` (`computeLeagueBrain`, 6 tests) takes digested per-team numbers →
+    profiles + awards; all league-relative math (means, ranks, min-max norm) lives here.
+  - `loadLeagueBrain(ctx,data)` assembles inputs: roster value / keeper surplus / posCounts / avg
+    `years_exp` from the surplus board; **auction spend by position** pooled per owner across the chain
+    (`buildDraftSpendByOwner`, excludes carried keepers); **trade counts** per roster
+    (`buildTradeCounts`, `type==="trade"` over all seasons — needs new `roster_ids` on `RawTransaction`);
+    rookie capital from the rookie board; last-season wins from prev rosters.
+  - Value-dependent → baked **per source** (`bySource[src].brain`); CLI `sgm brain`; `/api/brain?source=`.
+  - Web: Dashboard shows a superlatives **deck** + a **brain-grid** of profile cards (archetype pill +
+    tag chips + scouting line + mini stat row), each opening the Team page. Mobile: 0px overflow at 375.
+  - Interpretation stated in-UI: "drafts QBs early" = **auction $ share** by position (no snake draft for
+    vets), with a confidence note ("pooled over N auction seasons"). Verified live: Blotter trotters =
+    wheeler-dealer (13 trades); KrespoKreme = prime contender (87) + most valuable ($307); Kupp my ballz =
+    deepest rebuild (10) + draft-capital baron (3 picks). `npm run check` green — **89 tests** (was 83).
+- **Future brain ideas logged** (not built): roster volatility from player archetypes, positional age
+  cliffs, cap flexibility, FAAB aggressiveness, trade network, regret index, power ranking, trend-over-time.
+  See `specs/league-brain.md` "Future ideas".
+
 ## Done
 - Planning docs: `spec.md` (v0.2), `diagrams.md`, `tasks.md`.
 - Repo scaffold + autonomy scaffolding (`CLAUDE.md`, this file, `DECISIONS.md`, `README.md`).

@@ -61,6 +61,7 @@ export {
   loadTargetPool,
   leagueStarterSlots,
   loadPlayerDetails,
+  loadLeagueBrain,
   worthSource,
   worthSources,
   STREAMER_POSITIONS,
@@ -85,6 +86,8 @@ export { buildDraftValueReport } from "./engines/draftValue";
 export type { DraftValueReport, DraftValueRow, AuctionBuy } from "./engines/draftValue";
 export { computeScarcity } from "./engines/scarcity";
 export type { PositionScarcity, ScarcityPlayer } from "./engines/scarcity";
+export { computeLeagueBrain } from "./engines/leagueBrain";
+export type { LeagueBrain, TeamProfile, TeamBrainInput, Superlative, Archetype as BrainArchetype } from "./engines/leagueBrain";
 export { computeDraftTargets, positionalNeeds } from "./engines/draftTargets";
 export type { TargetCandidate, ScoredTarget, TargetInputs } from "./engines/draftTargets";
 export { computeInflation } from "./engines/inflation";

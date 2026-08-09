@@ -19,6 +19,7 @@ import {
   loadContext,
   loadDraftValue,
   loadKeeperData,
+  loadLeagueBrain,
   loadPlayerDetails,
   loadRookieBoard,
   loadScarcity,
@@ -37,7 +38,7 @@ import {
 } from "@sgm/core";
 
 /** Build every value-dependent view model (teams, inflation, trades) for one value source. */
-function buildForSource(ctx: Ctx, data: KeeperData, source: string) {
+async function buildForSource(ctx: Ctx, data: KeeperData, source: string) {
   const infl = leagueInflation(ctx, data);
   const cap = leagueRules.capBudget;
   const teams: Record<number, unknown> = {};
@@ -70,7 +71,7 @@ function buildForSource(ctx: Ctx, data: KeeperData, source: string) {
   const trades: Record<number, unknown> = {};
   for (const t of ctx.registry) trades[t.rosterId] = computeTrades(allPlayers, t.rosterId, { rosterPositions: ctx.rosterPositions });
 
-  return { multiplier: infl.multiplier, valueSource: source, inflation: infl, teams, trades, draftValue: loadDraftValue(ctx, data), scarcity: loadScarcity(ctx, data), tiers: loadTiers(ctx, data), targetPool: loadTargetPool(ctx, data) };
+  return { multiplier: infl.multiplier, valueSource: source, inflation: infl, teams, trades, draftValue: loadDraftValue(ctx, data), scarcity: loadScarcity(ctx, data), tiers: loadTiers(ctx, data), targetPool: loadTargetPool(ctx, data), brain: await loadLeagueBrain(ctx, data) };
 }
 
 async function main() {
@@ -105,7 +106,7 @@ async function main() {
   const bySource: Record<string, unknown> = {};
   for (const src of sources) {
     const d = src === defaultSource ? data : await withValueSource(ctx, data, src);
-    bySource[src] = buildForSource(ctx, d, src);
+    bySource[src] = await buildForSource(ctx, d, src);
   }
 
   const [rookies, playerDetails] = await Promise.all([loadRookieBoard(ctx), loadPlayerDetails(ctx, data)]);

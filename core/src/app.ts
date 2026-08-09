@@ -11,6 +11,7 @@ import { computeInflation, type InflationPlayer, type InflationResult } from "./
 import { computeRookieBoard, rankRookieProspects, type RookieBoard, type RookieProspect, type StandingRow, type TradedPick } from "./engines/rookies";
 import { buildDraftValueReport, type AuctionBuy, type DraftValueReport } from "./engines/draftValue";
 import { computeScarcity, type PositionScarcity, type ScarcityPlayer } from "./engines/scarcity";
+import { computeLeagueBrain, type LeagueBrain, type TeamBrainInput } from "./engines/leagueBrain";
 import { bandize, tierize, type Tier, type TierPlayer } from "./engines/tiers";
 import { startingSlots } from "./engines/trades";
 import type { TargetCandidate } from "./engines/draftTargets";
@@ -638,6 +639,111 @@ export async function rookieProspects(ctx: Ctx, values: Map<string, ValueLine>, 
     });
   }
   return rankRookieProspects(rows, limit);
+}
+
+const BRAIN_POSITIONS = ["QB", "RB", "WR", "TE"];
+
+/**
+ * League Brain (v3): per-team profile (contender index + archetype + tendency tags + scouting line) and
+ * league-wide superlatives. Value-dependent (roster value / keeper surplus / contender index come from the
+ * active source), so it's baked per source like tiers/scarcity. Assembles digested numbers per team and
+ * hands them to the pure `computeLeagueBrain`. See specs/league-brain.md.
+ */
+export async function loadLeagueBrain(ctx: Ctx, data: KeeperData): Promise<LeagueBrain> {
+  const players = (await sleeper.getPlayers()) ?? {};
+  const [spend, tradeCounts, board, lastWins] = await Promise.all([
+    buildDraftSpendByOwner(ctx),
+    buildTradeCounts(ctx),
+    loadRookieBoard(ctx),
+    lastSeasonWins(ctx),
+  ]);
+  const rookieByRoster = new Map(board.byTeam.map((b) => [b.rosterId, b.picks.length] as const));
+
+  const inputs: TeamBrainInput[] = ctx.registry.map((t) => {
+    let rosterValue = 0;
+    let keeperSurplus = 0;
+    const posCounts: Record<string, number> = { QB: 0, RB: 0, WR: 0, TE: 0 };
+    let ageSum = 0;
+    let ageN = 0;
+    for (const l of teamSurplusBoard(ctx, data, t)) {
+      if (STREAMER_POSITIONS.has(l.position)) continue; // K/DEF are streamed, not roster identity
+      if (l.position in posCounts) posCounts[l.position]! += 1;
+      rosterValue += l.worth;
+      if (l.surplus > 0) keeperSurplus += l.surplus;
+      const exp = players[l.playerId]?.years_exp;
+      if (typeof exp === "number") {
+        ageSum += exp;
+        ageN += 1;
+      }
+    }
+    return {
+      rosterId: t.rosterId,
+      teamName: t.teamName,
+      manager: t.displayName,
+      lastSeasonWins: lastWins.get(t.rosterId) ?? 0,
+      rosterValue: Math.round(rosterValue),
+      keeperSurplus: Math.round(keeperSurplus),
+      posCounts,
+      spendByPos: (t.ownerUserId && spend.byOwner.get(t.ownerUserId)) || {},
+      tradeCount: tradeCounts.get(t.rosterId) ?? 0,
+      rookiePicks: rookieByRoster.get(t.rosterId) ?? 0,
+      avgYearsExp: ageN ? Math.round((ageSum / ageN) * 10) / 10 : null,
+    };
+  });
+  return computeLeagueBrain(inputs, { spendSeasons: spend.seasons });
+}
+
+/** Auction dollars each OWNER (user_id, stable across seasons) has spent by position, pooled over the chain. */
+async function buildDraftSpendByOwner(ctx: Ctx): Promise<{ byOwner: Map<string, Record<string, number>>; seasons: number }> {
+  const byOwner = new Map<string, Record<string, number>>();
+  let seasons = 0;
+  for (const link of ctx.chain) {
+    const drafts = (await sleeper.getDrafts(link.leagueId)) ?? [];
+    let sawAuction = false;
+    for (const d of drafts) {
+      const picks = (await sleeper.getDraftPicks(d.draft_id)) ?? [];
+      for (const p of picks) {
+        if (p.is_keeper === true) continue; // a carried keeper's salary isn't a draft-day spending decision
+        const raw = p.metadata?.amount;
+        if (raw === undefined || raw === "") continue; // no amount = not an auction pick
+        const amt = Number(raw);
+        if (!Number.isFinite(amt) || amt <= 0 || !p.picked_by || !p.player_id) continue;
+        const pos = ctx.resolve(p.player_id).position;
+        if (!BRAIN_POSITIONS.includes(pos)) continue;
+        sawAuction = true;
+        const rec = byOwner.get(p.picked_by) ?? {};
+        rec[pos] = (rec[pos] ?? 0) + amt;
+        byOwner.set(p.picked_by, rec);
+      }
+    }
+    if (sawAuction) seasons += 1;
+  }
+  return { byOwner, seasons };
+}
+
+/** Completed trades each roster has been party to, across the league's history (roster_id is stable here). */
+async function buildTradeCounts(ctx: Ctx): Promise<Map<number, number>> {
+  const counts = new Map<number, number>();
+  for (const [i, link] of ctx.chain.entries()) {
+    const historical = i > 0; // prior seasons are immutable → cached forever
+    for (let week = 0; week <= 18; week++) {
+      const txns = (await sleeper.getTransactions(link.leagueId, week, historical)) ?? [];
+      for (const t of txns) {
+        if (t.type !== "trade" || t.status !== "complete") continue;
+        for (const rid of t.roster_ids ?? []) counts.set(rid, (counts.get(rid) ?? 0) + 1);
+      }
+    }
+  }
+  return counts;
+}
+
+/** Last completed season's win totals per roster (records this offseason's teams as 0-0). */
+async function lastSeasonWins(ctx: Ctx): Promise<Map<number, number>> {
+  const prev = ctx.chain.find((c) => c.leagueId !== ctx.leagueId) ?? ctx.chain[0];
+  const rosters = (await sleeper.getRosters(prev?.leagueId ?? ctx.leagueId)) ?? [];
+  const out = new Map<number, number>();
+  for (const r of rosters) out.set(r.roster_id, r.settings?.wins ?? 0);
+  return out;
 }
 
 /** Re-rank a surplus board with inflation-adjusted worth (skill worth × multiplier; streamers unchanged). */

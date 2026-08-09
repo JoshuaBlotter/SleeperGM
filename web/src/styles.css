@@ -109,6 +109,35 @@ h3 { margin: 22px 0 8px; color: var(--dim); font-size: 13px; text-transform: upp
 .info-card p { margin: 0; color: var(--dim); font-size: 13px; line-height: 1.55; }
 .pill-active { font-size: 10px; text-transform: uppercase; letter-spacing: 0.04em; background: var(--accent-dim); color: var(--accent); padding: 2px 7px; border-radius: 999px; font-weight: 700; }
 
+/* League Brain — superlative award cards + team profile cards */
+.info-card.award .award-winner { font-weight: 650; font-size: 14px; margin: 2px 0 6px; }
+.info-card.award .award-winner .dim { font-weight: 500; }
+
+.brain-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 12px; margin: 8px 0 4px; }
+.brain-card {
+  text-align: left; background: var(--panel); border: 1px solid var(--border); border-left: 3px solid var(--border);
+  border-radius: 12px; padding: 13px 15px; cursor: pointer; color: var(--text); font: inherit; display: flex; flex-direction: column; gap: 8px;
+}
+.brain-card:hover { border-color: var(--accent); }
+.brain-card-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.brain-card-head .team { font-weight: 650; font-size: 15px; }
+.brain-scout { color: var(--dim); font-size: 13px; line-height: 1.5; }
+.brain-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+.tag-chip { background: var(--panel-2); border: 1px solid var(--border); border-radius: 999px; padding: 1px 8px; font-size: 11px; color: var(--dim); }
+.brain-stats { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 12px; color: var(--dim); border-top: 1px solid var(--border); padding-top: 8px; }
+.brain-stats b { color: var(--text); font-weight: 650; }
+
+.arch-pill { font-size: 10px; text-transform: uppercase; letter-spacing: 0.04em; padding: 2px 8px; border-radius: 999px; font-weight: 700; white-space: nowrap; }
+/* Archetype accent: contenders warm (green→amber), rebuilds cool (blue), middle neutral */
+.arch-pill.arch-contender { background: rgba(55, 209, 122, 0.15); color: var(--pos); }
+.arch-pill.arch-win-now { background: rgba(255, 180, 84, 0.16); color: var(--amber); }
+.arch-pill.arch-balanced { background: var(--panel-2); color: var(--dim); }
+.arch-pill.arch-retooling { background: var(--panel-2); color: var(--dim); }
+.arch-pill.arch-rebuilding { background: rgba(76, 141, 255, 0.15); color: var(--accent); }
+.brain-card.arch-contender { border-left-color: var(--pos); }
+.brain-card.arch-win-now { border-left-color: var(--amber); }
+.brain-card.arch-rebuilding { border-left-color: var(--accent); }
+
 /* Draft targets — "why" chips */
 .why { display: inline-flex; flex-wrap: wrap; gap: 5px; }
 .why-chip { background: var(--panel-2); border: 1px solid var(--border); border-radius: 999px; padding: 1px 8px; font-size: 11px; color: var(--dim); }
