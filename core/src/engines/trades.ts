@@ -150,7 +150,7 @@ function computeNeeds(all: TradePlayer[], slots: Record<string, number>, startab
  * "depth" meaningful: a team has tradeable depth at a position only when it has MORE startable players
  * than base starters — the flex fraction would otherwise smear a fake 0.33 need across everyone.
  */
-function startingSlots(rosterPositions: string[]): Record<string, number> {
+export function startingSlots(rosterPositions: string[]): Record<string, number> {
   const slots: Record<string, number> = {};
   for (const pos of rosterPositions) {
     if (SKILL.includes(pos)) slots[pos] = (slots[pos] ?? 0) + 1;

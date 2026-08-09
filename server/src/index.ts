@@ -10,9 +10,11 @@ import {
   inflateBoard,
   leagueInflation,
   leagueRules,
+  leagueStarterSlots,
   loadAllPlayers,
   loadDraftValue,
   loadScarcity,
+  loadTargetPool,
   loadTiers,
   loadPlayerDetails,
   loadContext,
@@ -87,6 +89,7 @@ app.get(
       multiplier: infl.multiplier,
       valueSource: source,
       sources: worthSources(),
+      starterSlots: leagueStarterSlots(ctx),
       updatedAt: new Date(state?.at ?? Date.now()).toISOString(),
       teams: ctx.registry.map((t) => ({
         rosterId: t.rosterId,
@@ -179,6 +182,14 @@ app.get(
   api(async (req) => {
     const { ctx, data } = await dataForSource(req);
     return loadTiers(ctx, data);
+  }),
+);
+
+app.get(
+  "/api/target-pool",
+  api(async (req) => {
+    const { ctx, data } = await dataForSource(req);
+    return { pool: loadTargetPool(ctx, data) };
   }),
 );
 

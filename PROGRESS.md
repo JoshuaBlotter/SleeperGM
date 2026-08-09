@@ -26,16 +26,25 @@
   `npm run fixtures` (snapshot live data).
 
 ## Next up (in order)
-1. **Draft-prep toolkit (v2)** — specced in **`specs/draft-toolkit.md`**. Build order:
-   ~~#2 historical draft value~~ ✅ → ~~#5 player drilldown~~ ✅ → ~~#3 positional scarcity~~ ✅ →
-   ~~#4 tier board~~ ✅ → **#1 draft target assistant (NEXT — capstone)**. #1 will need the cross-tab
-   kept-set state (lift the Team keeper-sim selection to a shared container) + can reuse tiers (#4),
-   scarcity (#3), archetypes (#5), and the trade-engine need calc. Availability stays a rational-keeper
-   proxy until managers lock.
+1. **Draft-prep toolkit (v2) — COMPLETE ✅** (`specs/draft-toolkit.md`): #2 historical value, #5 drilldown,
+   #3 scarcity, #4 tiers, #1 target assistant all shipped. No queued feature work — awaiting the user's
+   next direction. Standing follow-ups: fix the nightly deploy (commit + Pages→Actions flip), confirm
+   rookie-draft round count, fill the other value-source import slots.
 2. **Fix the nightly deploy** (see "Static hosting" below) — needs a push + one Pages setting flip.
 3. **Confirm rookie-draft round count** — `rookieDraft.rounds` defaults to 1; bump in `league-rules.ts`
    once confirmed (logic already generalizes to N rounds).
 4. Optional: fill the other import slots (cbs/draftsharks/footballguys); tune ADP→$ tau.
+
+## Shipped 2026-08-07 (draft toolkit #1 — CAPSTONE, toolkit complete)
+- **#1 Draft target assistant** (`specs/draft-toolkit.md` §14.5): the **Team page is now Keepers / Targets
+  sub-tabs** sharing a per-team **kept set** (`keptStore`, localStorage, seeded from recommended keepers).
+  Targets ranks the available auction pool against *your live keeper selection*: positional need + value/
+  tier + **QB-stack bonus** (WR/TE on your kept QB's team) + **NFL-team diversity penalty**, each with a
+  "why" chip; "assume everyone available" toggle. Pure `engines/draftTargets.ts` (`computeDraftTargets` +
+  `positionalNeeds`, 4 tests); scoring **mirrored client-side** in `views/Targets.tsx` (static site has no
+  server — kept in sync with the core engine). `loadTargetPool` + `leagueStarterSlots`; baked
+  `bySource[src].targetPool` + `league.starterSlots`; `/api/target-pool?source=`. Verified: check Hurts (QB)
+  on Keepers → DeVonta Smith (PHI WR) rises to #1 on Targets with "stacks with Jalen Hurts".
 
 ## Shipped 2026-08-07 (points source = Sleeper STATS, not matchups) — correctness fix
 - **Root cause the user caught:** weekly/season points came from league **matchups**, which only include

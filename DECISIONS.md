@@ -323,3 +323,15 @@ bonuses; Chase 2025 290 == 290), so there's zero drift for rostered players and 
 for everyone. Count a week only when `gp ≥ 1` (byes/DNPs are real gaps). Functions now take an NFL season
 YEAR, not a leagueId. This improves the drilldown (true logs/archetypes), positional finishes (ranked vs
 all players), and VORP/last-season coverage (free agents included).
+
+## 2026-08-07 — Draft toolkit #1 (target assistant): client-side scoring over a baked pool
+The Targets tab must react to your LIVE keeper selection, and the primary deployment is the static Pages
+site (no server) — so scoring runs client-side. Design: bake a per-source `targetPool` (all skill players
+with worth/tier/owner/projectedKeeper) + `league.starterSlots`; the Team page lifts its keeper-sim
+selection into a shared per-team **kept store** (localStorage, seeded from recommended keepers) that both
+the Keepers and Targets sub-tabs read. `views/Targets.tsx` computes needs from the kept set and scores the
+available pool — a deliberate MIRROR of the tested core `computeDraftTargets`/`positionalNeeds` (documented
+"keep in sync"), same precedent as `recommendation()`. Scoring = value × need-multiplier + QB-stack bonus −
+NFL-team-diversity penalty, with a "why" per pick. Availability = rational-keeper proxy (worth ≥ keeper
+cost ⇒ assumed kept/off-board) with an "assume everyone available" override, since real availability isn't
+known until managers lock keepers. This completes the 5-feature draft-prep toolkit.

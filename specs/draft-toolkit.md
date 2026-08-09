@@ -15,7 +15,7 @@ a dependency chain, so build order matters. Kept the user's original numbering (
 2. **#5 Player drilldown** — full spec §14.2 — ✅ **shipped**
 3. **#3 Positional scarcity map** — full spec §14.3 — ✅ **shipped**
 4. **#4 Tier board builder** — light spec §14.4 — ✅ **shipped**
-5. **#1 Draft target assistant** — light spec §14.5 *(next / capstone; consumes #3/#4/#5 + need engine)*
+5. **#1 Draft target assistant** — light spec §14.5 — ✅ **shipped** — TOOLKIT COMPLETE 🎉
 
 **Shared availability caveat (applies to #1 and #3):** "who's available in the auction" is unreliable
 until managers lock keepers (most haven't streamlined their rosters yet). Every feature that needs
@@ -175,7 +175,17 @@ vs global; manual-override UX.
 
 ---
 
-### 14.5 Draft target assistant (#1 · light · capstone)
+### 14.5 Draft target assistant (#1 · light · capstone) — ✅ SHIPPED 2026-08-07
+Built: pure `engines/draftTargets.ts` (`computeDraftTargets` + `positionalNeeds`, 4 tests); `loadTargetPool`
+(all skill players with worth/tier/owner/projectedKeeper, per source) + `leagueStarterSlots`. Web: the
+**Team page is now Keepers / Targets sub-tabs** sharing a per-team **kept set** (`keptStore`, localStorage,
+seeded from recommended keepers). Targets scores the available pool **client-side** against your live kept
+set (mirror of the core engine — the static site has no server): need (from keepers) + value/tier +
+QB-stack bonus + NFL-team diversity penalty, each with a "why" chip, plus an "assume everyone available"
+toggle. Baked `bySource[src].targetPool` + `league.starterSlots`; `/api/target-pool?source=`.
+Verified live: checking Jalen Hurts (QB) on Keepers → DeVonta Smith (PHI WR) rises to #1 on Targets with
+"stacks with Jalen Hurts". Availability = rational-keeper proxy until keepers lock (toggle to override).
+
 **Problem:** given my roster and my kept set, who should I actually target in the auction/rookie draft?
 
 **Approach (sketch):** a ranked, explained target list for the selected team that scores each *available*

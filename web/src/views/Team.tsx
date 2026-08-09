@@ -3,8 +3,11 @@ import { api, type KeeperLine } from "../api";
 import { Call, ErrorBox, Loading, Surplus, money, signed, useAsync } from "../ui";
 import { clearAllOverrides, clearOverride, recommendation, setOverride, useOverrides } from "../overrides";
 import { openPlayer } from "../playerModalStore";
+import { hasKept, setKept as storeKept, useKept } from "../keptStore";
+import { TargetsView } from "./Targets";
 
 type Line = KeeperLine & { overridden?: boolean };
+type Sub = "keepers" | "targets";
 
 /** An editable Worth cell: click to set a custom value; ↺ resets to the source value. */
 function WorthCell({ line, onSet, onReset }: { line: Line; onSet: (v: number) => void; onReset: () => void }) {
@@ -53,21 +56,12 @@ function WorthCell({ line, onSet, onReset }: { line: Line; onSet: (v: number) =>
   );
 }
 
-export function TeamView({ teamId, source }: { teamId: number | null; source?: string }) {
+function Keepers({ teamId, source }: { teamId: number; source?: string }) {
   const [inflated, setInflated] = useState(false);
-  const s = useAsync(
-    () => (teamId ? api.team(teamId, inflated, source) : Promise.reject(new Error("Pick a team above"))),
-    [teamId, inflated, source],
-  );
+  const s = useAsync(() => api.team(teamId, inflated, source), [teamId, inflated, source]);
   const ov = useOverrides();
+  const [kept, setKept] = useKept(teamId);
 
-  // Interactive keeper simulation: which players are "kept". Seeded from the keep/hold/cut call.
-  const [kept, setKept] = useState<Set<string>>(new Set());
-  useEffect(() => {
-    if (s.data) setKept(new Set(s.data.lines.filter((l) => l.recommendation === "keep").map((l) => l.playerId)));
-  }, [s.data]);
-
-  // Overlay manual overrides: replace worth, recompute surplus + recommendation live. Keep source order.
   const lines: Line[] = useMemo(() => {
     return (s.data?.lines ?? []).map((l): Line => {
       if (ov[l.playerId] == null) return l;
@@ -76,6 +70,14 @@ export function TeamView({ teamId, source }: { teamId: number | null; source?: s
       return { ...l, worth, surplus, recommendation: recommendation(surplus, worth), overridden: true };
     });
   }, [s.data, ov]);
+
+  // First time this team is opened, seed the shared kept set from the recommended keepers.
+  useEffect(() => {
+    if (s.data && !hasKept(teamId)) {
+      storeKept(teamId, new Set(s.data.lines.filter((l) => l.recommendation === "keep").map((l) => l.playerId)));
+    }
+  }, [s.data, teamId]);
+
   const overrideCount = Object.keys(ov).length;
   const budget = s.data?.cap.budget ?? 200;
   const sim = useMemo(() => {
@@ -85,30 +87,24 @@ export function TeamView({ teamId, source }: { teamId: number | null; source?: s
     return { count: chosen.length, used, surplus, left: budget - used };
   }, [lines, kept, budget]);
 
-  if (teamId == null) return <div className="notice">Pick a team from the selector above.</div>;
   if (s.loading) return <Loading what="team" />;
   if (s.error) return <ErrorBox message={s.error} />;
   const d = s.data!;
   const over = sim.left < 0;
 
-  const toggle = (id: string) =>
-    setKept((prev) => {
-      const n = new Set(prev);
-      if (n.has(id)) n.delete(id);
-      else n.add(id);
-      return n;
-    });
+  const toggle = (id: string) => {
+    const n = new Set(kept);
+    if (n.has(id)) n.delete(id);
+    else n.add(id);
+    setKept(n);
+  };
   const allChecked = lines.length > 0 && kept.size === lines.length;
   const toggleAll = () => setKept(allChecked ? new Set() : new Set(lines.map((l) => l.playerId)));
-  const resetRecommended = () =>
-    setKept(new Set(lines.filter((l) => l.recommendation === "keep").map((l) => l.playerId)));
+  const resetRecommended = () => setKept(new Set(lines.filter((l) => l.recommendation === "keep").map((l) => l.playerId)));
 
   return (
-    <section>
-      <div className="head-row">
-        <h2>
-          {d.teamName} <span className="dim">· {d.manager} · {d.record.wins}-{d.record.losses}</span>
-        </h2>
+    <>
+      <div className="needs" style={{ marginTop: 4 }}>
         <label className="toggle">
           <input type="checkbox" checked={inflated} onChange={(e) => setInflated(e.target.checked)} /> Inflation-adjusted
           worth {d.inflated ? `(×${d.multiplier.toFixed(2)})` : ""}
@@ -141,7 +137,7 @@ export function TeamView({ teamId, source }: { teamId: number | null; source?: s
         <button className="refresh" onClick={resetRecommended}>
           Reset to recommended
         </button>
-        <span className="dim">If all kept: {money(d.cap.used)} / ${d.cap.budget}</span>
+        <span className="dim">Your kept set feeds the Targets tab.</span>
         {overrideCount > 0 && (
           <span className="ov-note">
             {overrideCount} custom value{overrideCount === 1 ? "" : "s"} ·{" "}
@@ -200,10 +196,44 @@ export function TeamView({ teamId, source }: { teamId: number | null; source?: s
         </tbody>
       </table>
       <div className="legend">
-        <span className="mark">†</span> from league salary sheet · <span className="mark warn">≈</span> approximate
-        (traded / pre-2022 history) · click a <strong>Worth</strong> to set a custom value (saved in this browser;
-        Inflation &amp; Trades keep the source values until re-snapshot)
+        <span className="mark">†</span> from league salary sheet · <span className="mark warn">≈</span> approximate ·
+        click a <strong>Worth</strong> to set a custom value (saved in this browser). Checked rows = your keepers,
+        shared with the <strong>Targets</strong> tab.
       </div>
+    </>
+  );
+}
+
+export function TeamView({ teamId, source }: { teamId: number | null; source?: string }) {
+  const [sub, setSub] = useState<Sub>("keepers");
+  const meta = useAsync(
+    () => (teamId ? api.team(teamId, false, source) : Promise.reject(new Error("Pick a team above"))),
+    [teamId, source],
+  );
+  if (teamId == null) return <div className="notice">Pick a team from the selector above.</div>;
+
+  return (
+    <section>
+      <div className="head-row">
+        <h2>
+          {meta.data ? (
+            <>
+              {meta.data.teamName} <span className="dim">· {meta.data.manager} · {meta.data.record.wins}-{meta.data.record.losses}</span>
+            </>
+          ) : (
+            "Team"
+          )}
+        </h2>
+        <div className="subtabs">
+          <button className={sub === "keepers" ? "active" : ""} onClick={() => setSub("keepers")}>
+            Keepers
+          </button>
+          <button className={sub === "targets" ? "active" : ""} onClick={() => setSub("targets")}>
+            Targets
+          </button>
+        </div>
+      </div>
+      {sub === "keepers" ? <Keepers teamId={teamId} source={source} /> : <TargetsView teamId={teamId} source={source} />}
     </section>
   );
 }

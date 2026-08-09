@@ -109,6 +109,13 @@ h3 { margin: 22px 0 8px; color: var(--dim); font-size: 13px; text-transform: upp
 .info-card p { margin: 0; color: var(--dim); font-size: 13px; line-height: 1.55; }
 .pill-active { font-size: 10px; text-transform: uppercase; letter-spacing: 0.04em; background: var(--accent-dim); color: var(--accent); padding: 2px 7px; border-radius: 999px; font-weight: 700; }
 
+/* Draft targets — "why" chips */
+.why { display: inline-flex; flex-wrap: wrap; gap: 5px; }
+.why-chip { background: var(--panel-2); border: 1px solid var(--border); border-radius: 999px; padding: 1px 8px; font-size: 11px; color: var(--dim); }
+.why-chip.good { border-color: #2a5c40; color: var(--pos); }
+.why-chip.stack { border-color: #35507d; color: var(--accent); }
+.why-chip.warn { border-color: #6b5a2e; color: var(--amber); }
+
 /* Tier board (Tiers) */
 .tier-list { display: flex; flex-direction: column; gap: 10px; }
 .tier-band { border: 1px solid var(--border); border-radius: 10px; background: var(--panel); padding: 8px 10px; }

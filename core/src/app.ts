@@ -12,6 +12,8 @@ import { computeRookieBoard, rankRookieProspects, type RookieBoard, type RookieP
 import { buildDraftValueReport, type AuctionBuy, type DraftValueReport } from "./engines/draftValue";
 import { computeScarcity, type PositionScarcity, type ScarcityPlayer } from "./engines/scarcity";
 import { bandize, tierize, type Tier, type TierPlayer } from "./engines/tiers";
+import { startingSlots } from "./engines/trades";
+import type { TargetCandidate } from "./engines/draftTargets";
 import { findTeam, loadRegistry } from "./registry/teams";
 import { recommendation, toSurplusLines } from "./engines/surplus";
 import { loadSalarySheet, sheetSalary, sheetSupersededByReacquire } from "./config/salaries";
@@ -552,6 +554,43 @@ export function loadTiers(ctx: Ctx, data: KeeperData): TierBoard {
   const byPosition: Record<string, Tier[]> = {};
   for (const pos of SCARCITY_POSITIONS) byPosition[pos] = tierize(byPos[pos] ?? [], { limit: 24 });
   return { byPosition, overall: bandize(all) }; // per-position = gap tiers; cross-position = fixed $ bands
+}
+
+/**
+ * The full skill-player pool for the draft target assistant (#1): every rostered player + free agent
+ * with worth, tier, current owner, and whether they're a projected keeper (likely off the auction board).
+ * Value-dependent (worth/tier/keeper come from the active source). The web scores this client-side against
+ * your live kept set; see `computeDraftTargets`.
+ */
+export function loadTargetPool(ctx: Ctx, data: KeeperData): TargetCandidate[] {
+  const tiers = loadTiers(ctx, data);
+  const tierOf = new Map<string, number>();
+  for (const pos of Object.keys(tiers.byPosition)) for (const t of tiers.byPosition[pos]!) for (const p of t.players) tierOf.set(p.playerId, t.tier);
+
+  const rosteredIds = new Set<string>();
+  const out: TargetCandidate[] = [];
+  for (const team of ctx.registry) {
+    for (const l of teamSurplusBoard(ctx, data, team)) {
+      rosteredIds.add(l.playerId);
+      if (STREAMER_POSITIONS.has(l.position)) continue; // K/DEF are streamed, not auction targets
+      out.push({
+        playerId: l.playerId, name: l.name, position: l.position, nflTeam: l.nflTeam,
+        worth: l.worth, tier: tierOf.get(l.playerId) ?? null, ownerTeamId: team.rosterId, projectedKeeper: l.surplus > 0,
+      });
+    }
+  }
+  for (const [id, v] of data.values) {
+    if (rosteredIds.has(id)) continue;
+    const pl = ctx.resolve(id);
+    if (!SCARCITY_POSITIONS.includes(pl.position)) continue;
+    out.push({ playerId: id, name: pl.name, position: pl.position, nflTeam: pl.team, worth: v.value, tier: tierOf.get(id) ?? null, ownerTeamId: null, projectedKeeper: false });
+  }
+  return out;
+}
+
+/** Base starter slots per skill position (QB/RB/WR/TE), from the league's roster settings. */
+export function leagueStarterSlots(ctx: Ctx): Record<string, number> {
+  return startingSlots(ctx.rosterPositions);
 }
 
 /**

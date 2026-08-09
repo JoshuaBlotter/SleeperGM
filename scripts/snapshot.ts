@@ -15,12 +15,14 @@ import {
   leagueInflation,
   leagueRules,
   loadAllPlayers,
+  leagueStarterSlots,
   loadContext,
   loadDraftValue,
   loadKeeperData,
   loadPlayerDetails,
   loadRookieBoard,
   loadScarcity,
+  loadTargetPool,
   loadTiers,
   loadTrending,
   outstandingRules,
@@ -68,7 +70,7 @@ function buildForSource(ctx: Ctx, data: KeeperData, source: string) {
   const trades: Record<number, unknown> = {};
   for (const t of ctx.registry) trades[t.rosterId] = computeTrades(allPlayers, t.rosterId, { rosterPositions: ctx.rosterPositions });
 
-  return { multiplier: infl.multiplier, valueSource: source, inflation: infl, teams, trades, draftValue: loadDraftValue(ctx, data), scarcity: loadScarcity(ctx, data), tiers: loadTiers(ctx, data) };
+  return { multiplier: infl.multiplier, valueSource: source, inflation: infl, teams, trades, draftValue: loadDraftValue(ctx, data), scarcity: loadScarcity(ctx, data), tiers: loadTiers(ctx, data), targetPool: loadTargetPool(ctx, data) };
 }
 
 async function main() {
@@ -86,6 +88,7 @@ async function main() {
     capBudget: cap,
     sources,
     defaultSource,
+    starterSlots: leagueStarterSlots(ctx),
     teams: ctx.registry.map((t) => ({
       rosterId: t.rosterId,
       teamName: t.teamName,

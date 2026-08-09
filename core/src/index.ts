@@ -58,6 +58,8 @@ export {
   loadDraftValue,
   loadScarcity,
   loadTiers,
+  loadTargetPool,
+  leagueStarterSlots,
   loadPlayerDetails,
   worthSource,
   worthSources,
@@ -83,6 +85,8 @@ export { buildDraftValueReport } from "./engines/draftValue";
 export type { DraftValueReport, DraftValueRow, AuctionBuy } from "./engines/draftValue";
 export { computeScarcity } from "./engines/scarcity";
 export type { PositionScarcity, ScarcityPlayer } from "./engines/scarcity";
+export { computeDraftTargets, positionalNeeds } from "./engines/draftTargets";
+export type { TargetCandidate, ScoredTarget, TargetInputs } from "./engines/draftTargets";
 export { computeInflation } from "./engines/inflation";
 export type { InflationPlayer, InflationResult, TeamSurplus, DiscountLine } from "./engines/inflation";
 export { computeTrades } from "./engines/trades";

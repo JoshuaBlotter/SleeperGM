@@ -17,8 +17,28 @@ export interface LeagueResp {
   multiplier: number;
   valueSource?: string;
   sources?: string[];
+  starterSlots?: Record<string, number>;
   updatedAt?: string; // ISO — snapshot build time (static) or cache time (server)
   teams: TeamRow[];
+}
+
+// Draft target assistant (#1) — the available pool; the web scores it against your live kept set.
+export interface TargetCandidate {
+  playerId: string;
+  name: string;
+  position: string;
+  nflTeam: string | null;
+  worth: number;
+  tier: number | null;
+  ownerTeamId: number | null;
+  projectedKeeper: boolean;
+}
+export interface ScoredTarget extends TargetCandidate {
+  score: number;
+  reasons: string[];
+  fillsNeed: boolean;
+  stack: boolean;
+  overStacked: boolean;
 }
 
 export interface KeeperLine {
@@ -315,10 +335,11 @@ interface SourceData {
   draftValue: DraftValueReport;
   scarcity: PositionScarcity[];
   tiers: TierBoard;
+  targetPool: TargetCandidate[];
 }
 interface Bundle {
   generatedAt?: string;
-  league: { season: string; capBudget: number; sources: string[]; defaultSource: string; teams: TeamRow[] };
+  league: { season: string; capBudget: number; sources: string[]; defaultSource: string; starterSlots?: Record<string, number>; teams: TeamRow[] };
   bySource: Record<string, SourceData>;
   players: PlayersResp;
   playerDetails: Record<string, PlayerDetail>;
@@ -360,7 +381,7 @@ export const api = {
     const b = await getBundle();
     if (b) {
       const sd = pickSource(b, source);
-      return { season: b.league.season, capBudget: b.league.capBudget, teams: b.league.teams, sources: b.league.sources, valueSource: sd.valueSource, multiplier: sd.multiplier, updatedAt: b.generatedAt };
+      return { season: b.league.season, capBudget: b.league.capBudget, teams: b.league.teams, sources: b.league.sources, starterSlots: b.league.starterSlots, valueSource: sd.valueSource, multiplier: sd.multiplier, updatedAt: b.generatedAt };
     }
     return get<LeagueResp>(`/api/league${qs(source) ? `?${qs(source)}` : ""}`);
   },
@@ -391,6 +412,11 @@ export const api = {
     const b = await getBundle();
     if (b) return pickSource(b, source).tiers;
     return get<TierBoard>(`/api/tiers${qs(source) ? `?${qs(source)}` : ""}`);
+  },
+  targetPool: async (source?: string): Promise<TargetCandidate[]> => {
+    const b = await getBundle();
+    if (b) return pickSource(b, source).targetPool ?? [];
+    return (await get<{ pool: TargetCandidate[] }>(`/api/target-pool${qs(source) ? `?${qs(source)}` : ""}`)).pool;
   },
   trades: async (id: number, partner?: string, source?: string) => {
     const b = await getBundle();

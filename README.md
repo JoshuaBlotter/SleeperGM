@@ -36,8 +36,9 @@ source everywhere — worth, surplus, inflation, and trades all recompute. On th
 client-side (the snapshot bakes each source under `data.json → bySource`); on the server it's the
 `?source=` query param.
 
-Views: **Dashboard**, **Team** (keeper board with an interactive keeper-simulation — check rows to see
-live cap/surplus — plus an inflation-adjusted toggle), **Inflation**, **Trades** (partner selector +
+Views: **Dashboard**, **Team** (**Keepers** = keeper board + interactive sim; **Targets** = draft target
+assistant ranking the auction pool against your kept set — need + value/tier + QB-stacks + diversity),
+**Trades** (partner selector +
 mutual-fit/sharky toggle), **Market** (Inflation · **Scarcity** = per-position kept-vs-available ·
 **Last-year auction** = 2025 cost vs 2026 worth), **Tiers** (gap-clustered draft tiers by position +
 cross-position $ bands), **Rookies** (draft board — order, pick ownership, slot
@@ -45,7 +46,7 @@ cost, capital, prospects), **Players** (All = rostered + relevant free agents; T
 24h), **Rules** (rulebook + value glossary). Click any player name for a **drilldown** (weekly scores,
 consistency grade, archetype).
 API: `/api/league`, `/api/team/:id`, `/api/players`, `/api/trending`, `/api/player-details`, `/api/inflation`,
-`/api/scarcity`, `/api/tiers`, `/api/draft-value`, `/api/trades/:id`, `/api/rookies`, `/api/rules`, `POST /api/refresh`
+`/api/scarcity`, `/api/tiers`, `/api/target-pool`, `/api/draft-value`, `/api/trades/:id`, `/api/rookies`, `/api/rules`, `POST /api/refresh`
 (value-dependent routes accept `?source=<name>`).
 
 ## Commands
