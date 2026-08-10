@@ -357,3 +357,19 @@ nothing is presented as fact it isn't:
   Humor is deterministic (template per dominant tag) — the workflow runtime forbids `Math.random`, and
   determinism keeps snapshots stable. Future ideas (volatility, age cliffs, cap flex, FAAB, trade network,
   regret, power ranking, trend) logged in specs/league-brain.md, not built.
+
+## 2026-08-09 — League Brain v3.1: volatility, age cliffs, regret index
+Three signals added to the Brain, each source-independent (they ride the per-source bake but don't change
+with the value dropdown):
+- **Volatility** reuses the drilldown's `gradePlayer` on last season's weekly log — a rostered skill player
+  counts toward volatility if their archetype is boom-bust or one-week-wonder, requiring ≥8 logged weeks so
+  a thin sample can't label a team. Team volatility = volatile / graded (null if none graded).
+- **Age cliffs** count rostered RBs with `years_exp ≥ 5` (~age 27+). A blunt but honest proxy (Sleeper gives
+  experience, not birthdate); it's a rebuild-vs-win-now nuance, surfaced as a tag/award, NOT folded into the
+  contender index (didn't want age double-counted — the index already has a small veteran nudge).
+- **Regret index** = for last season's NON-keeper auction buys (attributed to the buyer via draft
+  `picked_by`, not current owner), Σ max(0, paid − VORP-worth-from-actual-production). VORP worth comes from
+  `loadValues(ctx,"vorp",data.points)` regardless of the active source, so "deserved" = what last season's
+  real points were worth in this league's auction economy. Paid pre-season vs earned = realized remorse, not
+  a projection. The floor-y nature of auction VORP (only ~starters clear $1) means an expensive buy who
+  finished outside startable range reads as a near-total bust — intended, and the blurb states the earned $.

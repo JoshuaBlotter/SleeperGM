@@ -327,6 +327,10 @@ export interface TeamProfile {
   tradeCount: number;
   rookiePicks: number;
   avgYearsExp: number | null;
+  volatility: number | null;
+  agingRbCount: number;
+  regret: number;
+  biggestBust: { name: string; paid: number; worth: number } | null;
   contenderIndex: number;
   archetype: BrainArchetype;
   tags: string[];

@@ -17,6 +17,10 @@ export interface TeamBrainInput {
   tradeCount: number; // completed trades across the chain
   rookiePicks: number; // upcoming rookie picks owned
   avgYearsExp: number | null; // mean years_exp of rostered skill players (youth = rebuild)
+  volatility: number | null; // 0..1 share of rostered skill players with a boom-bust profile (null if none graded)
+  agingRbCount: number; // rostered RBs at/over the age-cliff experience threshold
+  regret: number; // Σ overpay $ on last season's auction buys (paid − actual production value; ≥ 0)
+  biggestBust: { name: string; paid: number; worth: number } | null; // the single worst last-season buy
 }
 
 export type Archetype = "contender" | "win-now" | "balanced" | "retooling" | "rebuilding";
@@ -122,13 +126,18 @@ export function computeLeagueBrain(teams: TeamBrainInput[], opts: { spendSeasons
   const botCut = third(indices, 1 / 3); // <= this = bottom third
   const rookieMedian = [...teams.map((t) => t.rookiePicks)].sort((a, b) => a - b)[Math.floor(teams.length / 2)] ?? 0;
 
-  // Trade/keeper leaderboards for tag thresholds.
+  // Trade/keeper/behavioral leaderboards for tag thresholds.
   const tradeRank = [...teams].sort((a, b) => b.tradeCount - a.tradeCount).map((t) => t.rosterId);
   const surplusRank = [...teams].sort((a, b) => b.keeperSurplus - a.keeperSurplus).map((t) => t.rosterId);
+  const regretRank = [...teams].sort((a, b) => b.regret - a.regret).map((t) => t.rosterId);
+  const volatilityRank = [...teams]
+    .filter((t) => t.volatility !== null)
+    .sort((a, b) => (b.volatility ?? 0) - (a.volatility ?? 0))
+    .map((t) => t.rosterId);
 
   const profiles: TeamProfile[] = withIndex.map(({ t, index, share }) => {
     const archetype = classify(t, index, { topCut, botCut, aMin, aMax, rookieMedian });
-    const tags = tagsFor(t, share, { posMean, posSd, spendShareMean, tradeRank, surplusRank, rookieMean });
+    const tags = tagsFor(t, share, { posMean, posSd, spendShareMean, tradeRank, surplusRank, rookieMean, regretRank, volatilityRank });
     return { ...t, spendShare: share, contenderIndex: index, archetype, tags, scouting: scoutingLine(t, share, tags, archetype) };
   });
   profiles.sort((a, b) => b.contenderIndex - a.contenderIndex);
@@ -167,6 +176,8 @@ function tagsFor(
     tradeRank: number[];
     surplusRank: number[];
     rookieMean: number;
+    regretRank: number[];
+    volatilityRank: number[];
   },
 ): string[] {
   const tags: string[] = [];
@@ -192,6 +203,14 @@ function tagsFor(
   if (ctx.tradeRank.slice(0, 2).includes(t.rosterId) && t.tradeCount > 0) tags.push("wheeler-dealer");
   if (ctx.surplusRank.slice(0, 3).includes(t.rosterId) && t.keeperSurplus > 0) tags.push("keeper hoard");
   if (t.rookiePicks >= ctx.rookieMean + 1) tags.push("draft-capital baron");
+
+  // Behavioral / roster-shape signals (v3.1).
+  if (t.agingRbCount >= 2) tags.push("aging RB corps");
+  if (t.volatility !== null) {
+    if (ctx.volatilityRank.slice(0, 2).includes(t.rosterId) && t.volatility >= 0.4) tags.push("boom-or-bust roster");
+    else if (t.volatility <= 0.15) tags.push("steady floor");
+  }
+  if (ctx.regretRank.slice(0, 2).includes(t.rosterId) && t.regret >= 15) tags.push("last year's overpayer");
 
   return tags;
 }
@@ -230,6 +249,16 @@ function scoutingLine(t: TeamBrainInput, share: Record<string, number>, tags: st
       return `Sitting on cheap studs (${Math.round(t.keeperSurplus)} in keeper surplus). The rich get richer.`;
     case "draft-capital baron":
       return `Stockpiling ${t.rookiePicks} rookie picks — clearly playing a longer game than the rest of us.`;
+    case "aging RB corps":
+      return `Running back room is ${t.agingRbCount}-deep in veterans — hope that cliff is more of a gentle slope.`;
+    case "boom-or-bust roster":
+      return `Rosters ceilings, not floors — ${pct(t.volatility ?? 0)} of the squad is a weekly coin flip.`;
+    case "steady floor":
+      return `Nothing flashy, nothing scary — just a lineup that quietly posts its number every week.`;
+    case "last year's overpayer":
+      return t.biggestBust
+        ? `Still paying off last year's auction — ${t.biggestBust.name} cost $${t.biggestBust.paid}, earned like $${t.biggestBust.worth}.`
+        : `Last year's auction receipts have not aged well.`;
     default:
       break;
   }
@@ -290,6 +319,22 @@ function buildSuperlatives(profiles: TeamProfile[]): Superlative[] {
 
   const richest = argmax((p) => p.rosterValue);
   push("richest-roster", "👑", "Most Valuable Roster", richest, `$${Math.round(richest?.rosterValue ?? 0)} of talent`, `The most raw value on paper — now they just have to win with it.`);
+
+  const volatile = argmax((p) => p.volatility ?? 0, (p) => p.volatility !== null && (p.volatility ?? 0) > 0);
+  push("boom-bust", "🎢", "Boom-or-Bust Roster", volatile, `${pct(volatile?.volatility ?? 0)} coin-flips`, `Highest ceiling in the league, and the ulcers to match.`);
+
+  const geriatric = argmax((p) => p.agingRbCount, (p) => p.agingRbCount >= 2);
+  push("aging-rbs", "👴", "Geriatric Backfield", geriatric, `${geriatric?.agingRbCount ?? 0} veteran RBs`, `The running backs are experienced. Very experienced. Load-management experienced.`);
+
+  const remorse = argmax((p) => p.regret, (p) => p.regret >= 15);
+  push(
+    "buyers-remorse",
+    "🪦",
+    "Buyer's Remorse",
+    remorse,
+    remorse?.biggestBust ? `$${remorse.biggestBust.paid} → $${remorse.biggestBust.worth} on ${remorse.biggestBust.name}` : `$${Math.round(remorse?.regret ?? 0)} overpaid`,
+    `Last year's auction sprees are still echoing. The receipts do not spark joy.`,
+  );
 
   const contender = profiles[0]; // sorted by index desc
   push("contender", "🏆", "Prime Contender", contender, `${contender?.contenderIndex ?? 0}/100 index`, `Best-positioned to win it all this season. No pressure.`);

@@ -198,18 +198,29 @@ like tiers/scarcity/targets. Assembles the `TeamBrainInput[]`:
 - superlatives: the arg-max team wins each award; awards with no data are omitted.
 - humor line is present and references the driving number (no RNG; deterministic per input).
 
-## Future ideas (answering "what else could make the brain more useful") — NOT in v3
+## v3.1 additions — SHIPPED 2026-08-09
 
-Logged so they aren't lost; pick up later if wanted:
+Three of the "future ideas" below, built and wired end-to-end (engine input fields + orchestration +
+per-source bake + CLI/web). All three are **source-independent** (they don't move with the value dropdown),
+but ride along in the per-source bake for simplicity.
 
-- **Roster volatility** — average player archetype (boom-bust share) per team, from the drilldown grades:
-  "high-ceiling, high-variance" vs "steady floor." We already compute per-player archetypes.
-- **Positional age cliffs** — RB age exposure (years_exp of the RB corps): flags a win-now team whose
-  studs are about to fall off.
+- **Roster volatility** (`volatility: 0..1 | null`) — share of a team's rostered skill players whose
+  last-season game log grades to a **boom-bust or one-week-wonder** archetype (needs ≥8 weeks logged to
+  count; null if none qualify). Tags: **boom-or-bust roster** (top-2 and ≥0.40) / **steady floor** (≤0.15).
+  Award 🎢 **Boom-or-Bust Roster**. Reuses `gradePlayer` on `seasonWeeklyPoints` — no new grading logic.
+- **Positional age cliffs** (`agingRbCount`) — rostered RBs with `years_exp ≥ 5` (~age 27+). Tag **aging
+  RB corps** (≥2); award 👴 **Geriatric Backfield**. A rebuild-vs-win-now nuance the index alone misses.
+- **Regret index** (`regret`, `biggestBust`) — last season's **auction buys** (non-keeper, keyed by buyer
+  via `picked_by`) priced against their **VORP worth from actual production** (`loadValues(ctx,"vorp",…)`):
+  `regret = Σ max(0, paid − deserved)`. Tag **last year's overpayer** (top-2, ≥$15); award 🪦 **Buyer's
+  Remorse**, blurb names the single worst buy (e.g. "$28 → $1 on DJ Moore"). Realized remorse — paid
+  pre-season vs earned — not a forward projection.
+
+## Future ideas (still on the shelf) — NOT built
+
 - **Cap health / flexibility** — committed keeper $ vs cap, and how much dry powder for the auction.
 - **FAAB aggressiveness** — from the FAAB index (`buildFaabIndex`): who bids big on waivers.
 - **Trade network** — who trades with whom (partners), not just counts — a mini rivalry map.
-- **Regret index** — last year's auction buys that busted (we already have draft-value deltas per team).
 - **Power ranking** — blend contenderIndex with record for an offseason power poll.
 - **Trend over time** — is a manager trending up or down across seasons (value/record trajectory)?
 ```

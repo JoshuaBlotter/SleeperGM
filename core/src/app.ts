@@ -642,6 +642,9 @@ export async function rookieProspects(ctx: Ctx, values: Map<string, ValueLine>, 
 }
 
 const BRAIN_POSITIONS = ["QB", "RB", "WR", "TE"];
+const RB_AGE_CLIFF = 5; // years_exp at/over which an RB is "cliff risk" (roughly age 27+)
+const MIN_GRADE_GAMES = 8; // weeks of log needed before a player's boom/bust profile is trustworthy
+const VOLATILE_ARCHETYPES = new Set(["boom-bust", "one-week-wonder"]);
 
 /**
  * League Brain (v3): per-team profile (contender index + archetype + tendency tags + scouting line) and
@@ -651,11 +654,14 @@ const BRAIN_POSITIONS = ["QB", "RB", "WR", "TE"];
  */
 export async function loadLeagueBrain(ctx: Ctx, data: KeeperData): Promise<LeagueBrain> {
   const players = (await sleeper.getPlayers()) ?? {};
-  const [spend, tradeCounts, board, lastWins] = await Promise.all([
+  const [spend, tradeCounts, board, lastWins, vorp, weekly, lastBuys] = await Promise.all([
     buildDraftSpendByOwner(ctx),
     buildTradeCounts(ctx),
     loadRookieBoard(ctx),
     lastSeasonWins(ctx),
+    loadValues(ctx, "vorp", data.points), // "deserved" worth from actual production (for the regret index)
+    loadLastSeasonWeekly(ctx), // per-player game logs (for roster volatility)
+    buildLastSeasonBuys(ctx), // last season's auction buys, keyed by buyer (for the regret index)
   ]);
   const rookieByRoster = new Map(board.byTeam.map((b) => [b.rosterId, b.picks.length] as const));
 
@@ -665,6 +671,9 @@ export async function loadLeagueBrain(ctx: Ctx, data: KeeperData): Promise<Leagu
     const posCounts: Record<string, number> = { QB: 0, RB: 0, WR: 0, TE: 0 };
     let ageSum = 0;
     let ageN = 0;
+    let volatileN = 0;
+    let gradedN = 0;
+    let agingRbCount = 0;
     for (const l of teamSurplusBoard(ctx, data, t)) {
       if (STREAMER_POSITIONS.has(l.position)) continue; // K/DEF are streamed, not roster identity
       if (l.position in posCounts) posCounts[l.position]! += 1;
@@ -674,8 +683,28 @@ export async function loadLeagueBrain(ctx: Ctx, data: KeeperData): Promise<Leagu
       if (typeof exp === "number") {
         ageSum += exp;
         ageN += 1;
+        if (l.position === "RB" && exp >= RB_AGE_CLIFF) agingRbCount += 1;
+      }
+      const log = weekly.get(l.playerId);
+      if (log && log.length >= MIN_GRADE_GAMES) {
+        gradedN += 1;
+        if (VOLATILE_ARCHETYPES.has(gradePlayer(log, l.position).archetype)) volatileN += 1;
       }
     }
+
+    // Regret: last season's auction buys, paid vs "deserved" (VORP) worth from actual production.
+    let regret = 0;
+    let biggestBust: { name: string; paid: number; worth: number } | null = null;
+    for (const buy of (t.ownerUserId && lastBuys.get(t.ownerUserId)) || []) {
+      const worth = vorp.get(buy.playerId)?.value ?? 0;
+      const overpay = buy.cost - worth;
+      if (overpay <= 0) continue;
+      regret += overpay;
+      if (!biggestBust || overpay > biggestBust.paid - biggestBust.worth) {
+        biggestBust = { name: ctx.resolve(buy.playerId).name, paid: buy.cost, worth: Math.round(worth) };
+      }
+    }
+
     return {
       rosterId: t.rosterId,
       teamName: t.teamName,
@@ -688,6 +717,10 @@ export async function loadLeagueBrain(ctx: Ctx, data: KeeperData): Promise<Leagu
       tradeCount: tradeCounts.get(t.rosterId) ?? 0,
       rookiePicks: rookieByRoster.get(t.rosterId) ?? 0,
       avgYearsExp: ageN ? Math.round((ageSum / ageN) * 10) / 10 : null,
+      volatility: gradedN ? Math.round((volatileN / gradedN) * 100) / 100 : null,
+      agingRbCount,
+      regret: Math.round(regret),
+      biggestBust,
     };
   });
   return computeLeagueBrain(inputs, { spendSeasons: spend.seasons });
@@ -719,6 +752,28 @@ async function buildDraftSpendByOwner(ctx: Ctx): Promise<{ byOwner: Map<string, 
     if (sawAuction) seasons += 1;
   }
   return { byOwner, seasons };
+}
+
+/** Last completed season's auction buys (non-keeper), keyed by the buyer's user_id — for the regret index. */
+async function buildLastSeasonBuys(ctx: Ctx): Promise<Map<string, { playerId: string; cost: number }[]>> {
+  const out = new Map<string, { playerId: string; cost: number }[]>();
+  const prev = ctx.chain.find((c) => c.leagueId !== ctx.leagueId) ?? ctx.chain[0];
+  if (!prev) return out;
+  const drafts = (await sleeper.getDrafts(prev.leagueId)) ?? [];
+  for (const d of drafts) {
+    const picks = (await sleeper.getDraftPicks(d.draft_id)) ?? [];
+    for (const p of picks) {
+      if (p.is_keeper === true) continue;
+      const raw = p.metadata?.amount;
+      if (raw === undefined || raw === "") continue;
+      const amt = Number(raw);
+      if (!Number.isFinite(amt) || amt <= 0 || !p.picked_by || !p.player_id) continue;
+      const arr = out.get(p.picked_by) ?? [];
+      arr.push({ playerId: p.player_id, cost: amt });
+      out.set(p.picked_by, arr);
+    }
+  }
+  return out;
 }
 
 /** Completed trades each roster has been party to, across the league's history (roster_id is stable here). */

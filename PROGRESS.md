@@ -34,9 +34,14 @@
     vets), with a confidence note ("pooled over N auction seasons"). Verified live: Blotter trotters =
     wheeler-dealer (13 trades); KrespoKreme = prime contender (87) + most valuable ($307); Kupp my ballz =
     deepest rebuild (10) + draft-capital baron (3 picks). `npm run check` green — **89 tests** (was 83).
-- **Future brain ideas logged** (not built): roster volatility from player archetypes, positional age
-  cliffs, cap flexibility, FAAB aggressiveness, trade network, regret index, power ranking, trend-over-time.
-  See `specs/league-brain.md` "Future ideas".
+- **Brain v3.1 — 3 more signals (2026-08-09):** roster **volatility** (share of rostered skill players
+  grading boom-bust/one-week-wonder → 🎢 Boom-or-Bust award + boom-or-bust/steady-floor tags), positional
+  **age cliffs** (rostered RBs with `years_exp ≥ 5` → 👴 Geriatric Backfield + "aging RB corps" tag), and a
+  **regret index** (last season's auction buys priced vs VORP-of-actual-production → 🪦 Buyer's Remorse +
+  "last year's overpayer" tag; names the worst buy). All source-independent; 91 tests green. Live: Jahmyr =
+  boom-or-bust (47%), Sunday Scaries = 4 veteran RBs, Jarhead = $28→$1 on DJ Moore.
+- **Future brain ideas still on the shelf** (not built): cap flexibility, FAAB aggressiveness, trade
+  network map, power ranking, trend-over-time. See `specs/league-brain.md` "Future ideas".
 
 ## Done
 - Planning docs: `spec.md` (v0.2), `diagrams.md`, `tasks.md`.
