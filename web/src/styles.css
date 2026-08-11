@@ -67,6 +67,7 @@
   --control-h-lg: 52px;  /* tab bar item, sheet header, top bar */
   --control-h-sm: 36px;  /* desktop only, or nested inside a 44px hit area */
   --row-h: 64px;         /* row card minimum */
+  --ctx-h: 61px;         /* context strip — fixed so a list bar can stick beneath it */
   --sim-h: 96px;         /* keeper sim bar — the app pads by this much when it is shown */
   --safe-b: env(safe-area-inset-bottom);
 }
@@ -137,6 +138,9 @@ code { background: var(--surface-2); padding: 1px var(--space-2); border-radius:
   display: flex;
   align-items: center;
   gap: var(--space-2);
+  /* Height is fixed rather than content-driven: a sticky list bar underneath needs a
+     constant offset, and the strip's contents differ per tab. */
+  min-height: var(--ctx-h);
   padding: var(--space-2) 0;
   background: var(--bg);
   border-bottom: 1px solid var(--line);
@@ -603,6 +607,41 @@ table.grid tr.kept:hover td { background: rgba(76, 141, 255, 0.12); }
 .sim-bar.is-over .sim-fig.cap .v { color: var(--danger); }
 .sim-meta { flex: 1 1 100%; color: var(--text-muted); font-size: var(--text-caption); line-height: var(--lh-caption); }
 .sim-spacer { height: var(--sim-h); }
+
+/* ---------- List bar — the mobile head of a row list ----------
+   One row of controls (search + everything else behind a Filters sheet) plus a status
+   line, stuck under the context strip so the result count and the sort stay on screen. */
+.list-bar {
+  position: sticky;
+  top: calc(var(--control-h-lg) + var(--ctx-h));
+  z-index: 8;
+  background: var(--bg);
+  padding: var(--space-2) 0;
+}
+.list-bar-row { display: flex; align-items: center; gap: var(--space-2); }
+.list-bar-row input { flex: 1 1 auto; min-width: 0; }
+.list-bar-row .btn { flex: none; }
+.filter-count {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 20px; height: 20px; border-radius: var(--radius-full);
+  background: var(--accent); color: var(--bg);
+  font-size: var(--text-micro); font-weight: var(--weight-bold);
+}
+.list-status {
+  display: flex; align-items: center; gap: var(--space-1);
+  margin-top: var(--space-2); color: var(--text-muted);
+  font-size: var(--text-caption); line-height: var(--lh-caption);
+}
+
+/* Sheet form: a labelled control, then a full-bleed option list, then the actions. */
+.field { display: block; margin-bottom: var(--space-3); }
+.field-k { display: block; margin-bottom: var(--space-1); color: var(--text-muted); font-size: var(--text-micro); line-height: var(--lh-micro); text-transform: uppercase; letter-spacing: var(--ls-micro); }
+.field select, .field input { width: 100%; }
+.sheet-section-h { margin: var(--space-5) 0 var(--space-2); color: var(--text-muted); font-size: var(--text-micro); line-height: var(--lh-micro); text-transform: uppercase; letter-spacing: var(--ls-micro); font-weight: var(--weight-bold); }
+.sheet-rows { display: flex; flex-direction: column; margin: 0 calc(var(--space-4) * -1); }
+.sheet-actions { display: flex; flex-direction: column; gap: var(--space-2); margin-top: var(--space-5); }
+
+.lede { margin-top: 0; }
 
 /* data page filters + sortable headers */
 .filters { display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap; margin: var(--space-2) 0 var(--space-1); }

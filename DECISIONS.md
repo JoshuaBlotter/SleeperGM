@@ -2,6 +2,27 @@
 
 Non-obvious choices and their rationale, so we don't re-litigate them. Newest at top.
 
+## 2026-08-11 — Task 6.1 (Players): three calls the handoff left open
+**The trailing metric follows the sort key.** 6.1 says "rows with last-season points as the trailing
+metric", but the Row spec says the trailing zone is "the metric the screen is *about*" — and with sort
+moved off the table headers into a sheet, a fixed metric would leave you sorting by keeper cost while
+every row shouts last-season points. So the metric is whatever you sorted by (points is the default, so
+the literal reading still holds on first paint), and the two it displaces move into the expander. This
+also does most of the work for "sort direction is clear without a table header".
+
+**Trending leads with adds, not points.** Same principle: the list is *ranked* by adds. Points stay in
+the expander.
+
+**The context strip is now a fixed 61px (`--ctx-h`).** `.list-bar` sticks at
+`calc(--control-h-lg + --ctx-h)`, and a content-driven strip changes height per tab (44px picker vs a
+line of `ctx-meta` text), which would leave rows sliding through a gap. Pinning it costs nothing today —
+every tab that shows a picker already measures 61px — and buys a constant offset for any future
+sticky element. Only below 760px does anything stick to it.
+
+**Native `<select>` inside the filters sheet.** Task 4.3 replaced native pickers with sheets, but that
+was about the context strip. Nesting a picker sheet inside a filter sheet means two focus traps and two
+scroll locks; the selects are already 44px/16px and keyboard-accessible, so they stay.
+
 ## 2026-08-06 — Resilience+perf: timeout, circuit breaker, request coalescing, permanent history cache
 `team`/`keepers` hung under throttling (no fetch timeout) and re-pulled immutable history every run.
 Fixes: (1) per-request AbortController timeout (7s) so hangs fail fast; (2) module-level circuit breaker

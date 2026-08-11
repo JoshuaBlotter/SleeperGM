@@ -14,9 +14,23 @@
   (A.J. Brown $45, Pickens $35, Hurts $29, Achane $25, McConkey $16). Sheet salaries show `†`; players
   not in the sheet fall back to computed (`≈`).
 
+## Shipped 2026-08-11 (mobile design system, task 6.1)
+- **6.1 Players**: All + Trending render as rows below 760px. The four filters collapse to one sticky
+  row — a search field plus a **Filters** button carrying an active-filter count — over a status line
+  (`N players · <sort> ▼`) that keeps the count and the sort direction on screen while you scroll.
+  Owner / NFL / position and the sort options live in a `Sheet`; the sortable table headers are gone on
+  mobile. The trailing metric **follows the sort key** (last pts / keep $ / in league), so the number
+  you sorted by is the number the row leads with, and the other two sit in the expander. Trending leads
+  with adds. Empty results get a notice instead of an empty bordered box. Desktop is byte-for-byte the
+  old table + `.filters` row.
+- New: `.list-bar` (sticky under the context strip), `.field`/`.sheet-rows`/`.sheet-actions` for sheet
+  forms, `--ctx-h`. The context strip is now a fixed 61px so the list bar has a constant offset to
+  stick to.
+- **Next open task: 6.2 Market.**
+
 ## Shipped 2026-08-10 (mobile design system, PRs 1–5 of 7)
-Rollout plan: `design_handoff_mobile_design_system/TASKS.md` (7 PRs, 23 tasks). **PRs 1–5 are on `main`;
-PRs 6 and 7 are not started.** Nothing in `core/` changed — this is `web/` only.
+Rollout plan: `design_handoff_mobile_design_system/TASKS.md` (7 PRs, 23 tasks). **PRs 1–5 and task 6.1
+are on `main`; 6.2–6.4 and PR 7 are not started.** Nothing in `core/` changed — this is `web/` only.
 - **PR1 tokens / PR2 controls** (earlier session): the `:root` token set, mobile-first CSS with one
   760px breakpoint, and `.btn` / `.seg` / `.input` / `.chip` collapsing ~20 ad-hoc treatments.
 - **PR3 shell**: fixed bottom tab bar (Home · Team · Market · Players · More; Tiers/Trades/Rookies/
