@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+  body { margin: 0; background: #0b0e12; -webkit-text-size-adjust: 100%; }
+  a { color: #4c8dff; text-decoration: none; }
+  a:hover { color: #7fb0ff; text-decoration: underline; }
+</style>
+</helmet>
+
+<div style="background:#0b0e12;color:#e6e9ee;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;font-size:15px;line-height:1.55;min-height:100vh;padding:0 0 72px">
+
+  <div style="max-width:760px;margin:0 auto;padding:0 18px">
+
+    <div style="padding:32px 0 20px;border-bottom:1px solid #2a3039">
+      <div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:#8b95a3">Phase 1 · Audit</div>
+      <h1 style="margin:8px 0 10px;font-size:30px;line-height:1.15;font-weight:700;letter-spacing:-0.02em">Sleeper GM — UI inventory</h1>
+      <p style="margin:0;color:#8b95a3;font-size:14px;text-wrap:pretty">Everything below is read off <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:#c3cad4">web/src/styles.css</span> (17.6&nbsp;KB, 1 file, no component styles) plus the 9 view files, <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:#c3cad4">App.tsx</span>, <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:#c3cad4">PlayerModal.tsx</span> and <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:#c3cad4">ui.tsx</span>. No inference — every value is in the repo today.</p>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:20px 0 8px">
+      <div style="background:#171b22;border:1px solid #2a3039;border-radius:12px;padding:12px 14px">
+        <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.05em;color:#8b95a3">Distinct colors</div>
+        <div style="font-size:26px;font-weight:700;margin-top:2px">28</div>
+        <div style="font-size:12px;color:#8b95a3">11 tokens · 17 raw</div>
+      </div>
+      <div style="background:#171b22;border:1px solid #2a3039;border-radius:12px;padding:12px 14px">
+        <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.05em;color:#8b95a3">Font sizes</div>
+        <div style="font-size:26px;font-weight:700;margin-top:2px">14</div>
+        <div style="font-size:12px;color:#8b95a3">9px → 30px, no scale</div>
+      </div>
+      <div style="background:#171b22;border:1px solid #2a3039;border-radius:12px;padding:12px 14px">
+        <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.05em;color:#8b95a3">Spacing values</div>
+        <div style="font-size:26px;font-weight:700;margin-top:2px">21</div>
+        <div style="font-size:12px;color:#8b95a3">every int 1–10 in use</div>
+      </div>
+      <div style="background:#171b22;border:1px solid #2a3039;border-radius:12px;padding:12px 14px">
+        <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.05em;color:#8b95a3">Corner radii</div>
+        <div style="font-size:26px;font-weight:700;margin-top:2px">9</div>
+        <div style="font-size:12px;color:#8b95a3">3·4·5·6·8·10·12·14·999</div>
+      </div>
+      <div style="background:#171b22;border:1px solid #2a3039;border-radius:12px;padding:12px 14px">
+        <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.05em;color:#8b95a3">Button treatments</div>
+        <div style="font-size:26px;font-weight:700;margin-top:2px">10</div>
+        <div style="font-size:12px;color:#8b95a3">3 are the same toggle</div>
+      </div>
+      <div style="background:#171b22;border:1px solid #2a3039;border-radius:12px;padding:12px 14px">
+        <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.05em;color:#8b95a3">Pill / chip styles</div>
+        <div style="font-size:26px;font-weight:700;margin-top:2px">10</div>
+        <div style="font-size:12px;color:#8b95a3">6 different paddings</div>
+      </div>
+      <div style="background:#171b22;border:1px solid #6b2e2e;border-radius:12px;padding:12px 14px">
+        <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.05em;color:#8b95a3">Targets ≥ 44px</div>
+        <div style="font-size:26px;font-weight:700;margin-top:2px;color:#ff6b6b">0</div>
+        <div style="font-size:12px;color:#8b95a3">tallest control = 37px</div>
+      </div>
+      <div style="background:#171b22;border:1px solid #6b2e2e;border-radius:12px;padding:12px 14px">
+        <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.05em;color:#8b95a3">Focus styles</div>
+        <div style="font-size:26px;font-weight:700;margin-top:2px;color:#ff6b6b">0</div>
+        <div style="font-size:12px;color:#8b95a3">only :hover exists</div>
+      </div>
+    </div>
+
+    <!-- 01 COLOR -->
+    <h2 style="margin:36px 0 4px;font-size:13px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:0.1em;text-transform:uppercase;color:#4c8dff">01 — Color</h2>
+    <h3 style="margin:0 0 14px;font-size:21px;font-weight:650;letter-spacing:-0.01em">11 tokens, then 17 colors that escaped them</h3>
+
+    <div style="font-size:12px;text-transform:uppercase;letter-spacing:0.05em;color:#8b95a3;margin:0 0 8px">Declared in <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;text-transform:none;letter-spacing:0">:root</span></div>
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-bottom:20px">
+      <div style="display:flex;align-items:center;gap:10px;background:#171b22;border:1px solid #2a3039;border-radius:10px;padding:8px 10px"><div style="width:26px;height:26px;border-radius:6px;background:#0e1116;border:1px solid #3a4250;flex:none"></div><div style="min-width:0"><div style="font-size:13px;font-weight:600">--bg</div><div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#8b95a3">#0e1116</div></div></div>
+      <div style="display:flex;align-items:center;gap:10px;background:#171b22;border:1px solid #2a3039;border-radius:10px;padding:8px 10px"><div style="width:26px;height:26px;border-radius:6px;background:#171b22;border:1px solid #3a4250;flex:none"></div><div style="min-width:0"><div style="font-size:13px;font-weight:600">--panel</div><div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#8b95a3">#171b22</div></div></div>
+      <div style="display:flex;align-items:center;gap:10px;background:#171b22;border:1px solid #2a3039;border-radius:10px;padding:8px 10px"><div style="width:26px;height:26px;border-radius:6px;background:#1e242d;border:1px solid #3a4250;flex:none"></div><div style="min-width:0"><div style="font-size:13px;font-weight:600">--panel-2</div><div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#8b95a3">#1e242d</div></div></div>
+      <div style="display:flex;align-items:center;gap:10px;background:#171b22;border:1px solid #2a3039;border-radius:10px;padding:8px 10px"><div style="width:26px;height:26px;border-radius:6px;background:#2a3039;border:1px solid #3a4250;flex:none"></div><div style="min-width:0"><div style="font-size:13px;font-weight:600">--border</div><div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#8b95a3">#2a3039</div></div></div>
+      <div style="display:flex;align-items:center;gap:10px;background:#171b22;border:1px solid #2a3039;border-radius:10px;padding:8px 10px"><div style="width:26px;height:26px;border-radius:6px;background:#e6e9ee;flex:none"></div><div style="min-width:0"><div style="font-size:13px;font-weight:600">--text</div><div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#8b95a3">#e6e9ee</div></div></div>
+      <div style="display:flex;align-items:center;gap:10px;background:#171b22;border:1px solid #2a3039;border-radius:10px;padding:8px 10px"><div style="width:26px;height:26px;border-radius:6px;background:#8b95a3;flex:none"></div><div style="min-width:0"><div style="font-size:13px;font-weight:600">--dim</div><div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#8b95a3">#8b95a3</div></div></div>
+      <div style="display:flex;align-items:center;gap:10px;background:#171b22;border:1px solid #2a3039;border-radius:10px;padding:8px 10px"><div style="width:26px;height:26px;border-radius:6px;background:#4c8dff;flex:none"></div><div style="min-width:0"><div style="font-size:13px;font-weight:600">--accent</div><div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#8b95a3">#4c8dff</div></div></div>
+      <div style="display:flex;align-items:center;gap:10px;background:#171b22;border:1px solid #2a3039;border-radius:10px;padding:8px 10px"><div style="width:26px;height:26px;border-radius:6px;background:#23324d;flex:none"></div><div style="min-width:0"><div style="font-size:13px;font-weight:600">--accent-dim</div><div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#8b95a3">#23324d</div></div></div>
+      <div style="display:flex;align-items:center;gap:10px;background:#171b22;border:1px solid #2a3039;border-radius:10px;padding:8px 10px"><div style="width:26px;height:26px;border-radius:6px;background:#37d17a;flex:none"></div><div style="min-width:0"><div style="font-size:13px;font-weight:600">--pos</div><div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#8b95a3">#37d17a</div></div></div>
+      <div style="display:flex;align-items:center;gap:10px;background:#171b22;border:1px solid #2a3039;border-radius:10px;padding:8px 10px"><div style="width:26px;height:26px;border-radius:6px;background:#ff6b6b;flex:none"></div><div style="min-width:0"><div style="font-size:13px;font-weight:600">--neg</div><div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#8b95a3">#ff6b6b</div></div></div>
+      <div style="display:flex;align-items:center;gap:10px;background:#171b22;border:1px solid #2a3039;border-radius:10px;padding:8px 10px"><div style="width:26px;height:26px;border-radius:6px;background:#ffb454;flex:none"></div><div style="min-width:0"><div style="font-size:13px;font-weight:600">--amber</div><div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#8b95a3">#ffb454</div></div></div>
+    </div>
+
+    <div style="font-size:12px;text-transform:uppercase;letter-spacing:0.05em;color:#8b95a3;margin:0 0 8px">Hard-coded outside the token set</div>
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-bottom:14px">
+      <div style="display:flex;align-items:center;gap:10px;background:#171b22;border:1px solid #6b5a2e;border-radius:10px;padding:8px 10px"><div style="width:26px;height:26px;border-radius:6px;background:#20252e;border:1px solid #3a4250;flex:none"></div><div style="min-width:0"><div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;font-weight:600">#20252e</div><div style="font-size:12px;color:#8b95a3">2nd border · 3 rules</div></div></div>
+      <div style="display:flex;align-items:center;gap:10px;background:#171b22;border:1px solid #6b5a2e;border-radius:10px;padding:8px 10px"><div style="width:26px;height:26px;border-radius:6px;background:#35507d;flex:none"></div><div style="min-width:0"><div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;font-weight:600">#35507d</div><div style="font-size:12px;color:#8b95a3">"accent border" · 3×</div></div></div>
+      <div style="display:flex;align-items:center;gap:10px;background:#171b22;border:1px solid #6b5a2e;border-radius:10px;padding:8px 10px"><div style="width:26px;height:26px;border-radius:6px;background:#2a5c40;flex:none"></div><div style="min-width:0"><div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;font-weight:600">#2a5c40</div><div style="font-size:12px;color:#8b95a3">"good border" · 3×</div></div></div>
+      <div style="display:flex;align-items:center;gap:10px;background:#171b22;border:1px solid #6b5a2e;border-radius:10px;padding:8px 10px"><div style="width:26px;height:26px;border-radius:6px;background:#6b2e2e;flex:none"></div><div style="min-width:0"><div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;font-weight:600">#6b2e2e</div><div style="font-size:12px;color:#8b95a3">"bad border" · 2×</div></div></div>
+      <div style="display:flex;align-items:center;gap:10px;background:#171b22;border:1px solid #6b5a2e;border-radius:10px;padding:8px 10px"><div style="width:26px;height:26px;border-radius:6px;background:#6b5a2e;flex:none"></div><div style="min-width:0"><div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;font-weight:600">#6b5a2e</div><div style="font-size:12px;color:#8b95a3">"warn border" · 2×</div></div></div>
+      <div style="display:flex;align-items:center;gap:10px;background:#171b22;border:1px solid #6b5a2e;border-radius:10px;padding:8px 10px"><div style="width:26px;height:26px;border-radius:6px;background:#ff8f8f;flex:none"></div><div style="min-width:0"><div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;font-weight:600">#ff8f8f</div><div style="font-size:12px;color:#8b95a3">.pos-QB text</div></div></div>
+      <div style="display:flex;align-items:center;gap:10px;background:#171b22;border:1px solid #6b5a2e;border-radius:10px;padding:8px 10px"><div style="width:26px;height:26px;border-radius:6px;background:#5fe0a0;flex:none"></div><div style="min-width:0"><div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;font-weight:600">#5fe0a0</div><div style="font-size:12px;color:#8b95a3">.pos-RB text</div></div></div>
+      <div style="display:flex;align-items:center;gap:10px;background:#171b22;border:1px solid #6b5a2e;border-radius:10px;padding:8px 10px"><div style="width:26px;height:26px;border-radius:6px;background:#7fb0ff;flex:none"></div><div style="min-width:0"><div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;font-weight:600">#7fb0ff</div><div style="font-size:12px;color:#8b95a3">.pos-WR text</div></div></div>
+      <div style="display:flex;align-items:center;gap:10px;background:#171b22;border:1px solid #6b5a2e;border-radius:10px;padding:8px 10px"><div style="width:26px;height:26px;border-radius:6px;background:#ffc677;flex:none"></div><div style="min-width:0"><div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;font-weight:600">#ffc677</div><div style="font-size:12px;color:#8b95a3">.pos-TE text</div></div></div>
+    </div>
+
+    <div style="background:#171b22;border:1px solid #2a3039;border-radius:12px;padding:14px 16px;margin-bottom:14px">
+      <div style="font-size:13px;font-weight:650;margin-bottom:8px">Plus 8 rgba() literals, written out 15 times</div>
+      <div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#8b95a3;line-height:1.9">rgba(55,209,122,0.15) ×3<br>rgba(255,180,84,0.15) ×2 &nbsp;·&nbsp; rgba(255,180,84,0.16) ×1<br>rgba(255,107,107,0.15) ×3<br>rgba(76,141,255,0.15) ×2 &nbsp;·&nbsp; 0.07 &nbsp;·&nbsp; 0.12<br>rgba(0,0,0,0.6) — modal scrim</div>
+      <div style="font-size:13px;color:#8b95a3;margin-top:10px;text-wrap:pretty"><span style="color:#ffb454">0.15 vs 0.16</span> on the two amber tints is almost certainly a typo — visually identical, but it means <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">.badge.hold</span> and <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">.arch-pill.arch-win-now</span> can never be deduped by a find-and-replace.</div>
+    </div>
+
+    <div style="background:#1a1520;border:1px solid #6b2e2e;border-left:3px solid #ff6b6b;border-radius:12px;padding:14px 16px;margin-bottom:8px">
+      <div style="font-size:12px;text-transform:uppercase;letter-spacing:0.06em;color:#ff6b6b;font-weight:700;margin-bottom:8px">⚑ Flagged</div>
+      <div style="font-size:14px;line-height:1.6;text-wrap:pretty"><b>Four parallel systems express the same three meanings</b> (good / warning / bad). <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">.badge.keep|hold|cut</span>, <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">.need-pill.deep|short</span>, <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">.why-chip.good|warn</span>, and <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">.card.good|bad</span> each re-encode success/warning/danger — one with an rgba tint, one with a border hex, one with both. A single semantic pair (<span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">--success-fg / --success-bg</span>) replaces 14 declarations.</div>
+    </div>
+    <div style="background:#171b22;border:1px solid #2a3039;border-left:3px solid #ffb454;border-radius:12px;padding:14px 16px;margin-bottom:8px">
+      <div style="font-size:14px;line-height:1.6;text-wrap:pretty"><b>Two border colors, 6% apart.</b> <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">--border #2a3039</span> for containers, bare <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">#20252e</span> for row dividers in <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">table.grid td</span>, <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">.scar-row</span>, <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">.prospect</span>. Intentional (dividers should be quieter) but untokenised, so it reads as a mistake.</div>
+    </div>
+    <div style="background:#171b22;border:1px solid #2a3039;border-left:3px solid #ffb454;border-radius:12px;padding:14px 16px;margin-bottom:8px">
+      <div style="font-size:14px;line-height:1.6;text-wrap:pretty"><b>Position colors are a fifth palette.</b> The four <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">.pos-*</span> chips use lightened one-off hexes (<span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">#ff8f8f</span>…) over a tint of a <em>different</em> hex (<span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">rgba(255,107,107,.15)</span>). QB red is also the danger red — a QB chip and a "cut" badge are the same color, which is the one collision that actually misleads.</div>
+    </div>
+    <div style="background:#171b22;border:1px solid #2a3039;border-left:3px solid #ffb454;border-radius:12px;padding:14px 16px;margin-bottom:8px">
+      <div style="font-size:14px;line-height:1.6;text-wrap:pretty"><b>Contrast:</b> <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">--dim #8b95a3</span> on <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">--bg</span> ≈ 6.4:1 — fine for body, but it is used at 11px and 12px in 20+ places (table headers, card labels, chips), where it sits under the recommended size for that weight. The 9px <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">.wk-num</span> chart labels are effectively unreadable on a phone.</div>
+    </div>
+
+    <!-- 02 TYPE -->
+    <h2 style="margin:40px 0 4px;font-size:13px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:0.1em;text-transform:uppercase;color:#4c8dff">02 — Typography</h2>
+    <h3 style="margin:0 0 6px;font-size:21px;font-weight:650;letter-spacing:-0.01em">14 sizes, 4 weights, 5 line-heights</h3>
+    <p style="margin:0 0 14px;color:#8b95a3;font-size:14px">One family: the system stack, set at <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#c3cad4">14px/1.5</span> on <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#c3cad4">body</span>. That part is consistent. The scale on top of it is not.</p>
+
+    <div style="border:1px solid #2a3039;border-radius:12px;overflow:hidden;margin-bottom:14px">
+      <div style="display:grid;grid-template-columns:52px 1fr;gap:10px;padding:9px 12px;background:#1e242d;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;color:#8b95a3"><div>Size</div><div>Used by</div></div>
+      <div style="display:grid;grid-template-columns:52px 1fr;gap:10px;padding:9px 12px;border-top:1px solid #20252e;font-size:13px;align-items:baseline"><div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:#ff6b6b">9</div><div style="color:#8b95a3">.wk-num (weekly chart axis)</div></div>
+      <div style="display:grid;grid-template-columns:52px 1fr;gap:10px;padding:9px 12px;border-top:1px solid #20252e;font-size:13px;align-items:baseline"><div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:#ff6b6b">10</div><div style="color:#8b95a3">.pill-active · .arch-pill</div></div>
+      <div style="display:grid;grid-template-columns:52px 1fr;gap:10px;padding:9px 12px;border-top:1px solid #20252e;font-size:13px;align-items:baseline"><div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:#ffb454">11</div><div style="color:#8b95a3">.card .k · table th · .pos · .tag-chip · .why-chip · modal sub-label</div></div>
+      <div style="display:grid;grid-template-columns:52px 1fr;gap:10px;padding:9px 12px;border-top:1px solid #20252e;font-size:13px;align-items:baseline"><div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace">12</div><div style="color:#8b95a3">.brand .sub · .updated · .badge · .legend · footer · .need-pill · .cost-pill · .brain-stats · .prospect-rank · .ov-note · .tier-label</div></div>
+      <div style="display:grid;grid-template-columns:52px 1fr;gap:10px;padding:9px 12px;border-top:1px solid #20252e;font-size:13px;align-items:baseline"><div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace">13</div><div style="color:#8b95a3">select · .refresh · .filters input · .subtabs button · .subtabs-btn · .link · .tier-chip · .info-card p · .brain-scout · .arch-line · .stat-chips · .toggle · .scar-row · summary</div></div>
+      <div style="display:grid;grid-template-columns:52px 1fr;gap:10px;padding:9px 12px;border-top:1px solid #20252e;font-size:13px;align-items:baseline"><div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace">14</div><div style="color:#8b95a3">body · nav button · .plink · .info-card h4 · table td</div></div>
+      <div style="display:grid;grid-template-columns:52px 1fr;gap:10px;padding:9px 12px;border-top:1px solid #20252e;font-size:13px;align-items:baseline"><div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace">15</div><div style="color:#8b95a3">.brain-card-head .team — one rule</div></div>
+      <div style="display:grid;grid-template-columns:52px 1fr;gap:10px;padding:9px 12px;border-top:1px solid #20252e;font-size:13px;align-items:baseline"><div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace">18</div><div style="color:#8b95a3">.modal-close · modal h3 (inline) · h1 @mobile</div></div>
+      <div style="display:grid;grid-template-columns:52px 1fr;gap:10px;padding:9px 12px;border-top:1px solid #20252e;font-size:13px;align-items:baseline"><div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace">19</div><div style="color:#8b95a3">h2 @mobile · .card .v @mobile</div></div>
+      <div style="display:grid;grid-template-columns:52px 1fr;gap:10px;padding:9px 12px;border-top:1px solid #20252e;font-size:13px;align-items:baseline"><div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace">20</div><div style="color:#8b95a3">.brand h1 · grade badge (inline)</div></div>
+      <div style="display:grid;grid-template-columns:52px 1fr;gap:10px;padding:9px 12px;border-top:1px solid #20252e;font-size:13px;align-items:baseline"><div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace">22</div><div style="color:#8b95a3">.card .v</div></div>
+      <div style="display:grid;grid-template-columns:52px 1fr;gap:10px;padding:9px 12px;border-top:1px solid #20252e;font-size:13px;align-items:baseline"><div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace">24</div><div style="color:#8b95a3">.card.big .v @mobile</div></div>
+      <div style="display:grid;grid-template-columns:52px 1fr;gap:10px;padding:9px 12px;border-top:1px solid #20252e;font-size:13px;align-items:baseline"><div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace">28</div><div style="color:#8b95a3">.brand .logo (the 🏈 emoji)</div></div>
+      <div style="display:grid;grid-template-columns:52px 1fr;gap:10px;padding:9px 12px;border-top:1px solid #20252e;font-size:13px;align-items:baseline"><div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace">30</div><div style="color:#8b95a3">.card.big .v</div></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
+      <div style="background:#171b22;border:1px solid #2a3039;border-radius:12px;padding:12px 14px">
+        <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.05em;color:#8b95a3;margin-bottom:6px">Weights</div>
+        <div style="font-size:13px;line-height:1.9;font-family:ui-monospace,SFMono-Regular,Menlo,monospace">500 · 600 · <span style="color:#ffb454">650</span> · 700</div>
+        <div style="font-size:12px;color:#8b95a3;margin-top:6px;text-wrap:pretty"><b style="color:#ffb454">650</b> appears 8× (h1–h3, .card .v, .info-card h4, .brain-card .team, .brain-stats b). The system stack has no 650 — browsers round it to 700, so it is 600/700 wearing a third name.</div>
+      </div>
+      <div style="background:#171b22;border:1px solid #2a3039;border-radius:12px;padding:12px 14px">
+        <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.05em;color:#8b95a3;margin-bottom:6px">Line-heights</div>
+        <div style="font-size:13px;line-height:1.9;font-family:ui-monospace,SFMono-Regular,Menlo,monospace">1 · 1.5 · 1.55 · 1.8</div>
+        <div style="font-size:12px;color:#8b95a3;margin-top:6px;text-wrap:pretty">1.5 global, 1.55 on <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace">.info-card p</span> only, 1.8 on <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace">.rules-list</span>. Nothing tightens for large display numbers — the 30px stat still runs at 1.5.</div>
+      </div>
+    </div>
+
+    <div style="background:#1a1520;border:1px solid #6b2e2e;border-left:3px solid #ff6b6b;border-radius:12px;padding:14px 16px;margin-bottom:8px">
+      <div style="font-size:12px;text-transform:uppercase;letter-spacing:0.06em;color:#ff6b6b;font-weight:700;margin-bottom:8px">⚑ Flagged — mobile</div>
+      <div style="font-size:14px;line-height:1.6;text-wrap:pretty"><b>Every input and select is 13px.</b> iOS Safari auto-zooms any focused form control under 16px, then leaves the page zoomed. The player search on Players, all six filter selects, the team picker in the header and the value-override field all trigger it. This is the single most visible mobile defect in the app.</div>
+    </div>
+    <div style="background:#171b22;border:1px solid #2a3039;border-left:3px solid #ffb454;border-radius:12px;padding:14px 16px;margin-bottom:8px">
+      <div style="font-size:14px;line-height:1.6;text-wrap:pretty"><b>13px is doing too much work.</b> 14 of the ~40 text rules are 13px — controls, body prose, chips and table meta all share it, so nothing is visually ranked. There is no step between 14 (body) and 18 (h1 on mobile).</div>
+    </div>
+    <div style="background:#171b22;border:1px solid #2a3039;border-left:3px solid #ffb454;border-radius:12px;padding:14px 16px;margin-bottom:8px">
+      <div style="font-size:14px;line-height:1.6;text-wrap:pretty"><b>Two uppercase micro-label styles.</b> <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">h3 / th / .pill-active / .arch-pill</span> use 0.04em tracking; <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">.card .k</span> uses 0.05em at a different size. Same intent, two recipes.</div>
+    </div>
+
+    <!-- 03 SPACING -->
+    <h2 style="margin:40px 0 4px;font-size:13px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:0.1em;text-transform:uppercase;color:#4c8dff">03 — Spacing &amp; radii</h2>
+    <h3 style="margin:0 0 6px;font-size:21px;font-weight:650;letter-spacing:-0.01em">21 spacing values, no base unit</h3>
+    <p style="margin:0 0 12px;color:#8b95a3;font-size:14px;text-wrap:pretty">Every integer from 1 to 10 is in use, plus 12, 13, 14, 15, 16, 18, 20, 22, 24, 40, 60. A 4pt grid would keep 4·8·12·16·20·24·40 and retire the other 14.</p>
+
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px">
+      <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;background:#1e242d;border:1px solid #2a5c40;color:#37d17a;border-radius:999px;padding:4px 10px">4</span>
+      <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;background:#1e242d;border:1px solid #2a5c40;color:#37d17a;border-radius:999px;padding:4px 10px">8</span>
+      <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;background:#1e242d;border:1px solid #2a5c40;color:#37d17a;border-radius:999px;padding:4px 10px">12</span>
+      <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;background:#1e242d;border:1px solid #2a5c40;color:#37d17a;border-radius:999px;padding:4px 10px">16</span>
+      <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;background:#1e242d;border:1px solid #2a5c40;color:#37d17a;border-radius:999px;padding:4px 10px">20</span>
+      <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;background:#1e242d;border:1px solid #2a5c40;color:#37d17a;border-radius:999px;padding:4px 10px">24</span>
+      <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;background:#1e242d;border:1px solid #2a5c40;color:#37d17a;border-radius:999px;padding:4px 10px">40</span>
+      <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;background:#1e242d;border:1px solid #2a3039;color:#8b95a3;border-radius:999px;padding:4px 10px">1</span>
+      <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;background:#1e242d;border:1px solid #2a3039;color:#8b95a3;border-radius:999px;padding:4px 10px">2</span>
+      <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;background:#1e242d;border:1px solid #2a3039;color:#8b95a3;border-radius:999px;padding:4px 10px">3</span>
+      <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;background:#1e242d;border:1px solid #2a3039;color:#8b95a3;border-radius:999px;padding:4px 10px">5</span>
+      <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;background:#1e242d;border:1px solid #2a3039;color:#8b95a3;border-radius:999px;padding:4px 10px">6</span>
+      <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;background:#1e242d;border:1px solid #2a3039;color:#8b95a3;border-radius:999px;padding:4px 10px">7</span>
+      <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;background:#1e242d;border:1px solid #2a3039;color:#8b95a3;border-radius:999px;padding:4px 10px">9</span>
+      <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;background:#1e242d;border:1px solid #2a3039;color:#8b95a3;border-radius:999px;padding:4px 10px">10</span>
+      <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;background:#1e242d;border:1px solid #2a3039;color:#8b95a3;border-radius:999px;padding:4px 10px">13</span>
+      <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;background:#1e242d;border:1px solid #2a3039;color:#8b95a3;border-radius:999px;padding:4px 10px">14</span>
+      <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;background:#1e242d;border:1px solid #2a3039;color:#8b95a3;border-radius:999px;padding:4px 10px">15</span>
+      <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;background:#1e242d;border:1px solid #2a3039;color:#8b95a3;border-radius:999px;padding:4px 10px">18</span>
+      <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;background:#1e242d;border:1px solid #2a3039;color:#8b95a3;border-radius:999px;padding:4px 10px">22</span>
+      <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;background:#1e242d;border:1px solid #2a3039;color:#8b95a3;border-radius:999px;padding:4px 10px">60</span>
+    </div>
+
+    <div style="border:1px solid #2a3039;border-radius:12px;overflow:hidden;margin-bottom:14px">
+      <div style="display:grid;grid-template-columns:1fr 92px;gap:10px;padding:9px 12px;background:#1e242d;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;color:#8b95a3"><div>Container padding</div><div style="text-align:right">Value</div></div>
+      <div style="display:grid;grid-template-columns:1fr 92px;gap:10px;padding:9px 12px;border-top:1px solid #20252e;font-size:13px"><div>.card / .info-card</div><div style="text-align:right;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:#8b95a3">14 16</div></div>
+      <div style="display:grid;grid-template-columns:1fr 92px;gap:10px;padding:9px 12px;border-top:1px solid #20252e;font-size:13px"><div>.brain-card</div><div style="text-align:right;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:#ffb454">13 15</div></div>
+      <div style="display:grid;grid-template-columns:1fr 92px;gap:10px;padding:9px 12px;border-top:1px solid #20252e;font-size:13px"><div>.card @mobile</div><div style="text-align:right;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:#ffb454">12 13</div></div>
+      <div style="display:grid;grid-template-columns:1fr 92px;gap:10px;padding:9px 12px;border-top:1px solid #20252e;font-size:13px"><div>.tier-band</div><div style="text-align:right;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:#8b95a3">8 10</div></div>
+      <div style="display:grid;grid-template-columns:1fr 92px;gap:10px;padding:9px 12px;border-top:1px solid #20252e;font-size:13px"><div>.notice</div><div style="text-align:right;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:#8b95a3">16</div></div>
+      <div style="display:grid;grid-template-columns:1fr 92px;gap:10px;padding:9px 12px;border-top:1px solid #20252e;font-size:13px"><div>.modal</div><div style="text-align:right;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:#8b95a3">20</div></div>
+      <div style="display:grid;grid-template-columns:1fr 92px;gap:10px;padding:9px 12px;border-top:1px solid #20252e;font-size:13px"><div>table.grid td / th</div><div style="text-align:right;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:#8b95a3">8 10</div></div>
+      <div style="display:grid;grid-template-columns:1fr 92px;gap:10px;padding:9px 12px;border-top:1px solid #20252e;font-size:13px"><div>.app gutter (desktop / mobile)</div><div style="text-align:right;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:#8b95a3">20 / 12</div></div>
+    </div>
+
+    <div style="background:#171b22;border:1px solid #2a3039;border-left:3px solid #ffb454;border-radius:12px;padding:14px 16px;margin-bottom:8px">
+      <div style="font-size:14px;line-height:1.6;text-wrap:pretty"><b>Nine radii for five shapes.</b> 3 (chart bar), 4 (code), 5 (override field), 6 (.pos, .ov-note), 8 (all controls), 10 (.notice, .tier-band, .table-scroll, .subtabs), 12 (cards), 14 (modal), 999 (pills). 5/6 and 10/12 are indistinguishable at arm's length — three values (6, 10, 999) plus a pill would cover the whole app.</div>
+    </div>
+
+    <!-- 04 BUTTONS -->
+    <h2 style="margin:40px 0 4px;font-size:13px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:0.1em;text-transform:uppercase;color:#4c8dff">04 — Buttons</h2>
+    <h3 style="margin:0 0 6px;font-size:21px;font-weight:650;letter-spacing:-0.01em">10 treatments, none of them a primary button</h3>
+    <p style="margin:0 0 12px;color:#8b95a3;font-size:14px;text-wrap:pretty">Height = computed min box (font-size × 1.5 + vertical padding + border). Nothing reaches the 44px touch minimum.</p>
+
+    <div style="border:1px solid #2a3039;border-radius:12px;overflow:hidden;margin-bottom:14px">
+      <div style="display:grid;grid-template-columns:1fr 84px 52px;gap:8px;padding:9px 12px;background:#1e242d;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;color:#8b95a3"><div>Class</div><div>Pad · radius</div><div style="text-align:right">H</div></div>
+      <div style="display:grid;grid-template-columns:1fr 84px 52px;gap:8px;padding:10px 12px;border-top:1px solid #20252e;font-size:13px;align-items:center"><div><span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">nav button</span><div style="color:#8b95a3;font-size:12px">tab · desktop only</div></div><div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#8b95a3">8 14 · r8</div><div style="text-align:right;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#ffb454">37</div></div>
+      <div style="display:grid;grid-template-columns:1fr 84px 52px;gap:8px;padding:10px 12px;border-top:1px solid #20252e;font-size:13px;align-items:center"><div><span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">.refresh</span><div style="color:#8b95a3;font-size:12px">shares its rule with <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace">select</span>; also used as the "Reset to recommended" action</div></div><div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#8b95a3">7 12 · r8</div><div style="text-align:right;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#ffb454">34</div></div>
+      <div style="display:grid;grid-template-columns:1fr 84px 52px;gap:8px;padding:10px 12px;border-top:1px solid #20252e;font-size:13px;align-items:center"><div><span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">.subtabs button</span><div style="color:#8b95a3;font-size:12px">segmented, in a bordered track</div></div><div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#8b95a3">6 14 · r8</div><div style="text-align:right;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#ff6b6b">32</div></div>
+      <div style="display:grid;grid-template-columns:1fr 84px 52px;gap:8px;padding:10px 12px;border-top:1px solid #20252e;font-size:13px;align-items:center"><div><span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">.subtabs-btn</span><div style="color:#8b95a3;font-size:12px">same job, no track, own border + <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace">.on</span> instead of <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace">.active</span></div></div><div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#8b95a3">6 14 · r8</div><div style="text-align:right;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#ff6b6b">34</div></div>
+      <div style="display:grid;grid-template-columns:1fr 84px 52px;gap:8px;padding:10px 12px;border-top:1px solid #20252e;font-size:13px;align-items:center"><div><span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">.link</span><div style="color:#8b95a3;font-size:12px">"View →", "Reset all"</div></div><div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#8b95a3">0 · —</div><div style="text-align:right;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#ff6b6b">20</div></div>
+      <div style="display:grid;grid-template-columns:1fr 84px 52px;gap:8px;padding:10px 12px;border-top:1px solid #20252e;font-size:13px;align-items:center"><div><span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">.plink</span><div style="color:#8b95a3;font-size:12px">every player name — the app's most-tapped control</div></div><div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#8b95a3">0 · —</div><div style="text-align:right;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#ff6b6b">21</div></div>
+      <div style="display:grid;grid-template-columns:1fr 84px 52px;gap:8px;padding:10px 12px;border-top:1px solid #20252e;font-size:13px;align-items:center"><div><span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">.tier-chip</span><div style="color:#8b95a3;font-size:12px">button shaped as a pill</div></div><div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#8b95a3">4 10 · r999</div><div style="text-align:right;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#ff6b6b">28</div></div>
+      <div style="display:grid;grid-template-columns:1fr 84px 52px;gap:8px;padding:10px 12px;border-top:1px solid #20252e;font-size:13px;align-items:center"><div><span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">.brain-card</span><div style="color:#8b95a3;font-size:12px">whole card is a button</div></div><div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#8b95a3">13 15 · r12</div><div style="text-align:right;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#37d17a">ok</div></div>
+      <div style="display:grid;grid-template-columns:1fr 84px 52px;gap:8px;padding:10px 12px;border-top:1px solid #20252e;font-size:13px;align-items:center"><div><span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">.modal-close</span><div style="color:#8b95a3;font-size:12px">✕ glyph, absolute 10/12</div></div><div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#8b95a3">0 · —</div><div style="text-align:right;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#ff6b6b">27</div></div>
+      <div style="display:grid;grid-template-columns:1fr 84px 52px;gap:8px;padding:10px 12px;border-top:1px solid #20252e;font-size:13px;align-items:center"><div><span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">.ov-edit / .ov-reset</span><div style="color:#8b95a3;font-size:12px">dashed-on-hover cell editor + ↺</div></div><div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#8b95a3">1 5 · r5</div><div style="text-align:right;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#ff6b6b">23</div></div>
+    </div>
+
+    <div style="background:#1a1520;border:1px solid #6b2e2e;border-left:3px solid #ff6b6b;border-radius:12px;padding:14px 16px;margin-bottom:8px">
+      <div style="font-size:12px;text-transform:uppercase;letter-spacing:0.06em;color:#ff6b6b;font-weight:700;margin-bottom:8px">⚑ Flagged</div>
+      <div style="font-size:14px;line-height:1.6;text-wrap:pretty"><b>Three different toggle-group implementations.</b> <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">nav</span> (top-level tabs, <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">.active</span>), <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">.subtabs</span> (Team, Players, Tiers, Market — <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">.active</span>, track container) and <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">.subtabs-btn</span> (the QB/RB/WR/TE filter on Tiers — <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">.on</span>, no track, extra border color <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">#35507d</span>). Same interaction, three visual languages, two state-class names.</div>
+    </div>
+    <div style="background:#1a1520;border:1px solid #6b2e2e;border-left:3px solid #ff6b6b;border-radius:12px;padding:14px 16px;margin-bottom:8px">
+      <div style="font-size:14px;line-height:1.6;text-wrap:pretty"><b>No primary button exists.</b> The most consequential actions — Refresh, "Reset to recommended" — reuse <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">.refresh</span>, a rule that <em>also</em> styles every <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">&lt;select&gt;</span>. A destructive/primary distinction can't be expressed at all.</div>
+    </div>
+    <div style="background:#1a1520;border:1px solid #6b2e2e;border-left:3px solid #ff6b6b;border-radius:12px;padding:14px 16px;margin-bottom:8px">
+      <div style="font-size:14px;line-height:1.6;text-wrap:pretty"><b>Player names are 21px-tall tap targets</b> and they open the drilldown modal — the primary interaction on six of eight screens. In the keeper table they sit next to a 13px checkbox in a row 37px tall, on a 390px screen, inside a horizontally scrolling container.</div>
+    </div>
+    <div style="background:#171b22;border:1px solid #2a3039;border-left:3px solid #ffb454;border-radius:12px;padding:14px 16px;margin-bottom:8px">
+      <div style="font-size:14px;line-height:1.6;text-wrap:pretty"><b>Hover-only affordances on a touch device.</b> <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">.ov-edit</span> reveals its dashed border on hover, <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">table tr:hover</span> is the only row feedback, and <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">.plink</span> only underlines on hover. On a phone none of these ever fire — the editable Worth cell is invisible as a control.</div>
+    </div>
+
+    <!-- 05 INPUTS -->
+    <h2 style="margin:40px 0 4px;font-size:13px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:0.1em;text-transform:uppercase;color:#4c8dff">05 — Inputs</h2>
+    <h3 style="margin:0 0 12px;font-size:21px;font-weight:650;letter-spacing:-0.01em">3 definitions, 0 focus rings</h3>
+
+    <div style="border:1px solid #2a3039;border-radius:12px;overflow:hidden;margin-bottom:14px">
+      <div style="display:grid;grid-template-columns:1fr auto;gap:10px;padding:10px 12px;border-bottom:1px solid #20252e;font-size:13px"><div><span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">select, .refresh</span><div style="color:#8b95a3;font-size:12px">header pickers — a control and a button sharing one rule</div></div><div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#8b95a3;text-align:right">7 12 · r8 · 13px</div></div>
+      <div style="display:grid;grid-template-columns:1fr auto;gap:10px;padding:10px 12px;border-bottom:1px solid #20252e;font-size:13px"><div><span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">.filters input, .filters select</span><div style="color:#8b95a3;font-size:12px">Players, Market, Tiers — 2px less horizontal padding, for no reason</div></div><div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#ffb454;text-align:right">7 10 · r8 · 13px</div></div>
+      <div style="display:grid;grid-template-columns:1fr auto;gap:10px;padding:10px 12px;font-size:13px"><div><span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">.ov-input</span><div style="color:#8b95a3;font-size:12px">worth override — fixed 62px wide, accent border, r5</div></div><div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#ff6b6b;text-align:right">2 5 · r5 · 13px</div></div>
+    </div>
+
+    <div style="background:#1a1520;border:1px solid #6b2e2e;border-left:3px solid #ff6b6b;border-radius:12px;padding:14px 16px;margin-bottom:8px">
+      <div style="font-size:12px;text-transform:uppercase;letter-spacing:0.06em;color:#ff6b6b;font-weight:700;margin-bottom:8px">⚑ Flagged</div>
+      <div style="font-size:14px;line-height:1.6;text-wrap:pretty"><b>The stylesheet contains no <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px">:focus</span> or <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px">:focus-visible</span> rule.</b> Not one, across 17.6&nbsp;KB. Every custom button sets <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">border: 0</span> on a transparent background, so keyboard focus falls back to the UA outline over a dark panel where it is barely visible — and the modal has no focus trap or scroll lock either.</div>
+    </div>
+    <div style="background:#171b22;border:1px solid #2a3039;border-left:3px solid #ffb454;border-radius:12px;padding:14px 16px;margin-bottom:8px">
+      <div style="font-size:14px;line-height:1.6;text-wrap:pretty"><b>No disabled, error, placeholder or loading styling.</b> <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">.refresh</span> is rendered with <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">disabled</span> while refreshing but looks identical; the label just becomes "…". Checkboxes are native at ~13px with only <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">accent-color</span> set — the keeper simulator is driven entirely by them.</div>
+    </div>
+
+    <!-- 06 SURFACES -->
+    <h2 style="margin:40px 0 4px;font-size:13px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:0.1em;text-transform:uppercase;color:#4c8dff">06 — Cards, chips &amp; surfaces</h2>
+    <h3 style="margin:0 0 6px;font-size:21px;font-weight:650;letter-spacing:-0.01em">5 card variants, 10 pill variants</h3>
+    <p style="margin:0 0 12px;color:#8b95a3;font-size:14px;text-wrap:pretty">Cards: <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">.card</span> (stat), <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">.info-card</span> (prose), <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">.brain-card</span> (tappable, 3px left accent), <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">.tier-band</span>, <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">.notice</span>. Same border and background; four different paddings and three radii. <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">.card.highlight</span> is the only gradient in the app.</p>
+
+    <div style="border:1px solid #2a3039;border-radius:12px;overflow:hidden;margin-bottom:14px">
+      <div style="display:grid;grid-template-columns:1fr 92px;gap:10px;padding:9px 12px;background:#1e242d;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;color:#8b95a3"><div>Pill / chip</div><div style="text-align:right">Padding</div></div>
+      <div style="display:grid;grid-template-columns:1fr 92px;gap:10px;padding:9px 12px;border-top:1px solid #20252e;font-size:13px"><div><span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">.badge</span> <span style="color:#8b95a3">keep/hold/cut · 12px/600</span></div><div style="text-align:right;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#8b95a3">2 9</div></div>
+      <div style="display:grid;grid-template-columns:1fr 92px;gap:10px;padding:9px 12px;border-top:1px solid #20252e;font-size:13px"><div><span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">.arch-pill</span> <span style="color:#8b95a3">10px/700 uppercase</span></div><div style="text-align:right;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#8b95a3">2 8</div></div>
+      <div style="display:grid;grid-template-columns:1fr 92px;gap:10px;padding:9px 12px;border-top:1px solid #20252e;font-size:13px"><div><span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">.pill-active</span> <span style="color:#8b95a3">10px/700 uppercase</span></div><div style="text-align:right;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#ffb454">2 7</div></div>
+      <div style="display:grid;grid-template-columns:1fr 92px;gap:10px;padding:9px 12px;border-top:1px solid #20252e;font-size:13px"><div><span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">.tag-chip</span> · <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">.why-chip</span> <span style="color:#8b95a3">11px</span></div><div style="text-align:right;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#8b95a3">1 8</div></div>
+      <div style="display:grid;grid-template-columns:1fr 92px;gap:10px;padding:9px 12px;border-top:1px solid #20252e;font-size:13px"><div><span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">.need-pill</span> <span style="color:#8b95a3">12px</span></div><div style="text-align:right;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#ffb454">3 10</div></div>
+      <div style="display:grid;grid-template-columns:1fr 92px;gap:10px;padding:9px 12px;border-top:1px solid #20252e;font-size:13px"><div><span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">.finish-chip</span> <span style="color:#8b95a3">13px/600</span></div><div style="text-align:right;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#8b95a3">2 9</div></div>
+      <div style="display:grid;grid-template-columns:1fr 92px;gap:10px;padding:9px 12px;border-top:1px solid #20252e;font-size:13px"><div><span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">.tier-chip</span> <span style="color:#8b95a3">13px · interactive</span></div><div style="text-align:right;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#ffb454">4 10</div></div>
+      <div style="display:grid;grid-template-columns:1fr 92px;gap:10px;padding:9px 12px;border-top:1px solid #20252e;font-size:13px"><div><span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">.pos</span> <span style="color:#8b95a3">11px/700 · r6 not pill · min-w 34</span></div><div style="text-align:right;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#ff6b6b">1 6</div></div>
+    </div>
+
+    <div style="background:#1a1520;border:1px solid #6b2e2e;border-left:3px solid #ff6b6b;border-radius:12px;padding:14px 16px;margin-bottom:8px">
+      <div style="font-size:12px;text-transform:uppercase;letter-spacing:0.06em;color:#ff6b6b;font-weight:700;margin-bottom:8px">⚑ Flagged</div>
+      <div style="font-size:14px;line-height:1.6;text-wrap:pretty"><b>Ten pill styles, six paddings, five font sizes, and one of them is a button.</b> <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">.tier-chip</span> is tappable and looks identical to <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">.tag-chip</span>, which is not. Nothing distinguishes a static label from a control.</div>
+    </div>
+
+    <!-- 07 MOBILE -->
+    <h2 style="margin:40px 0 4px;font-size:13px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:0.1em;text-transform:uppercase;color:#4c8dff">07 — Mobile behaviour</h2>
+    <h3 style="margin:0 0 12px;font-size:21px;font-weight:650;letter-spacing:-0.01em">The primary viewport is handled by one media query</h3>
+
+    <div style="border:1px solid #2a3039;border-radius:12px;overflow:hidden;margin-bottom:14px">
+      <div style="display:grid;grid-template-columns:1fr auto;gap:10px;padding:10px 12px;border-bottom:1px solid #20252e;font-size:13px"><div>Breakpoints</div><div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#ffb454;text-align:right">760 ×2 · 800 ×1</div></div>
+      <div style="display:grid;grid-template-columns:1fr auto;gap:10px;padding:10px 12px;border-bottom:1px solid #20252e;font-size:13px"><div>Safe-area insets</div><div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#ff6b6b;text-align:right">none</div></div>
+      <div style="display:grid;grid-template-columns:1fr auto;gap:10px;padding:10px 12px;border-bottom:1px solid #20252e;font-size:13px"><div>viewport-fit=cover</div><div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#ff6b6b;text-align:right">no</div></div>
+      <div style="display:grid;grid-template-columns:1fr auto;gap:10px;padding:10px 12px;border-bottom:1px solid #20252e;font-size:13px"><div>Header on mobile</div><div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#ff6b6b;text-align:right">position: static</div></div>
+      <div style="display:grid;grid-template-columns:1fr auto;gap:10px;padding:10px 12px;border-bottom:1px solid #20252e;font-size:13px"><div>Nav on mobile</div><div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#ffb454;text-align:right">native &lt;select&gt;</div></div>
+      <div style="display:grid;grid-template-columns:1fr auto;gap:10px;padding:10px 12px;font-size:13px"><div>Wide tables on mobile</div><div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#ff6b6b;text-align:right">overflow-x + nowrap</div></div>
+    </div>
+
+    <div style="background:#1a1520;border:1px solid #6b2e2e;border-left:3px solid #ff6b6b;border-radius:12px;padding:14px 16px;margin-bottom:8px">
+      <div style="font-size:12px;text-transform:uppercase;letter-spacing:0.06em;color:#ff6b6b;font-weight:700;margin-bottom:8px">⚑ Flagged — highest impact</div>
+      <div style="font-size:14px;line-height:1.6;text-wrap:pretty"><b>Navigation disappears on scroll.</b> The header is <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">sticky</span> on desktop and explicitly <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">static</span> on mobile — so on the one viewport that matters, the tab switcher, team picker and value-source picker all scroll away. On the Players table (hundreds of rows) getting back to nav means scrolling to the top. And the switcher itself is a native <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">&lt;select&gt;</span> at the very top of the screen: the least thumb-reachable position on the page, presented as the least discoverable control.</div>
+    </div>
+    <div style="background:#1a1520;border:1px solid #6b2e2e;border-left:3px solid #ff6b6b;border-radius:12px;padding:14px 16px;margin-bottom:8px">
+      <div style="font-size:14px;line-height:1.6;text-wrap:pretty"><b>Eight-column tables become horizontal scrollers.</b> <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">table.grid { display:block; overflow-x:auto }</span> with <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">white-space:nowrap</span> on every cell. The keeper board (checkbox · Player · Pos · Acquired · Worth · Keep&nbsp;$ · Surplus · Call) needs ~640px; on a 390px screen the Surplus and Call columns — the entire point of the screen — are off-canvas, with no column freeze and no scroll affordance.</div>
+    </div>
+    <div style="background:#1a1520;border:1px solid #6b2e2e;border-left:3px solid #ff6b6b;border-radius:12px;padding:14px 16px;margin-bottom:8px">
+      <div style="font-size:14px;line-height:1.6;text-wrap:pretty"><b>Nested scroll containers.</b> <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">.table-scroll</span> caps height at <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">65vh</span> and scrolls vertically, while the table inside it scrolls horizontally, inside the page which scrolls vertically. On Players, Targets and Last-year auction that's three scroll axes in one thumb zone. <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">65vh</span> also fights mobile browser chrome.</div>
+    </div>
+    <div style="background:#171b22;border:1px solid #2a3039;border-left:3px solid #ffb454;border-radius:12px;padding:14px 16px;margin-bottom:8px">
+      <div style="font-size:14px;line-height:1.6;text-wrap:pretty"><b>The modal is a desktop dialog on a phone.</b> <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">6vh 16px</span> padding, <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">max-height:86vh</span>, a 27px ✕ in the top-right corner — the hardest point on a phone to reach — no bottom-sheet treatment, no drag-to-dismiss, no body scroll lock, no safe-area padding. Its 18-bar weekly chart with 9px labels renders inside a 358px-wide box.</div>
+    </div>
+    <div style="background:#171b22;border:1px solid #2a3039;border-left:3px solid #ffb454;border-radius:12px;padding:14px 16px;margin-bottom:8px">
+      <div style="font-size:14px;line-height:1.6;text-wrap:pretty"><b>Two breakpoints for one job.</b> <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">.two-col</span> collapses at 800px, everything else at 760px — so between 761 and 800px the layout is half-mobile. Both are desktop-down queries: the CSS is written desktop-first for an app that is used on phones.</div>
+    </div>
+
+    <!-- 08 LEAKAGE -->
+    <h2 style="margin:40px 0 4px;font-size:13px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:0.1em;text-transform:uppercase;color:#4c8dff">08 — System leakage</h2>
+    <h3 style="margin:0 0 12px;font-size:21px;font-weight:650;letter-spacing:-0.01em">~25 inline style objects in the views</h3>
+    <div style="border:1px solid #2a3039;border-radius:12px;overflow:hidden;margin-bottom:14px">
+      <div style="display:grid;grid-template-columns:1fr auto;gap:10px;padding:10px 12px;border-bottom:1px solid #20252e;font-size:13px"><div><span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">PlayerModal.tsx</span><div style="color:#8b95a3;font-size:12px">7 objects — a whole heading style, the grade badge size, a section label</div></div><div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#ff6b6b;text-align:right">7</div></div>
+      <div style="display:grid;grid-template-columns:1fr auto;gap:10px;padding:10px 12px;border-bottom:1px solid #20252e;font-size:13px"><div><span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">style=&#123;&#123; marginTop: 0 &#125;&#125;</span><div style="color:#8b95a3;font-size:12px">the same paragraph reset, copy-pasted across 6 views</div></div><div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#ffb454;text-align:right">6</div></div>
+      <div style="display:grid;grid-template-columns:1fr auto;gap:10px;padding:10px 12px;border-bottom:1px solid #20252e;font-size:13px"><div><span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">Rules.tsx</span> <span style="color:#8b95a3">maxWidth 420 ×2, marginBottom 16</span></div><div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#8b95a3;text-align:right">3</div></div>
+      <div style="display:grid;grid-template-columns:1fr auto;gap:10px;padding:10px 12px;border-bottom:1px solid #20252e;font-size:13px"><div><span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">Rookies.tsx</span> <span style="color:#8b95a3">marginTop 8 ×2, marginBottom 16</span></div><div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#8b95a3;text-align:right">3</div></div>
+      <div style="display:grid;grid-template-columns:1fr auto;gap:10px;padding:10px 12px;font-size:13px"><div><span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">marginLeft: "auto"</span> <span style="color:#8b95a3">layout via inline style — Targets, Inflation</span></div><div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#8b95a3;text-align:right">2</div></div>
+    </div>
+    <div style="background:#171b22;border:1px solid #2a3039;border-left:3px solid #ffb454;border-radius:12px;padding:14px 16px;margin-bottom:8px">
+      <div style="font-size:14px;line-height:1.6;text-wrap:pretty"><b>Icons are emoji and glyph characters</b> — 🏈 (28px logo), 🧠, ✕, ↻, ↺, †, ≈, ▸/▾, ▲/▼, ⚠, →. No icon set, so size, weight, optical alignment and color are whatever the system font gives. Emoji also render in full color regardless of context, so 🏈 and 🧠 are the two most saturated things on the screen.</div>
+    </div>
+    <div style="background:#171b22;border:1px solid #2a3039;border-left:3px solid #ffb454;border-radius:12px;padding:14px 16px;margin-bottom:8px">
+      <div style="font-size:14px;line-height:1.6;text-wrap:pretty"><b>Layout classes are reused as spacing hacks.</b> <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">.needs</span> (a flex row of positional-need pills) is reused on the Team screen to hold the "Inflation-adjusted" checkbox and the "Reset to recommended" button; <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">.controls</span> (a header element) is reused inside the Trades page body.</div>
+    </div>
+
+    <!-- PRIORITY -->
+    <h2 style="margin:40px 0 4px;font-size:13px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:0.1em;text-transform:uppercase;color:#4c8dff">09 — Priority</h2>
+    <h3 style="margin:0 0 12px;font-size:21px;font-weight:650;letter-spacing:-0.01em">What to fix, in order</h3>
+    <div style="border:1px solid #2a3039;border-radius:12px;overflow:hidden;margin-bottom:32px">
+      <div style="display:grid;grid-template-columns:26px 1fr;gap:10px;padding:12px;border-bottom:1px solid #20252e;font-size:14px;line-height:1.5"><div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:#ff6b6b;font-weight:700">1</div><div><b>Persistent thumb-reachable nav.</b> Bottom tab bar with safe-area inset; retire the mobile <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">&lt;select&gt;</span>.</div></div>
+      <div style="display:grid;grid-template-columns:26px 1fr;gap:10px;padding:12px;border-bottom:1px solid #20252e;font-size:14px;line-height:1.5"><div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:#ff6b6b;font-weight:700">2</div><div><b>16px minimum on every form control</b> + a 44px control height token. Kills the iOS zoom bug and every sub-44 target at once.</div></div>
+      <div style="display:grid;grid-template-columns:26px 1fr;gap:10px;padding:12px;border-bottom:1px solid #20252e;font-size:14px;line-height:1.5"><div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:#ff6b6b;font-weight:700">3</div><div><b>A mobile row pattern to replace horizontal-scroll tables</b> on Team, Players, Targets, Market.</div></div>
+      <div style="display:grid;grid-template-columns:26px 1fr;gap:10px;padding:12px;border-bottom:1px solid #20252e;font-size:14px;line-height:1.5"><div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:#ffb454;font-weight:700">4</div><div><b>Semantic color tokens.</b> Collapse 28 colors → ~14 named roles; one success/warning/danger pair replaces four parallel systems.</div></div>
+      <div style="display:grid;grid-template-columns:26px 1fr;gap:10px;padding:12px;border-bottom:1px solid #20252e;font-size:14px;line-height:1.5"><div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:#ffb454;font-weight:700">5</div><div><b>One button component</b> with primary / secondary / ghost / segmented variants — replaces 10 treatments and 3 toggle groups.</div></div>
+      <div style="display:grid;grid-template-columns:26px 1fr;gap:10px;padding:12px;border-bottom:1px solid #20252e;font-size:14px;line-height:1.5"><div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:#ffb454;font-weight:700">6</div><div><b>Type scale + 4pt spacing scale.</b> 14 sizes → 7 steps; 21 spacing values → 7.</div></div>
+      <div style="display:grid;grid-template-columns:26px 1fr;gap:10px;padding:12px;border-bottom:1px solid #20252e;font-size:14px;line-height:1.5"><div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:#ffb454;font-weight:700">7</div><div><b>Bottom-sheet modal</b> with focus trap, scroll lock and a reachable dismiss.</div></div>
+      <div style="display:grid;grid-template-columns:26px 1fr;gap:10px;padding:12px;font-size:14px;line-height:1.5"><div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:#8b95a3;font-weight:700">8</div><div><b>Focus-visible ring, chip primitive, icon set</b> — cleanup once the above land.</div></div>
+    </div>
+
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

@@ -1,0 +1,83 @@
+/* SleeperGM design tokens — paste into web/src/styles.css, replacing the current :root block.
+   Every value here already exists in the codebase today. This is a rename, not a recolor. */
+
+:root {
+  /* ---- Color: semantic roles (tint = fill, line = border, base, soft = text on tint) ---- */
+  --accent-tint: #23324d;
+  --accent-line: #35507d;
+  --accent: #4c8dff;
+  --accent-soft: #7fb0ff;
+
+  --success-tint: rgba(55, 209, 122, 0.15);
+  --success-line: #2a5c40;
+  --success: #37d17a;
+  --success-soft: #5fe0a0;
+
+  --warning-tint: rgba(255, 180, 84, 0.15);
+  --warning-line: #6b5a2e;
+  --warning: #ffb454;
+  --warning-soft: #ffc677;
+
+  --danger-tint: rgba(255, 107, 107, 0.15);
+  --danger-line: #6b2e2e;
+  --danger: #ff6b6b;
+  --danger-soft: #ff8f8f;
+
+  /* ---- Color: neutrals ---- */
+  --bg: #0e1116;
+  --surface: #171b22;
+  --surface-2: #1e242d;
+  --line: #2a3039;
+  --line-soft: #20252e;
+  --text: #e6e9ee;
+  --text-muted: #8b95a3;
+  --scrim: rgba(0, 0, 0, 0.6);
+
+  /* ---- Type ---- */
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+
+  --text-display: 30px;   --lh-display: 1.15;   --ls-display: -0.02em;
+  --text-title: 22px;     --lh-title: 1.25;     --ls-title: -0.01em;
+  --text-heading: 17px;   --lh-heading: 1.35;
+  --text-body: 15px;      --lh-body: 1.5;
+  --text-control: 16px;   /* MINIMUM on every input/select/textarea — prevents iOS focus zoom */
+  --text-label: 13px;     --lh-label: 1.4;
+  --text-caption: 12px;   --lh-caption: 1.45;
+  --text-micro: 11px;     --lh-micro: 1.3;      --ls-micro: 0.05em;
+
+  --weight-regular: 400;
+  --weight-medium: 600;
+  --weight-bold: 700;
+
+  /* ---- Space: 4pt scale ---- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 32px;
+  --space-8: 48px;
+
+  /* ---- Radius ---- */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-full: 999px;
+
+  /* ---- Size ---- */
+  --control-h: 44px;
+  --control-h-lg: 52px;
+  --control-h-sm: 36px;
+  --row-h: 64px;
+  --safe-b: env(safe-area-inset-bottom);
+}
+
+/* The only breakpoint. Base rules are mobile; this block adds the desktop layer.
+   @media (min-width: 760px) { ... } */
+
+/* Global focus ring — the current stylesheet has no :focus rule at all. */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
