@@ -62,7 +62,7 @@ function swapTable(swaps: Swap[], sharky: boolean) {
             <td className="r">{signed(s.capRelief)}</td>
             {!sharky && (
               <td>
-                <span className="badge keep">both ✓</span>
+                <span className="chip chip-solid chip-success">both ✓</span>
               </td>
             )}
           </tr>
@@ -117,7 +117,7 @@ export function TradesView({ teamId, teams, source }: { teamId: number | null; t
               <div className="needs">
                 Roster fit:{" "}
                 {d.myNeeds.map((n) => (
-                  <span key={n.position} className={"need-pill " + (n.need > 0 ? "short" : n.need < 0 ? "deep" : "")}>
+                  <span key={n.position} className={"chip " + (n.need > 0 ? "chip-solid chip-warning" : n.need < 0 ? "chip-solid chip-success" : "chip-neutral")}>
                     {n.position}: {n.need > 0 ? `need ${n.need}` : n.need < 0 ? `depth ${-n.need}` : "set"}
                   </span>
                 ))}

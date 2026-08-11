@@ -108,7 +108,7 @@ function AllPlayers() {
               </td>
               <td className="dim">{p.nflTeam ?? "—"}</td>
               <td className={p.rostered ? "dim" : ""}>
-                {p.rostered ? p.teamName : <span className="badge hold">FA</span>}
+                {p.rostered ? p.teamName : <span className="chip chip-solid chip-warning">FA</span>}
               </td>
               <td className="r">{pts(p.lastSeasonPoints)}</td>
               <td className="r">{p.yearsInLeague == null ? "—" : `${p.yearsInLeague} yr${p.yearsInLeague === 1 ? "" : "s"}`}</td>
@@ -119,7 +119,7 @@ function AllPlayers() {
       </table>
       </div>
       <div className="legend">
-        Free agents (<span className="badge hold">FA</span>) are unrostered but fantasy-relevant (in the ADP list or
+        Free agents (<span className="chip chip-solid chip-warning">FA</span>) are unrostered but fantasy-relevant (in the ADP list or
         50+ points last season). Keep $ / In league apply to rostered players only.
       </div>
     </>
@@ -160,7 +160,7 @@ function Trending() {
               <td className="dim">{p.nflTeam ?? "—"}</td>
               <td className="r strong">{p.count.toLocaleString()}</td>
               <td className={p.rostered ? "dim" : ""}>
-                {p.rostered ? p.teamName : <span className="badge hold">FA</span>}
+                {p.rostered ? p.teamName : <span className="chip chip-solid chip-warning">FA</span>}
               </td>
               <td className="r">{pts(p.lastSeasonPoints)}</td>
             </tr>
@@ -178,11 +178,11 @@ export function PlayersView() {
     <section>
       <div className="head-row">
         <h2>Players</h2>
-        <div className="subtabs">
-          <button className={sub === "all" ? "active" : ""} onClick={() => setSub("all")}>
+        <div className="seg">
+          <button className={sub === "all" ? "is-on" : ""} onClick={() => setSub("all")}>
             All players
           </button>
-          <button className={sub === "trending" ? "active" : ""} onClick={() => setSub("trending")}>
+          <button className={sub === "trending" ? "is-on" : ""} onClick={() => setSub("trending")}>
             Trending
           </button>
         </div>

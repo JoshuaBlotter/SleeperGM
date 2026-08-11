@@ -128,7 +128,7 @@ export function RulesView() {
             <div className="info-card" key={src}>
               <h4>
                 {info?.label ?? src}
-                {src === activeSource && <span className="pill-active">active</span>}
+                {src === activeSource && <span className="chip chip-solid chip-accent">active</span>}
               </h4>
               <p>
                 {info?.blurb ??

@@ -11,7 +11,7 @@ function costCell(cost: Record<string, number>) {
   return (
     <span className="cost-pills">
       {parts.map((p) => (
-        <span key={p} className="cost-pill">
+        <span key={p} className="chip chip-neutral">
           <span className={"pos pos-" + p}>{p}</span> {money(cost[p]!)}
         </span>
       ))}
@@ -141,11 +141,11 @@ export function RookiesView() {
         <h2>
           Rookies <span className="dim">· {b.season} · {b.rounds} round{b.rounds === 1 ? "" : "s"}{b.snake ? " · snake" : ""}</span>
         </h2>
-        <div className="subtabs">
-          <button className={sub === "prospects" ? "active" : ""} onClick={() => setSub("prospects")}>
+        <div className="seg">
+          <button className={sub === "prospects" ? "is-on" : ""} onClick={() => setSub("prospects")}>
             Prospects
           </button>
-          <button className={sub === "picks" ? "active" : ""} onClick={() => setSub("picks")}>
+          <button className={sub === "picks" ? "is-on" : ""} onClick={() => setSub("picks")}>
             Pick board
           </button>
         </div>

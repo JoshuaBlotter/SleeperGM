@@ -134,14 +134,14 @@ function Keepers({ teamId, source }: { teamId: number; source?: string }) {
       </div>
 
       <div className="needs">
-        <button className="refresh" onClick={resetRecommended}>
+        <button className="btn btn-secondary" onClick={resetRecommended}>
           Reset to recommended
         </button>
         <span className="dim">Your kept set feeds the Targets tab.</span>
         {overrideCount > 0 && (
           <span className="ov-note">
             {overrideCount} custom value{overrideCount === 1 ? "" : "s"} ·{" "}
-            <button className="link" onClick={clearAllOverrides}>
+            <button className="btn btn-ghost" onClick={clearAllOverrides}>
               Reset all
             </button>
           </span>
@@ -224,11 +224,11 @@ export function TeamView({ teamId, source }: { teamId: number | null; source?: s
             "Team"
           )}
         </h2>
-        <div className="subtabs">
-          <button className={sub === "keepers" ? "active" : ""} onClick={() => setSub("keepers")}>
+        <div className="seg">
+          <button className={sub === "keepers" ? "is-on" : ""} onClick={() => setSub("keepers")}>
             Keepers
           </button>
-          <button className={sub === "targets" ? "active" : ""} onClick={() => setSub("targets")}>
+          <button className={sub === "targets" ? "is-on" : ""} onClick={() => setSub("targets")}>
             Targets
           </button>
         </div>

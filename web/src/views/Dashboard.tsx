@@ -8,19 +8,26 @@ const ARCH_LABEL: Record<TeamProfile["archetype"], string> = {
   retooling: "Retooling",
   rebuilding: "Rebuilding",
 };
+const ARCH_CHIP: Record<TeamProfile["archetype"], string> = {
+  contender: "chip-solid chip-success",
+  "win-now": "chip-solid chip-warning",
+  balanced: "chip-neutral",
+  retooling: "chip-neutral",
+  rebuilding: "chip-solid chip-accent",
+};
 
 function ProfileCard({ p, onOpen }: { p: TeamProfile; onOpen: (id: number) => void }) {
   return (
     <button className={`brain-card arch-${p.archetype}`} onClick={() => onOpen(p.rosterId)} title="Open team">
       <div className="brain-card-head">
         <span className="team">{p.teamName}</span>
-        <span className={`arch-pill arch-${p.archetype}`}>{ARCH_LABEL[p.archetype]}</span>
+        <span className={`chip ${ARCH_CHIP[p.archetype]}`}>{ARCH_LABEL[p.archetype]}</span>
       </div>
       <div className="brain-scout">{p.scouting}</div>
       {p.tags.length > 0 && (
         <div className="brain-tags">
           {p.tags.map((t) => (
-            <span key={t} className="tag-chip">
+            <span key={t} className="chip chip-neutral">
               {t}
             </span>
           ))}
@@ -146,7 +153,7 @@ export function Dashboard({
               <td className="r">{t.players}</td>
               <td className="r">{t.taxi}</td>
               <td className="r">
-                <button className="link" onClick={() => onOpenTeam(t.rosterId)}>
+                <button className="btn btn-ghost" onClick={() => onOpenTeam(t.rosterId)}>
                   View →
                 </button>
               </td>

@@ -51,7 +51,7 @@ function Scarcity({ source }: { source?: string }) {
                   <div className="scar-row" key={p.playerId}>
                     <span className={p.kept ? "dim" : "strong"}>{p.name}</span>
                     <span className="r">{money(p.value)}</span>
-                    <span>{p.kept ? <span className="dim">kept</span> : <span className="badge keep">open</span>}</span>
+                    <span>{p.kept ? <span className="dim">kept</span> : <span className="chip chip-solid chip-success">open</span>}</span>
                   </div>
                 ))}
               </div>
@@ -204,11 +204,11 @@ function LastYearAuction({ source }: { source?: string }) {
             </option>
           ))}
         </select>
-        <div className="subtabs">
-          <button className={sort === "cost" ? "active" : ""} onClick={() => setSort("cost")}>
+        <div className="seg">
+          <button className={sort === "cost" ? "is-on" : ""} onClick={() => setSort("cost")}>
             Priciest
           </button>
-          <button className={sort === "gap" ? "active" : ""} onClick={() => setSort("gap")}>
+          <button className={sort === "gap" ? "is-on" : ""} onClick={() => setSort("gap")}>
             Biggest drop
           </button>
         </div>
@@ -248,7 +248,7 @@ function LastYearAuction({ source }: { source?: string }) {
                       kept {p.keeperCost == null ? "" : money(p.keeperCost)} · {p.ownerTeam}
                     </span>
                   ) : (
-                    <span className="badge hold">pool</span>
+                    <span className="chip chip-solid chip-warning">pool</span>
                   )}
                 </td>
               </tr>
@@ -271,14 +271,14 @@ export function InflationView({ source }: { source?: string }) {
     <section>
       <div className="head-row">
         <h2>Market</h2>
-        <div className="subtabs">
-          <button className={sub === "overview" ? "active" : ""} onClick={() => setSub("overview")}>
+        <div className="seg">
+          <button className={sub === "overview" ? "is-on" : ""} onClick={() => setSub("overview")}>
             Inflation
           </button>
-          <button className={sub === "scarcity" ? "active" : ""} onClick={() => setSub("scarcity")}>
+          <button className={sub === "scarcity" ? "is-on" : ""} onClick={() => setSub("scarcity")}>
             Scarcity
           </button>
-          <button className={sub === "auction" ? "active" : ""} onClick={() => setSub("auction")}>
+          <button className={sub === "auction" ? "is-on" : ""} onClick={() => setSub("auction")}>
             Last-year auction
           </button>
         </div>

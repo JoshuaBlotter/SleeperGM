@@ -60,7 +60,10 @@ function Detail({ d }: { d: PlayerDetail }) {
           </div>
         </div>
         <div className="grade-badge">
-          <span className={"badge " + gradeClass} style={{ fontSize: 20, padding: "6px 14px" }}>
+          <span
+            className={"chip chip-solid " + (gradeClass === "keep" ? "chip-success" : gradeClass === "hold" ? "chip-warning" : "chip-danger")}
+            style={{ fontSize: 20, padding: "6px 14px" }}
+          >
             {g.grade}
           </span>
           <div className="dim" style={{ fontSize: 11, marginTop: 4, textAlign: "center" }}>consistency</div>
@@ -75,7 +78,7 @@ function Detail({ d }: { d: PlayerDetail }) {
         <div className="finish-line">
           <span className="dim">Positional finish:</span>
           {d.finishes.map((f) => (
-            <span className="finish-chip" key={f.season} title={`${f.points} pts`}>
+            <span className="chip chip-neutral" key={f.season} title={`${f.points} pts`}>
               <span className="dim">{f.season}</span> {f.position}
               {f.rank}
             </span>
@@ -126,7 +129,7 @@ export function PlayerModal() {
   return (
     <div className="modal-backdrop" onClick={closePlayer}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
-        <button className="modal-close" onClick={closePlayer} aria-label="Close">
+        <button className="btn btn-icon modal-close" onClick={closePlayer} aria-label="Close">
           ✕
         </button>
         {details.loading ? (

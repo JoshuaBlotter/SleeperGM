@@ -115,7 +115,7 @@ export function App() {
               updated {updated || "—"}
             </span>
           ) : (
-            <button className="refresh" onClick={refresh} disabled={refreshing} title="Clear the server cache and reload with fresh Sleeper data">
+            <button className="btn btn-secondary" onClick={refresh} disabled={refreshing} title="Clear the server cache and reload with fresh Sleeper data">
               {refreshing ? "…" : "↻ Refresh"}
             </button>
           )}

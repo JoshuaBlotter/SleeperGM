@@ -20,7 +20,7 @@ function TierBands({ tiers, showPos }: { tiers: Tier[]; showPos?: boolean }) {
           </div>
           <div className="tier-chips">
             {t.players.map((p) => (
-              <button className="tier-chip" key={p.playerId} onClick={() => openPlayer(p.playerId)} title="Player detail">
+              <button className="chip chip-neutral chip-interactive" key={p.playerId} onClick={() => openPlayer(p.playerId)} title="Player detail">
                 {showPos && <span className={"pos pos-" + p.position}>{p.position}</span>}
                 <span className="strong">{p.name}</span>
                 <span className="dim">{money(p.value)}</span>
@@ -42,11 +42,11 @@ export function TiersView({ source }: { source?: string }) {
     <section>
       <div className="head-row">
         <h2>Tiers</h2>
-        <div className="subtabs">
-          <button className={sub === "position" ? "active" : ""} onClick={() => setSub("position")}>
+        <div className="seg">
+          <button className={sub === "position" ? "is-on" : ""} onClick={() => setSub("position")}>
             By position
           </button>
-          <button className={sub === "overall" ? "active" : ""} onClick={() => setSub("overall")}>
+          <button className={sub === "overall" ? "is-on" : ""} onClick={() => setSub("overall")}>
             Overall value
           </button>
         </div>
@@ -65,9 +65,9 @@ export function TiersView({ source }: { source?: string }) {
         <TierBands tiers={s.data!.overall} showPos />
       ) : (
         <>
-          <div className="filters">
+          <div className="seg">
             {POS.map((p) => (
-              <button key={p} className={"subtabs-btn " + (pos === p ? "on" : "")} onClick={() => setPos(p)}>
+              <button key={p} className={pos === p ? "is-on" : ""} onClick={() => setPos(p)}>
                 {p}
               </button>
             ))}

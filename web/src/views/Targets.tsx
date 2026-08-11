@@ -81,7 +81,7 @@ export function TargetsView({ teamId, source }: { teamId: number; source?: strin
       <div className="needs">
         Roster after keepers:{" "}
         {needChips.map((n) => (
-          <span key={n.pos} className={"need-pill " + (n.need > 0 ? "short" : n.need < 0 ? "deep" : "")}>
+          <span key={n.pos} className={"chip " + (n.need > 0 ? "chip-solid chip-warning" : n.need < 0 ? "chip-solid chip-success" : "chip-neutral")}>
             {n.pos}: {n.need > 0 ? `need ${n.need}` : n.need < 0 ? `depth ${-n.need}` : "set"}
           </span>
         ))}
@@ -118,9 +118,9 @@ export function TargetsView({ teamId, source }: { teamId: number; source?: strin
                 <td className="r">{money(t.worth)}</td>
                 <td>
                   {t.ownerTeamId == null ? (
-                    <span className="badge keep">FA</span>
+                    <span className="chip chip-solid chip-success">FA</span>
                   ) : (
-                    <span className="badge hold" title="rostered but projected to be cut → back to the auction">
+                    <span className="chip chip-solid chip-warning" title="rostered but projected to be cut → back to the auction">
                       cut? {teamName.get(t.ownerTeamId) ?? "?"}
                     </span>
                   )}
@@ -130,7 +130,16 @@ export function TargetsView({ teamId, source }: { teamId: number; source?: strin
                     {t.reasons.map((r, j) => (
                       <span
                         key={j}
-                        className={"why-chip" + (r.startsWith("fills") ? " good" : r.startsWith("stacks") ? " stack" : r.startsWith("⚠") ? " warn" : "")}
+                        className={
+                          "chip " +
+                          (r.startsWith("fills")
+                            ? "chip-solid chip-success"
+                            : r.startsWith("stacks")
+                              ? "chip-solid chip-accent"
+                              : r.startsWith("⚠")
+                                ? "chip-solid chip-warning"
+                                : "chip-neutral")
+                        }
                       >
                         {r}
                       </span>

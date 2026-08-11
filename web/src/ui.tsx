@@ -31,8 +31,10 @@ export function Surplus({ value }: { value: number }) {
   return <span className={`num ${cls}`}>{signed(value)}</span>;
 }
 
+const CALL_ROLE: Record<"keep" | "hold" | "cut", string> = { keep: "chip-success", hold: "chip-warning", cut: "chip-danger" };
+
 export function Call({ rec }: { rec: "keep" | "hold" | "cut" }) {
-  return <span className={`badge ${rec}`}>{rec}</span>;
+  return <span className={`chip chip-solid ${CALL_ROLE[rec]}`}>{rec}</span>;
 }
 
 export function Loading({ what }: { what: string }) {
