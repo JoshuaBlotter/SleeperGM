@@ -23,7 +23,7 @@ export interface PlayerGrade {
   boomLine: number; // the position's boom threshold (so the UI colors bars by the SAME rule)
   bustLine: number; // the position's bust threshold
   maxShare: number; // biggest week as a share of the season total (0..1)
-  firstWeek: number; // first league week with data (a late start ≈ waiver/breakout, not injury)
+  firstWeek: number; // first NFL week the player actually played (a late start ≈ call-up/breakout, not injury)
   lastWeek: number;
   grade: Grade;
   archetype: Archetype;
@@ -80,8 +80,9 @@ export function gradePlayer(log: WeekScore[], position: string): PlayerGrade {
   const grade: Grade = med >= floor.a ? "A" : med >= floor.b ? "B" : "C";
 
   let archetype: Archetype;
-  // Small sample: a late FIRST week means they weren't rostered until mid-season (a waiver/breakout add),
-  // which is a "late riser", NOT an injury. A short log that starts early = actually lost weeks.
+  // Small sample: the log comes from league-wide stats and counts only weeks actually played, so a late
+  // FIRST week means the player did not appear until mid-season (a call-up or breakout) — a "late riser",
+  // NOT an injury. A short log that STARTS early is a player who lost weeks along the way.
   if (games < 10) archetype = firstWeek >= 6 ? "late-riser" : "injury-limited";
   else if (grade === "A" && boomCount >= Math.ceil(games * 0.4)) archetype = "league-winner"; // elite floor + boomed ~half the weeks
   else if (boomCount === 0 && bustCount >= Math.ceil(games * 0.4)) archetype = "bust"; // never booms, mostly duds

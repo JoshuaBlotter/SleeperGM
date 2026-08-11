@@ -10,8 +10,8 @@ const ARCHETYPE_BLURB: Record<string, string> = {
   "boom-bust": "High variance — real ceiling weeks and duds in equal measure.",
   "one-week-wonder": "One big week carried the season total; otherwise thin.",
   bust: "Never really hit — mostly dud weeks, no boom games. Fade.",
-  "late-riser": "Only rostered late (a mid-season breakout) — small, recent sample.",
-  "injury-limited": "Rostered for few weeks — likely lost time.",
+  "late-riser": "Didn't play until midseason — a call-up or breakout. Small, recent sample.",
+  "injury-limited": "Played few games despite an early start — likely lost time to injury.",
 };
 
 /** Bar height is data, not design — set as a property so the file carries no inline style objects. */
@@ -130,8 +130,8 @@ function Detail({ d }: { d: PlayerDetail }) {
         {partial && (
           <>
             {" "}
-            Only weeks <strong>rostered in the league</strong> are tracked, so earlier NFL weeks may be missing (this
-            log is wk {g.firstWeek}–{g.lastWeek}).
+            Every NFL week is checked, so the gaps are weeks this player <strong>did not play</strong> — bye, injury or
+            inactive. Only games actually played count toward the grade (this log runs wk {g.firstWeek}–{g.lastWeek}).
           </>
         )}
       </p>

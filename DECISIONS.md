@@ -2,6 +2,25 @@
 
 Non-obvious choices and their rationale, so we don't re-litigate them. Newest at top.
 
+## 2026-08-11 — Issue #10: a caveat that outlived the code it described
+The drilldown claimed "Only weeks **rostered in the league** are tracked, so earlier NFL weeks may be
+missing". That was true of an earlier implementation that read weekly scores out of league matchups. It
+has not been true since scoring moved to Sleeper's per-week **stats** endpoint — `core/engines/points.ts`
+says so at the top: it "covers EVERY player (not just those rostered in our league)" and counts a
+player-week only when `gp >= 1`. So the app does factor in every week, and a gap is not a rostering
+artifact — it is a week the player **did not play**: bye, injury or inactive. Jalen Hurts' single gap is
+Philadelphia's week 9 bye.
+
+**The same stale assumption had leaked into three more places**, all corrected: the `late-riser` blurb
+("Only rostered late") and the `injury-limited` blurb ("Rostered for few weeks") in `PlayerModal.tsx`,
+plus the `firstWeek` doc comment and the archetype branch comment in `engines/playerDetail.ts`, and the
+`weekly` field comment in `app.ts`. The archetype *logic* is unaffected and stays: with a league-wide
+stats source, `firstWeek >= 6` with a short log still means the player did not appear until midseason —
+a call-up or breakout rather than lost time — which is exactly what the branch keys on.
+
+Copy-only fix; no engine behaviour changed, so no new tests. The bug was that prose and code disagreed,
+and the code was right.
+
 ## 2026-08-11 — Issue #11 "years in league wrong": two bugs, one of them the label
 Reported as "Matt Stanford has not been in the league the same years as Trevor Lawrence". Both read
 **5y**. Investigating turned up two separate defects; only the second is what the reporter saw.

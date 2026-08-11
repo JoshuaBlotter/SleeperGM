@@ -457,7 +457,7 @@ export interface PlayerDetail {
   position: string;
   nflTeam: string | null;
   season: string; // the season the weekly log is from
-  weekly: WeekScore[]; // week-tagged game log (weeks rostered in the league)
+  weekly: WeekScore[]; // week-tagged game log — every NFL week the player actually played, not just ours
   grade: PlayerGrade;
   finishes: SeasonFinish[]; // positional finish every season in the league (newest first)
   rostered: boolean;

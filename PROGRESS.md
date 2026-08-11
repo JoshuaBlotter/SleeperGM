@@ -14,6 +14,16 @@
   (A.J. Brown $45, Pickens $35, Hurts $29, Achane $25, McConkey $16). Sheet salaries show `†`; players
   not in the sheet fall back to computed (`≈`).
 
+## Shipped 2026-08-11 (issue #10 — drilldown caveat was false)
+- The drilldown said "Only weeks **rostered in the league** are tracked, so earlier NFL weeks may be
+  missing". Untrue since scoring moved to Sleeper's per-week **stats** endpoint, which covers every
+  player and counts a week only when `gp >= 1`. Every NFL week *is* factored in; a gap is a week the
+  player didn't play (bye / injury / inactive). Hurts' one gap is the PHI week-9 bye.
+- Same stale assumption fixed in three more spots: the `late-riser` and `injury-limited` archetype
+  blurbs, and doc comments in `engines/playerDetail.ts` + `app.ts`.
+- Copy only — no engine behaviour changed, so no new tests. Archetype logic still holds under the
+  league-wide source (`firstWeek >= 6` + short log = appeared late, not injured).
+
 ## Shipped 2026-08-11 (issue #11 — "years in league wrong")
 - **Two defects, only the second was the reported one.**
   1. `yearsInLeague` computed `currentYear − firstAcquisition + 1` (a **span**) while its own comment
