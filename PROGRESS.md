@@ -14,6 +14,19 @@
   (A.J. Brown $45, Pickens $35, Hurts $29, Achane $25, McConkey $16). Sheet salaries show `†`; players
   not in the sheet fall back to computed (`≈`).
 
+## Shipped 2026-08-11 (issue #7 — week-by-week score on hover/tap)
+- The drilldown chart now reads the week's score out beside its heading (`Wk 12 · 30.9 pts`) on
+  **hover, tap or keyboard focus**; the non-selected bars dim to 0.35 so the asked-for week stands out.
+  Tapping the active week clears it. Gap weeks read `did not play`.
+- Replaces a `title` tooltip that never fired on touch — i.e. the feature was missing on phones, which
+  is the only viewport this app is really used on. Chose a readout over a floating bubble: a bubble on
+  a 16px bar needs edge-clamping inside a scrolling sheet and your finger covers it.
+- Columns are `<button>`s now (focus ring, per-week `aria-label`, `aria-live` readout). A column is
+  17px wide at 390px — a knowing exception to the 44px rule, since 17 weeks can't each be 44px in
+  358px and the full 160px height is the hit area.
+- New `.chart-head` (baseline-aligned) because `.head-row`'s `flex-start` + `h3` top margin left the
+  readout floating above the title.
+
 ## Shipped 2026-08-11 (issue #10 — drilldown caveat was false)
 - The drilldown said "Only weeks **rostered in the league** are tracked, so earlier NFL weeks may be
   missing". Untrue since scoring moved to Sleeper's per-week **stats** endpoint, which covers every

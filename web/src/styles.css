@@ -335,8 +335,26 @@ h3 { margin: var(--space-6) 0 var(--space-2); color: var(--text-muted); font-siz
 .stat-cell.bad .v { color: var(--danger); }
 
 .wk-chart { display: flex; align-items: flex-end; gap: var(--space-1); height: 160px; margin: var(--space-2) 0; }
-.wk-col { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; height: 100%; justify-content: flex-end; }
-.wk-bar { width: 100%; flex: none; min-height: 3px; border-radius: var(--radius-bar) var(--radius-bar) 0 0; background: var(--accent); }
+/* A column is a button so hover, tap and keyboard all reach the same readout. It is deliberately
+   narrower than the 44px control minimum: 17 weeks cannot each be 44px inside 358px, and a data
+   mark is not a control. The full 160px height is the hit area, which keeps it tappable. */
+.wk-col {
+  flex: 1 1 0; min-width: 0; height: 100%;
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+  border: 0; padding: 0; background: transparent; font: inherit; cursor: pointer;
+}
+.wk-bar { width: 100%; flex: none; min-height: 3px; border-radius: var(--radius-bar) var(--radius-bar) 0 0; background: var(--accent); transition: opacity 0.12s ease; }
+/* Pointing at one week pushes the rest back so the one you asked about reads clearly. */
+.wk-chart.has-active .wk-col:not(.is-active) .wk-bar { opacity: 0.35; }
+.wk-col.is-active .wk-num { color: var(--text); }
+/* Not .head-row: that aligns to flex-start, and an h3's own top margin then drops the heading
+   below whatever sits beside it. The readout has to sit ON the heading's baseline. */
+.chart-head {
+  display: flex; align-items: baseline; justify-content: space-between;
+  flex-wrap: wrap; gap: var(--space-2); margin: var(--space-6) 0 var(--space-2);
+}
+.chart-head h3 { margin: 0; }
+.wk-readout { font-size: var(--text-label); font-weight: var(--weight-medium); white-space: nowrap; font-variant-numeric: tabular-nums; }
 .wk-bar.boom { background: var(--success); }
 .wk-bar.bust { background: var(--danger); }
 .wk-bar.mid { background: var(--accent); }

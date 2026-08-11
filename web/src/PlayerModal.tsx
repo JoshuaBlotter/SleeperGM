@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { api, type PlayerDetail, type WeekScore } from "./api";
 import { Sheet } from "./Sheet";
 import { money, useAsync } from "./ui";
@@ -19,7 +20,24 @@ const barHeight = (pct: number) => (el: HTMLDivElement | null) => {
   el?.style.setProperty("height", `${pct}%`);
 };
 
-function WeekBars({ weekly, boomLine, bustLine }: { weekly: WeekScore[]; boomLine: number; bustLine: number }) {
+/**
+ * Weekly game log. Pointing at a week reads its score out above the chart rather than into a
+ * floating bubble: a bubble anchored to a 16px bar needs edge-clamping inside a scrolling sheet,
+ * and on a phone your finger covers it. The readout is also the only version of this that works
+ * on touch at all — the `title` tooltip it replaces never fired there.
+ */
+function WeekBars({
+  weekly,
+  boomLine,
+  bustLine,
+  season,
+}: {
+  weekly: WeekScore[];
+  boomLine: number;
+  bustLine: number;
+  season: string;
+}) {
+  const [active, setActive] = useState<number | null>(null);
   if (!weekly.length) return null;
   const max = Math.max(1, ...weekly.map((w) => w.points));
   const first = weekly[0]!.week;
@@ -27,29 +45,55 @@ function WeekBars({ weekly, boomLine, bustLine }: { weekly: WeekScore[]; boomLin
   const byWeek = new Map(weekly.map((w) => [w.week, w.points]));
   // Render the full week span so mid-season gaps (missed weeks) show as blanks with real week numbers.
   const span = Array.from({ length: last - first + 1 }, (_, i) => first + i);
+  const clear = (week: number) => setActive((a) => (a === week ? null : a));
+  const readout = (week: number) => {
+    const pts = byWeek.get(week);
+    return pts === undefined ? "did not play" : `${pts} pts`;
+  };
+
   return (
-    <div className="wk-chart" role="img" aria-label="weekly fantasy points">
-      {span.map((week, i) => {
-        const pts = byWeek.get(week);
-        // Every third week only — at 11px the full run collides below about 12 columns.
-        const label = i % 3 === 0 ? week : "";
-        if (pts === undefined) {
+    <>
+      <div className="chart-head">
+        <h3>{season} week by week</h3>
+        <span className="wk-readout" aria-live="polite">
+          {active == null ? (
+            <span className="dim">tap a week for its score</span>
+          ) : (
+            <>
+              Wk {active} · {readout(active)}
+            </>
+          )}
+        </span>
+      </div>
+      <div className={"wk-chart" + (active != null ? " has-active" : "")}>
+        {span.map((week, i) => {
+          const pts = byWeek.get(week);
+          // Every third week only — at 11px the full run collides below about 12 columns.
+          const label = i % 3 === 0 ? week : "";
+          const band = pts === undefined ? "gap" : pts >= boomLine ? "boom" : pts <= bustLine ? "bust" : "mid";
           return (
-            <div className="wk-col" key={week} title={`Wk ${week}: no data`}>
-              <div className="wk-bar gap" ref={barHeight(0)} />
+            <button
+              type="button"
+              key={week}
+              className={"wk-col" + (active === week ? " is-active" : "")}
+              // Hover for a mouse, tap for a finger, focus for a keyboard — same readout.
+              onMouseEnter={() => setActive(week)}
+              onMouseLeave={() => clear(week)}
+              onFocus={() => setActive(week)}
+              onBlur={() => clear(week)}
+              onClick={() => setActive((a) => (a === week ? null : week))}
+              aria-label={`Week ${week}: ${readout(week)}`}
+            >
+              <div
+                className={"wk-bar " + band}
+                ref={barHeight(pts === undefined ? 0 : Math.max(3, (pts / max) * 100))}
+              />
               <span className="wk-num">{label}</span>
-            </div>
+            </button>
           );
-        }
-        const band = pts >= boomLine ? "boom" : pts <= bustLine ? "bust" : "mid";
-        return (
-          <div className="wk-col" key={week} title={`Wk ${week}: ${pts}`}>
-            <div className={"wk-bar " + band} ref={barHeight(Math.max(3, (pts / max) * 100))} />
-            <span className="wk-num">{label}</span>
-          </div>
-        );
-      })}
-    </div>
+        })}
+      </div>
+    </>
   );
 }
 
@@ -117,8 +161,7 @@ function Detail({ d }: { d: PlayerDetail }) {
         </div>
       </div>
 
-      <h3>{d.season} week by week</h3>
-      <WeekBars weekly={d.weekly} boomLine={g.boomLine} bustLine={g.bustLine} />
+      <WeekBars weekly={d.weekly} boomLine={g.boomLine} bustLine={g.bustLine} season={d.season} />
       <div className="wk-key">
         <span className="chip chip-solid chip-success">boom ≥ {g.boomLine}</span>
         <span className="chip chip-solid chip-accent">solid — a startable week</span>

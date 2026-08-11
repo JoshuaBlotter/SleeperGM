@@ -2,6 +2,30 @@
 
 Non-obvious choices and their rationale, so we don't re-litigate them. Newest at top.
 
+## 2026-08-11 — Issue #7: a readout, not a tooltip
+Asked for "an on hover action to display the number they scored that week". A `title` tooltip already
+existed and was doing that badly — **it never fires on touch at all**, and this app is used almost
+entirely on phones, so the requested feature was effectively missing on the only viewport that matters.
+
+**A readout above the chart rather than a bubble on the bar.** A bubble anchored to a 16px-wide bar
+inside a scrolling sheet needs edge-clamping at both ends, and on a phone your finger covers the thing
+you are trying to read. A line on the chart's heading — `Wk 12 · 30.9 pts` — needs no positioning
+math, cannot overflow, and reads identically under a mouse and a thumb. Hover, tap and keyboard focus
+all drive the same state; tapping the active week clears it.
+
+**Columns became `<button>`s.** They are interactive now, so they should be focusable and announced;
+this also gets the global focus ring and an `aria-label` per week for free, and lets `aria-live` read
+the value out on change. The `title` attributes are gone — a native tooltip racing a live readout is
+noise.
+
+**A chart column is deliberately under the 44px touch minimum** (17px at 390px). Seventeen weeks cannot
+each be 44px inside 358px, and the invariant is about controls, not data marks — the full 160px column
+height is the hit area, which keeps it thumb-reachable. Noted here because it is a knowing exception.
+
+**`.chart-head` instead of reusing `.head-row`.** `.head-row` is `align-items: flex-start`, and an
+`h3`'s own top margin then drops the heading ~24px below anything sitting beside it — the readout
+floated above the title. The chart header baseline-aligns instead.
+
 ## 2026-08-11 — Issue #10: a caveat that outlived the code it described
 The drilldown claimed "Only weeks **rostered in the league** are tracked, so earlier NFL weeks may be
 missing". That was true of an earlier implementation that read weekly scores out of league matchups. It
