@@ -2,6 +2,23 @@
 
 Non-obvious choices and their rationale, so we don't re-litigate them. Newest at top.
 
+## 2026-08-11 — Task 6.2 (Market): the scarcity reveal, and where rows stop
+**Scarcity stays cards, not rows.** 6.2 says the cards "keep their bars but adopt card tokens" — the bar
+is the whole point of that screen and a row's trailing-metric zone has nowhere to put it. So the card
+survives; only the `<details class="reveal">` inside it becomes the row idiom: a 44px `.card-expander`
+with the row chevron, over `.row`s that run to the card's edges (`.card-rows` cancels the card padding)
+so they read as a list rather than a box inside a box. `.scar-row` is deleted with its only call site.
+`.reveal` stays — Rookies still uses it, and 6.3 owns that.
+
+**Δ and its percentage share the metric line, not a metric + microlabel.** Putting the percentage in the
+`--text-micro` label under the value would technically fit, but the criterion is that they stay on *one*
+line, and they are one value. `.row-metric-v` is now `white-space: nowrap` globally, which is right for
+every trailing metric — the widest case measured is `+$10 (+1000%)` at 124px of a 390px row.
+
+**`.filters` → `.toolbar` on the auction sub-tab.** The two are near-duplicates; `.toolbar` is the one
+documented for control bars inside a view body and it stacks full-width on mobile. `.filters` survives
+only as the desktop Players filter row, which is what PR 7.2's sweep will find.
+
 ## 2026-08-11 — Task 6.1 (Players): three calls the handoff left open
 **The trailing metric follows the sort key.** 6.1 says "rows with last-season points as the trailing
 metric", but the Row spec says the trailing zone is "the metric the screen is *about*" — and with sort

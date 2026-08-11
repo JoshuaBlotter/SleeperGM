@@ -410,7 +410,6 @@ h3 { margin: var(--space-6) 0 var(--space-2); color: var(--text-muted); font-siz
 .scar-fill.hot { background: var(--danger); }
 .scar-fill.warm { background: var(--warning); }
 .scar-fill.cool { background: var(--success); }
-.scar-row { display: grid; grid-template-columns: 1fr auto 48px; gap: var(--space-2); align-items: center; padding: 3px 0; border-bottom: 1px solid var(--line-soft); font-size: var(--text-label); }
 
 /* Segmented control (e.g. Players → All / Trending, Tiers position filter, Market sort) */
 .seg { display: flex; width: 100%; background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--radius-md); padding: 4px; gap: 4px; }
@@ -462,7 +461,8 @@ h3 { margin: var(--space-6) 0 var(--space-2); color: var(--text-muted); font-siz
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .row-metric { flex: none; text-align: right; }
-.row-metric-v { font-size: var(--text-heading); line-height: var(--lh-heading); font-weight: var(--weight-bold); }
+/* One value, one line — a delta and its percentage must never split across two. */
+.row-metric-v { font-size: var(--text-heading); line-height: var(--lh-heading); font-weight: var(--weight-bold); white-space: nowrap; }
 .row-metric-k { color: var(--text-muted); font-size: var(--text-micro); line-height: var(--lh-micro); text-transform: uppercase; letter-spacing: var(--ls-micro); }
 .row-metric.is-success .row-metric-v { color: var(--success); }
 .row-metric.is-danger .row-metric-v { color: var(--danger); }
@@ -474,6 +474,18 @@ h3 { margin: var(--space-6) 0 var(--space-2); color: var(--text-muted); font-siz
 .row-detail { min-width: 0; }
 .row-details dt { color: var(--text-muted); font-size: var(--text-micro); line-height: var(--lh-micro); text-transform: uppercase; letter-spacing: var(--ls-micro); }
 .row-details dd { margin: 0; font-size: var(--text-label); line-height: var(--lh-label); }
+
+/* A card's own disclosure: the <details> reveal at 44px, with the row chevron. */
+.card-expander {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--space-2);
+  width: 100%; min-height: var(--control-h); margin-top: var(--space-2); padding: 0;
+  border: 0; background: transparent; color: var(--text-muted);
+  font-family: inherit; font-size: var(--text-label); text-align: left; cursor: pointer;
+}
+.card-expander:hover { color: var(--text); }
+.card-expander[aria-expanded="true"] .row-chev { transform: rotate(180deg); }
+/* Rows inside a card run to its edges, so they read as a list and not a nested box. */
+.card-rows { margin: 0 calc(var(--space-4) * -1) calc(var(--space-4) * -1); border-top: 1px solid var(--line); }
 
 /* The player name inside a row: still inline text, but with a 44px hit area. */
 .row-title .plink { min-height: var(--control-h); }
