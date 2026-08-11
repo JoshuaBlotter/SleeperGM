@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { api, type ScoredTarget, type TargetCandidate } from "../api";
-import { ErrorBox, Loading, money, useAsync } from "../ui";
+import { Row, RowList } from "../Row";
+import { ErrorBox, Loading, money, useAsync, useIsDesktop } from "../ui";
 import { openPlayer } from "../playerModalStore";
 import { useKept } from "../keptStore";
 
@@ -44,11 +45,37 @@ function scoreTargets(
     .slice(0, 40);
 }
 
+/** Why a player scores where they do: need > stack > over-stack warning > tier. */
+function whyChip(reason: string, i: number) {
+  const role = reason.startsWith("fills")
+    ? "chip-solid chip-success"
+    : reason.startsWith("stacks")
+      ? "chip-solid chip-accent"
+      : reason.startsWith("⚠")
+        ? "chip-solid chip-warning"
+        : "chip-neutral";
+  return (
+    <span key={i} className={"chip " + role}>
+      {reason}
+    </span>
+  );
+}
+
+function AvailChip({ t, teamName }: { t: ScoredTarget; teamName: Map<number, string> }) {
+  if (t.ownerTeamId == null) return <span className="chip chip-solid chip-success">FA</span>;
+  return (
+    <span className="chip chip-solid chip-warning" title="rostered but projected to be cut → back to the auction">
+      cut? {teamName.get(t.ownerTeamId) ?? "?"}
+    </span>
+  );
+}
+
 export function TargetsView({ teamId, source }: { teamId: number; source?: string }) {
   const league = useAsync(() => api.league(source), [source]);
   const pool = useAsync(() => api.targetPool(source), [source]);
   const [kept] = useKept(teamId);
   const [assumeAll, setAssumeAll] = useState(false);
+  const isDesktop = useIsDesktop();
 
   const result = useMemo(() => {
     if (!pool.data || !league.data) return null;
@@ -94,66 +121,72 @@ export function TargetsView({ teamId, source }: { teamId: number; source?: strin
         </label>
       </div>
 
-      <div className="table-scroll">
-        <table className="grid">
-          <thead>
-            <tr>
-              <th className="r">#</th>
-              <th>Player</th>
-              <th>Pos</th>
-              <th>NFL</th>
-              <th className="r">Worth</th>
-              <th>Avail</th>
-              <th>Why</th>
-            </tr>
-          </thead>
-          <tbody>
-            {result.targets.map((t: ScoredTarget, i) => (
-              <tr key={t.playerId}>
-                <td className="r dim">{i + 1}</td>
-                <td>
-                  <button className="plink" onClick={() => openPlayer(t.playerId)}>{t.name}</button>
-                </td>
-                <td>
-                  <span className={"pos pos-" + t.position}>{t.position}</span>
-                </td>
-                <td className="dim">{t.nflTeam ?? "—"}</td>
-                <td className="r">{money(t.worth)}</td>
-                <td>
-                  {t.ownerTeamId == null ? (
-                    <span className="chip chip-solid chip-success">FA</span>
-                  ) : (
-                    <span className="chip chip-solid chip-warning" title="rostered but projected to be cut → back to the auction">
-                      cut? {teamName.get(t.ownerTeamId) ?? "?"}
-                    </span>
-                  )}
-                </td>
-                <td>
-                  <span className="why">
-                    {t.reasons.map((r, j) => (
-                      <span
-                        key={j}
-                        className={
-                          "chip " +
-                          (r.startsWith("fills")
-                            ? "chip-solid chip-success"
-                            : r.startsWith("stacks")
-                              ? "chip-solid chip-accent"
-                              : r.startsWith("⚠")
-                                ? "chip-solid chip-warning"
-                                : "chip-neutral")
-                        }
-                      >
-                        {r}
-                      </span>
-                    ))}
-                  </span>
-                </td>
+      {isDesktop ? (
+        <div className="table-scroll">
+          <table className="grid">
+            <thead>
+              <tr>
+                <th className="r">#</th>
+                <th>Player</th>
+                <th>Pos</th>
+                <th>NFL</th>
+                <th className="r">Worth</th>
+                <th>Avail</th>
+                <th>Why</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {result.targets.map((t: ScoredTarget, i) => (
+                <tr key={t.playerId}>
+                  <td className="r dim">{i + 1}</td>
+                  <td>
+                    <button className="plink" onClick={() => openPlayer(t.playerId)}>{t.name}</button>
+                  </td>
+                  <td>
+                    <span className={"pos pos-" + t.position}>{t.position}</span>
+                  </td>
+                  <td className="dim">{t.nflTeam ?? "—"}</td>
+                  <td className="r">{money(t.worth)}</td>
+                  <td>
+                    <AvailChip t={t} teamName={teamName} />
+                  </td>
+                  <td>
+                    <span className="why">{t.reasons.map(whyChip)}</span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <RowList>
+          {result.targets.map((t: ScoredTarget, i) => (
+            <Row
+              key={t.playerId}
+              leading={<span className="row-rank">{i + 1}</span>}
+              title={
+                <>
+                  <button className="plink" onClick={() => openPlayer(t.playerId)}>
+                    {t.name}
+                  </button>
+                  <span className={"pos pos-" + t.position}>{t.position}</span>
+                </>
+              }
+              /* Two chips is what fits on one line at 390px; the rest sit in the expander. */
+              meta={t.reasons.slice(0, 2).map(whyChip)}
+              metric={money(t.worth)}
+              metricLabel="worth"
+              details={[
+                { k: "NFL", v: t.nflTeam ?? "—" },
+                { k: "Avail", v: <AvailChip t={t} teamName={teamName} /> },
+                ...(t.reasons.length > 2
+                  ? [{ k: "Why", v: <span className="why">{t.reasons.slice(2).map(whyChip)}</span> }]
+                  : []),
+              ]}
+            />
+          ))}
+        </RowList>
+      )}
       <div className="legend">
         Availability is a projection: players worth ≥ their keeper cost are assumed kept (off the board) until managers
         lock — toggle <strong>Assume everyone available</strong> to ignore that. {result.availCount} available.

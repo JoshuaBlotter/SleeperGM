@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
+import { RotateCcw } from "lucide-react";
 import { api, type KeeperLine } from "../api";
-import { Call, ErrorBox, Loading, Surplus, money, signed, useAsync } from "../ui";
+import { Row, RowList } from "../Row";
+import { Call, ErrorBox, Loading, Surplus, money, signed, useAsync, useIsDesktop } from "../ui";
 import { clearAllOverrides, clearOverride, recommendation, setOverride, useOverrides } from "../overrides";
 import { openPlayer } from "../playerModalStore";
 import { hasKept, setKept as storeKept, useKept } from "../keptStore";
@@ -8,6 +10,19 @@ import { TargetsView } from "./Targets";
 
 type Line = KeeperLine & { overridden?: boolean };
 type Sub = "keepers" | "targets";
+
+/** Salary provenance: † from the league sheet, ≈ approximate. Data notation, not icons — kept as-is. */
+function SalaryMark({ line }: { line: Line }) {
+  if (line.salarySource === "sheet") return <sup className="mark">†</sup>;
+  if (line.approximate) return <sup className="mark warn">≈</sup>;
+  return null;
+}
+
+function acquired(l: Line): string {
+  return l.acquiredVia === "rookie" && l.rookiePick
+    ? `rookie ${l.rookiePick.round}.${String(l.rookiePick.slot).padStart(2, "0")}`
+    : l.acquiredVia;
+}
 
 /** An editable Worth cell: click to set a custom value; ↺ resets to the source value. */
 function WorthCell({ line, onSet, onReset }: { line: Line; onSet: (v: number) => void; onReset: () => void }) {
@@ -61,6 +76,7 @@ function Keepers({ teamId, source }: { teamId: number; source?: string }) {
   const s = useAsync(() => api.team(teamId, inflated, source), [teamId, inflated, source]);
   const ov = useOverrides();
   const [kept, setKept] = useKept(teamId);
+  const isDesktop = useIsDesktop();
 
   const lines: Line[] = useMemo(() => {
     return (s.data?.lines ?? []).map((l): Line => {
@@ -111,95 +127,168 @@ function Keepers({ teamId, source }: { teamId: number; source?: string }) {
         </label>
       </div>
 
-      <div className="cards">
-        <div className="card">
-          <div className="k">Keeping</div>
-          <div className="v">{sim.count}</div>
-          <div className="k">check rows to simulate</div>
-        </div>
-        <div className="card">
-          <div className="k">Sim cap used</div>
-          <div className="v">
-            {money(sim.used)} <span className="dim">/ ${budget}</span>
+      {isDesktop && (
+        <>
+          <div className="cards">
+            <div className="card">
+              <div className="k">Keeping</div>
+              <div className="v">{sim.count}</div>
+              <div className="k">check rows to simulate</div>
+            </div>
+            <div className="card">
+              <div className="k">Sim cap used</div>
+              <div className="v">
+                {money(sim.used)} <span className="dim">/ ${budget}</span>
+              </div>
+            </div>
+            <div className={"card " + (over ? "bad" : "good")}>
+              <div className="k">Cap {over ? "over by" : "left for auction"}</div>
+              <div className="v">{money(Math.abs(sim.left))}</div>
+            </div>
+            <div className="card">
+              <div className="k">Sim surplus</div>
+              <div className="v">{signed(sim.surplus)}</div>
+            </div>
           </div>
-        </div>
-        <div className={"card " + (over ? "bad" : "good")}>
-          <div className="k">Cap {over ? "over by" : "left for auction"}</div>
-          <div className="v">{money(Math.abs(sim.left))}</div>
-        </div>
-        <div className="card">
-          <div className="k">Sim surplus</div>
-          <div className="v">{signed(sim.surplus)}</div>
-        </div>
-      </div>
 
-      <div className="toolbar">
-        <button className="btn btn-secondary btn-block" onClick={resetRecommended}>
-          Reset to recommended
-        </button>
-        <span className="dim">Your kept set feeds the Targets tab.</span>
-        {overrideCount > 0 && (
+          <div className="toolbar">
+            <button className="btn btn-secondary" onClick={resetRecommended}>
+              Reset to recommended
+            </button>
+            <span className="dim">Your kept set feeds the Targets tab.</span>
+          </div>
+        </>
+      )}
+
+      {overrideCount > 0 && (
+        <div className="toolbar">
           <span className="ov-note">
             {overrideCount} custom value{overrideCount === 1 ? "" : "s"} ·{" "}
             <button className="btn btn-ghost" onClick={clearAllOverrides}>
               Reset all
             </button>
           </span>
-        )}
-      </div>
+        </div>
+      )}
 
-      <table className="grid">
-        <thead>
-          <tr>
-            <th style={{ width: 28 }}>
-              <input type="checkbox" checked={allChecked} onChange={toggleAll} title="Select all" />
-            </th>
-            <th>Player</th>
-            <th>Pos</th>
-            <th>Acquired</th>
-            <th className="r">Worth</th>
-            <th className="r">Keep $</th>
-            <th className="r">Surplus</th>
-            <th>Call</th>
-          </tr>
-        </thead>
-        <tbody>
-          {lines.map((l: Line) => (
-            <tr key={l.playerId} className={kept.has(l.playerId) ? "kept" : ""}>
-              <td>
-                <input type="checkbox" checked={kept.has(l.playerId)} onChange={() => toggle(l.playerId)} />
-              </td>
-              <td>
-                <button className="plink" onClick={() => openPlayer(l.playerId)}>{l.name}</button>
-                {l.salarySource === "sheet" ? <sup className="mark">†</sup> : l.approximate ? <sup className="mark warn">≈</sup> : null}
-              </td>
-              <td>
-                <span className={"pos pos-" + l.position}>{l.position}</span>
-              </td>
-              <td className="dim">
-                {l.acquiredVia === "rookie" && l.rookiePick
-                  ? `rookie ${l.rookiePick.round}.${String(l.rookiePick.slot).padStart(2, "0")}`
-                  : l.acquiredVia}
-              </td>
-              <td className="r">
-                <WorthCell line={l} onSet={(v) => setOverride(l.playerId, v)} onReset={() => clearOverride(l.playerId)} />
-              </td>
-              <td className="r">{money(l.keeperCostNextYear)}</td>
-              <td className="r">
-                <Surplus value={l.surplus} />
-              </td>
-              <td>
-                <Call rec={l.recommendation} />
-              </td>
+      {isDesktop ? (
+        <table className="grid">
+          <thead>
+            <tr>
+              <th className="check-col">
+                <input type="checkbox" checked={allChecked} onChange={toggleAll} title="Select all" />
+              </th>
+              <th>Player</th>
+              <th>Pos</th>
+              <th>Acquired</th>
+              <th className="r">Worth</th>
+              <th className="r">Keep $</th>
+              <th className="r">Surplus</th>
+              <th>Call</th>
             </tr>
+          </thead>
+          <tbody>
+            {lines.map((l: Line) => (
+              <tr key={l.playerId} className={kept.has(l.playerId) ? "kept" : ""}>
+                <td>
+                  <input type="checkbox" checked={kept.has(l.playerId)} onChange={() => toggle(l.playerId)} />
+                </td>
+                <td>
+                  <button className="plink" onClick={() => openPlayer(l.playerId)}>{l.name}</button>
+                  <SalaryMark line={l} />
+                </td>
+                <td>
+                  <span className={"pos pos-" + l.position}>{l.position}</span>
+                </td>
+                <td className="dim">{acquired(l)}</td>
+                <td className="r">
+                  <WorthCell line={l} onSet={(v) => setOverride(l.playerId, v)} onReset={() => clearOverride(l.playerId)} />
+                </td>
+                <td className="r">{money(l.keeperCostNextYear)}</td>
+                <td className="r">
+                  <Surplus value={l.surplus} />
+                </td>
+                <td>
+                  <Call rec={l.recommendation} />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      ) : (
+        <RowList>
+          {lines.map((l: Line) => (
+            <Row
+              key={l.playerId}
+              selected={kept.has(l.playerId)}
+              leading={
+                <input
+                  type="checkbox"
+                  checked={kept.has(l.playerId)}
+                  onChange={() => toggle(l.playerId)}
+                  aria-label={`Keep ${l.name}`}
+                />
+              }
+              title={
+                <>
+                  <button className="plink" onClick={() => openPlayer(l.playerId)}>
+                    {l.name}
+                  </button>
+                  <SalaryMark line={l} />
+                  <span className={"pos pos-" + l.position}>{l.position}</span>
+                </>
+              }
+              meta={`keep ${money(l.keeperCostNextYear)} · worth ${money(l.worth)} · ${acquired(l)}`}
+              metric={signed(l.surplus)}
+              metricRole={l.surplus > 0 ? "success" : l.surplus < 0 ? "danger" : "muted"}
+              metricLabel={<Call rec={l.recommendation} />}
+              details={[
+                {
+                  k: "Worth",
+                  v: <WorthCell line={l} onSet={(v) => setOverride(l.playerId, v)} onReset={() => clearOverride(l.playerId)} />,
+                },
+                { k: "Keep $", v: money(l.keeperCostNextYear) },
+                { k: "Acquired", v: acquired(l) },
+                { k: "Years kept", v: l.yearsKept },
+              ]}
+            />
           ))}
-        </tbody>
-      </table>
+        </RowList>
+      )}
       <div className="legend">
         <span className="mark">†</span> from league salary sheet · <span className="mark warn">≈</span> approximate ·
-        click a <strong>Worth</strong> to set a custom value (saved in this browser). Checked rows = your keepers,
-        shared with the <strong>Targets</strong> tab.
+        tap a row to edit its <strong>Worth</strong> (saved in this browser). Checked rows = your keepers, shared with
+        the <strong>Targets</strong> tab.
       </div>
+
+      {!isDesktop && (
+        <>
+          <div className="sim-spacer" />
+          <div className={"sim-bar" + (over ? " is-over" : "")}>
+            <div className="sim-figs">
+              <div className="sim-fig cap">
+                <span className="v">{money(Math.abs(sim.left))}</span>
+                <span className="k">cap {over ? "over by" : "left"}</span>
+              </div>
+              <div className="sim-fig">
+                <span className="v">{sim.count}</span>
+                <span className="k">keeping</span>
+              </div>
+            </div>
+            <button
+              className="btn btn-secondary push"
+              onClick={resetRecommended}
+              title="Reset to recommended"
+              aria-label="Reset to recommended"
+            >
+              <RotateCcw size={18} strokeWidth={1.5} /> Reset
+            </button>
+            <div className="sim-meta">
+              used {money(sim.used)} / ${budget} · sim surplus {signed(sim.surplus)}
+            </div>
+          </div>
+        </>
+      )}
     </>
   );
 }

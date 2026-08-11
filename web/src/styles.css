@@ -67,6 +67,7 @@
   --control-h-lg: 52px;  /* tab bar item, sheet header, top bar */
   --control-h-sm: 36px;  /* desktop only, or nested inside a 44px hit area */
   --row-h: 64px;         /* row card minimum */
+  --sim-h: 96px;         /* keeper sim bar — the app pads by this much when it is shown */
   --safe-b: env(safe-area-inset-bottom);
 }
 
@@ -221,7 +222,8 @@ input, select {
 }
 select { cursor: pointer; }
 input::placeholder { color: var(--text-muted); }
-input[type="checkbox"] { height: auto; width: 24px; accent-color: var(--accent); cursor: pointer; }
+/* 24x24 inside a 44px row. `height:auto` left these at the intrinsic 13px. */
+input[type="checkbox"] { height: 24px; width: 24px; accent-color: var(--accent); cursor: pointer; }
 
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2);
@@ -439,6 +441,43 @@ h3 { margin: var(--space-6) 0 var(--space-2); color: var(--text-muted); font-siz
 .card.bad { border-color: var(--danger-line); }
 .card.bad .v { color: var(--danger); }
 
+/* ---------- Row card — the mobile list primitive ---------- */
+.row-list { border: 1px solid var(--line); border-radius: var(--radius-md); overflow: hidden; margin: var(--space-2) 0 var(--space-1); }
+.row + .row { border-top: 1px solid var(--line-soft); }
+.row.is-selected { background: rgba(76, 141, 255, 0.07); }
+
+.row-main { display: flex; align-items: center; gap: var(--space-3); min-height: var(--row-h); padding: var(--space-3) var(--space-4); cursor: default; }
+.row-main[role="button"] { cursor: pointer; }
+.row-lead { flex: none; display: flex; align-items: center; justify-content: center; min-width: 24px; cursor: default; }
+.row-title-block { flex: 1 1 auto; min-width: 0; }
+.row-title { display: flex; align-items: center; gap: var(--space-2); min-width: 0; font-weight: var(--weight-medium); }
+.row-title > :first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.row-meta {
+  display: flex; align-items: center; flex-wrap: nowrap; gap: var(--space-1);
+  margin-top: 2px; color: var(--text-muted); font-size: var(--text-caption); line-height: var(--lh-caption);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.row-metric { flex: none; text-align: right; }
+.row-metric-v { font-size: var(--text-heading); line-height: var(--lh-heading); font-weight: var(--weight-bold); }
+.row-metric-k { color: var(--text-muted); font-size: var(--text-micro); line-height: var(--lh-micro); text-transform: uppercase; letter-spacing: var(--ls-micro); }
+.row-metric.is-success .row-metric-v { color: var(--success); }
+.row-metric.is-danger .row-metric-v { color: var(--danger); }
+.row-metric.is-muted .row-metric-v { color: var(--text-muted); }
+.row-chev { flex: none; color: var(--text-muted); transition: transform 0.15s ease; }
+.row.is-open .row-chev { transform: rotate(180deg); }
+
+.row-details { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2) var(--space-3); margin: 0; padding: 0 var(--space-4) var(--space-3); }
+.row-detail { min-width: 0; }
+.row-details dt { color: var(--text-muted); font-size: var(--text-micro); line-height: var(--lh-micro); text-transform: uppercase; letter-spacing: var(--ls-micro); }
+.row-details dd { margin: 0; font-size: var(--text-label); line-height: var(--lh-label); }
+
+/* The player name inside a row: still inline text, but with a 44px hit area. */
+.row-title .plink { min-height: var(--control-h); }
+.row-rank { color: var(--text-muted); font-size: var(--text-label); font-variant-numeric: tabular-nums; }
+
+/* Still block-scrolling on mobile for the lists PR 6 and 7 have yet to convert to rows;
+   deleting it before then would push five tables into page-level horizontal scroll. It is
+   now the ONLY scroll container in a list — .table-scroll no longer scrolls. */
 table.grid { width: 100%; border-collapse: collapse; margin: var(--space-2) 0 var(--space-1); display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; max-width: 100%; }
 table.grid th {
   text-align: left;
@@ -455,6 +494,7 @@ table.grid td { padding: var(--space-2) var(--space-3); border-bottom: 1px solid
 table.grid tr:hover td { background: var(--surface); }
 .r { text-align: right; }
 .push { margin-left: auto; }
+th.check-col { width: 28px; }
 .strong { font-weight: var(--weight-medium); }
 .dim { color: var(--text-muted); }
 
@@ -517,16 +557,17 @@ table.grid tr:hover td { background: var(--surface); }
 .two-col { display: grid; grid-template-columns: 1fr; gap: var(--space-4); }
 .two-col > * { min-width: 0; } /* let grid tracks shrink so inner tables scroll instead of overflowing */
 
-/* Height-capped, scrollable table (long lists e.g. Players) with a sticky header. */
-.table-scroll { max-height: 65vh; overflow: auto; border: 1px solid var(--line); border-radius: var(--radius-md); }
-.table-scroll table.grid { display: table; margin: 0; overflow-x: visible; }
-.table-scroll thead th { position: sticky; top: 0; background: var(--bg); z-index: 1; }
+/* Bordered container for a long table. The 65vh cap is gone: a capped list inside a
+   scrolling page is a nested scroll container, and on a phone it wastes a third of the screen. */
+.table-scroll { border: 1px solid var(--line); border-radius: var(--radius-md); }
+.table-scroll table.grid { margin: 0; }
 
 /* Generic control bar inside a view body. Stacks full-width on mobile so every
    control clears 44px; .controls is the app shell's and is never reused here. */
 .toolbar { display: flex; flex-direction: column; align-items: stretch; gap: var(--space-2); margin: var(--space-2) 0 var(--space-3); }
 .toolbar > * { width: 100%; }
-.toolbar .btn, .toolbar select, .toolbar input { width: 100%; }
+/* Checkboxes keep their 24px box — only text/select controls go full width. */
+.toolbar .btn, .toolbar select, .toolbar input:not([type="checkbox"]) { width: 100%; }
 
 /* Positional need pills — a pill row and nothing else. */
 .needs { display: flex; gap: var(--space-2); flex-wrap: wrap; margin: var(--space-1) 0 var(--space-2); color: var(--text-muted); align-items: center; font-size: var(--text-label); }
@@ -538,6 +579,30 @@ table.grid tr:hover td { background: var(--surface); }
 /* interactive keeper simulation */
 table.grid tr.kept td { background: rgba(76, 141, 255, 0.07); }
 table.grid tr.kept:hover td { background: rgba(76, 141, 255, 0.12); }
+
+/* Sim bar — the running keeper total, docked above the tab bar so cap left never
+   scrolls away while you work down the roster. Desktop keeps the stat cards instead. */
+.sim-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: calc(var(--control-h-lg) + var(--safe-b));
+  z-index: 25;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-4);
+  padding: var(--space-2) var(--space-4);
+  background: var(--surface-2);
+  border-top: 1px solid var(--line);
+}
+.sim-bar.is-over { background: var(--danger-tint); border-top-color: var(--danger-line); }
+.sim-figs { display: flex; gap: var(--space-5); }
+.sim-fig .v { display: block; font-size: var(--text-display); line-height: var(--lh-display); letter-spacing: var(--ls-display); font-weight: var(--weight-bold); }
+.sim-fig .k { color: var(--text-muted); font-size: var(--text-micro); line-height: var(--lh-micro); text-transform: uppercase; letter-spacing: var(--ls-micro); }
+.sim-bar.is-over .sim-fig.cap .v { color: var(--danger); }
+.sim-meta { flex: 1 1 100%; color: var(--text-muted); font-size: var(--text-caption); line-height: var(--lh-caption); }
+.sim-spacer { height: var(--sim-h); }
 
 /* data page filters + sortable headers */
 .filters { display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap; margin: var(--space-2) 0 var(--space-1); }
@@ -593,6 +658,6 @@ footer { margin-top: var(--space-6); padding-top: var(--space-3); border-top: 1p
 
   .toolbar { flex-direction: row; align-items: center; flex-wrap: wrap; }
   .toolbar > * { width: auto; }
-  .toolbar .btn, .toolbar select, .toolbar input { width: auto; }
+  .toolbar .btn, .toolbar select, .toolbar input:not([type="checkbox"]) { width: auto; }
   .toolbar .spacer { flex: 1 1 auto; }
 }
