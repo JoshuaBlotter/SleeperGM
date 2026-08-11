@@ -140,16 +140,26 @@ code { background: var(--surface-2); padding: 1px var(--space-2); border-radius:
   background: var(--bg);
   border-bottom: 1px solid var(--line);
 }
+/* Chip-shaped: a <select> on desktop, a button that opens a picker sheet on a phone. */
 .ctx-control {
   flex: 1 1 auto;
   min-width: 0;
   height: var(--control-h);
   border-radius: var(--radius-full);
+  border: 1px solid var(--line);
   background: var(--surface-2);
+  color: var(--text);
   padding: 0 var(--space-3);
+  font-family: inherit;
   font-size: var(--text-label);
   font-weight: var(--weight-medium);
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
 }
+.ctx-control:hover { border-color: var(--accent); }
 .ctx-meta { color: var(--text-muted); font-size: var(--text-label); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* ---------- Bottom tab bar — primary nav, always in the thumb zone ---------- */
@@ -195,33 +205,6 @@ code { background: var(--surface-2); padding: 1px var(--space-2); border-radius:
   border-radius: var(--radius-full);
 }
 .tabbar button.is-on .tabbar-icon { background: var(--accent-tint); }
-
-/* More — the overflow destinations. Becomes a Sheet in PR 4.3. */
-.more-scrim { position: fixed; inset: 0; background: var(--scrim); z-index: 29; }
-.more-menu {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: calc(var(--control-h-lg) + var(--safe-b));
-  z-index: 30;
-  background: var(--surface);
-  border-top: 1px solid var(--line);
-}
-.more-menu button {
-  display: flex;
-  align-items: center;
-  width: 100%;
-  min-height: var(--control-h);
-  padding: 0 var(--space-4);
-  border: 0;
-  border-bottom: 1px solid var(--line-soft);
-  background: transparent;
-  color: var(--text);
-  font-family: inherit;
-  font-size: var(--text-control);
-  cursor: pointer;
-}
-.more-menu button.is-on { color: var(--accent); background: var(--accent-tint); }
 
 @keyframes spin { to { transform: rotate(360deg); } }
 .spin { animation: spin 1s linear infinite; }
@@ -269,29 +252,86 @@ h3 { margin: var(--space-6) 0 var(--space-2); color: var(--text-muted); font-siz
 .h3-icon { display: flex; align-items: center; gap: var(--space-2); }
 .caption { font-size: var(--text-caption); }
 
-/* Player drilldown: clickable name + modal + weekly bar chart */
+/* Player drilldown: the clickable name that opens the sheet */
 .plink { background: transparent; border: 0; padding: 0; color: var(--text); font: inherit; font-weight: var(--weight-medium); cursor: pointer; text-align: left; display: inline-flex; align-items: center; min-height: var(--control-h); }
 .plink:hover { color: var(--accent); text-decoration: underline; }
 
-.modal-backdrop { position: fixed; inset: 0; background: var(--scrim); display: flex; align-items: flex-start; justify-content: center; padding: 6vh var(--space-4); z-index: 50; }
-.modal { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: var(--space-5); width: 100%; max-width: 640px; max-height: 86vh; overflow: auto; position: relative; }
-.modal-close { position: absolute; top: var(--space-2); right: var(--space-3); }
-.modal-head { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-3); }
-.grade-badge { text-align: center; flex-shrink: 0; }
-.arch-line { margin: var(--space-3) 0 var(--space-2); color: var(--text-muted); font-size: var(--text-label); }
-.finish-line { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); margin-bottom: var(--space-2); font-size: var(--text-label); }
-.stat-chips { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-4); font-size: var(--text-label); color: var(--text-muted); }
-.stat-chips b { color: var(--text); }
+/* ---------- Sheet — bottom-anchored on mobile, centered dialog on desktop ---------- */
+.sheet-scrim { position: fixed; inset: 0; z-index: 50; background: var(--scrim); display: flex; align-items: flex-end; justify-content: center; }
+.sheet {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-height: 92vh;
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  padding-bottom: var(--safe-b);
+}
+.sheet:focus { outline: none; }
+.sheet-handle { display: flex; justify-content: center; padding: var(--space-2) 0 var(--space-1); flex: none; touch-action: none; cursor: grab; }
+.sheet-handle span { display: block; width: 36px; height: 4px; border-radius: var(--radius-full); background: var(--line); }
+.sheet-head {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  flex: none;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-4) var(--space-3);
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+  touch-action: none;
+}
+.sheet-title-block { flex: 1 1 auto; min-width: 0; }
+.sheet-title { font-size: var(--text-title); line-height: var(--lh-title); letter-spacing: var(--ls-title); font-weight: var(--weight-bold); }
+.sheet-meta { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); margin-top: var(--space-1); color: var(--text-muted); font-size: var(--text-caption); }
+.sheet-body { flex: 1 1 auto; overflow: auto; -webkit-overflow-scrolling: touch; padding: var(--space-4); }
 
-.wk-chart { display: flex; align-items: flex-end; gap: var(--space-1); height: 130px; margin: var(--space-2) 0; }
-.wk-col { flex: 1 1 0; display: flex; flex-direction: column; align-items: center; height: 100%; justify-content: flex-end; }
-.wk-bar { width: 100%; min-height: 3px; border-radius: 3px 3px 0 0; background: var(--accent); }
+/* Picker sheet — one 44px row per option */
+.picker { display: flex; flex-direction: column; margin: calc(var(--space-4) * -1); }
+.picker-row {
+  display: flex; align-items: center; gap: var(--space-3);
+  min-height: var(--control-h); padding: var(--space-2) var(--space-4);
+  border: 0; border-bottom: 1px solid var(--line-soft); background: transparent;
+  color: var(--text); font-family: inherit; font-size: var(--text-control); text-align: left; cursor: pointer;
+}
+.picker-row:hover { background: var(--surface-2); }
+.picker-row.is-on { color: var(--accent); }
+.picker-label { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ---------- Player drilldown ---------- */
+.grade-banner { display: flex; align-items: center; gap: var(--space-3); background: var(--surface-2); border-radius: var(--radius-md); padding: var(--space-3); }
+.grade-mark { flex: none; width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-md); font-size: var(--text-title); font-weight: var(--weight-bold); }
+.grade-mark.keep { background: var(--success-tint); color: var(--success); }
+.grade-mark.hold { background: var(--warning-tint); color: var(--warning); }
+.grade-mark.cut { background: var(--danger-tint); color: var(--danger); }
+.grade-text { min-width: 0; }
+.grade-arch { font-weight: var(--weight-bold); text-transform: capitalize; }
+.grade-blurb { color: var(--text-muted); font-size: var(--text-caption); line-height: var(--lh-caption); }
+
+.finish-line { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); margin-top: var(--space-4); font-size: var(--text-label); }
+
+/* The eight-item stat run, as a scannable grid instead of a sentence. Six tracks so the
+   trailing pair (boom/bust) fills the last row instead of leaving a hole. */
+.stat-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: var(--space-2); margin-top: var(--space-4); }
+.stat-cell { grid-column: span 2; background: var(--surface-2); border-radius: var(--radius-md); padding: var(--space-2) var(--space-3); }
+.stat-cell.wide { grid-column: span 3; }
+.stat-cell .v { font-size: var(--text-title); line-height: var(--lh-title); font-weight: var(--weight-bold); }
+.stat-cell .k { color: var(--text-muted); font-size: var(--text-micro); line-height: var(--lh-micro); text-transform: uppercase; letter-spacing: var(--ls-micro); }
+.stat-cell.good .v { color: var(--success); }
+.stat-cell.bad .v { color: var(--danger); }
+
+.wk-chart { display: flex; align-items: flex-end; gap: var(--space-1); height: 160px; margin: var(--space-2) 0; }
+.wk-col { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; height: 100%; justify-content: flex-end; }
+.wk-bar { width: 100%; flex: none; min-height: 3px; border-radius: 3px 3px 0 0; background: var(--accent); }
 .wk-bar.boom { background: var(--success); }
 .wk-bar.bust { background: var(--danger); }
 .wk-bar.mid { background: var(--accent); }
 .wk-bar.gap { background: transparent; border-top: 1px dashed var(--line); }
-.wk-num { font-size: var(--text-micro); color: var(--text-muted); margin-top: 3px; }
-.wk-mid-key { color: var(--accent); font-weight: var(--weight-medium); }
+.wk-num { flex: none; height: 14px; font-size: var(--text-micro); line-height: var(--lh-micro); color: var(--text-muted); margin-top: 3px; }
+.wk-key { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-2); }
 
 /* Definition/info cards (e.g. Rules → value-source glossary). Prose wraps; no horizontal scroll. */
 .deck { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--space-3); margin: var(--space-2) 0 var(--space-1); }
@@ -524,7 +564,7 @@ footer { margin-top: var(--space-6); padding-top: var(--space-3); border-top: 1p
   .ctx { top: calc(var(--control-h-lg) + var(--space-4)); justify-content: flex-end; }
   .ctx-control { flex: 0 0 auto; max-width: 240px; }
 
-  .tabbar, .more-menu, .more-scrim { display: none; }
+  .tabbar { display: none; }
 
   main { padding-top: var(--space-6); }
   section > h2 { font-size: var(--text-title); }
@@ -545,6 +585,11 @@ footer { margin-top: var(--space-6); padding-top: var(--space-3); border-top: 1p
 
   .seg { width: auto; }
   .seg button { flex: 0 1 auto; padding: 0 var(--space-4); }
+
+  /* Sheets revert to a centered dialog. */
+  .sheet-scrim { align-items: flex-start; padding: 6vh var(--space-4); }
+  .sheet { max-width: 640px; max-height: 86vh; border: 1px solid var(--line); border-radius: var(--radius-lg); }
+  .sheet-handle { display: none; }
 
   .toolbar { flex-direction: row; align-items: center; flex-wrap: wrap; }
   .toolbar > * { width: auto; }

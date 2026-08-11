@@ -26,6 +26,25 @@ export function useAsync<T>(fn: () => Promise<T>, deps: unknown[]): { data?: T; 
   return state;
 }
 
+/** True above the one breakpoint (760px). Lets a view render a table on desktop and rows on a phone. */
+export function useIsDesktop(): boolean {
+  const [is, setIs] = useState(() => window.matchMedia("(min-width: 760px)").matches);
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 760px)");
+    const on = () => setIs(mq.matches);
+    on();
+    mq.addEventListener("change", on);
+    // Belt and braces: some viewport changes (device emulation, iPad split view) resize
+    // without dispatching a MediaQueryList change event.
+    window.addEventListener("resize", on);
+    return () => {
+      mq.removeEventListener("change", on);
+      window.removeEventListener("resize", on);
+    };
+  }, []);
+  return is;
+}
+
 export function Surplus({ value }: { value: number }) {
   const cls = value > 0 ? "pos" : value < 0 ? "neg" : "zero";
   return <span className={`num ${cls}`}>{signed(value)}</span>;

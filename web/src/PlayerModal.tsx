@@ -1,5 +1,5 @@
-import { useEffect } from "react";
 import { api, type PlayerDetail, type WeekScore } from "./api";
+import { Sheet } from "./Sheet";
 import { money, useAsync } from "./ui";
 import { closePlayer, useOpenPlayer } from "./playerModalStore";
 
@@ -14,6 +14,11 @@ const ARCHETYPE_BLURB: Record<string, string> = {
   "injury-limited": "Rostered for few weeks — likely lost time.",
 };
 
+/** Bar height is data, not design — set as a property so the file carries no inline style objects. */
+const barHeight = (pct: number) => (el: HTMLDivElement | null) => {
+  el?.style.setProperty("height", `${pct}%`);
+};
+
 function WeekBars({ weekly, boomLine, bustLine }: { weekly: WeekScore[]; boomLine: number; bustLine: number }) {
   if (!weekly.length) return null;
   const max = Math.max(1, ...weekly.map((w) => w.points));
@@ -24,21 +29,23 @@ function WeekBars({ weekly, boomLine, bustLine }: { weekly: WeekScore[]; boomLin
   const span = Array.from({ length: last - first + 1 }, (_, i) => first + i);
   return (
     <div className="wk-chart" role="img" aria-label="weekly fantasy points">
-      {span.map((week) => {
+      {span.map((week, i) => {
         const pts = byWeek.get(week);
+        // Every third week only — at 11px the full run collides below about 12 columns.
+        const label = i % 3 === 0 ? week : "";
         if (pts === undefined) {
           return (
             <div className="wk-col" key={week} title={`Wk ${week}: no data`}>
-              <div className="wk-bar gap" style={{ height: "3px" }} />
-              <span className="wk-num">{week}</span>
+              <div className="wk-bar gap" ref={barHeight(0)} />
+              <span className="wk-num">{label}</span>
             </div>
           );
         }
         const band = pts >= boomLine ? "boom" : pts <= bustLine ? "bust" : "mid";
         return (
           <div className="wk-col" key={week} title={`Wk ${week}: ${pts}`}>
-            <div className={"wk-bar " + band} style={{ height: `${Math.max(3, (pts / max) * 100)}%` }} />
-            <span className="wk-num">{week}</span>
+            <div className={"wk-bar " + band} ref={barHeight(Math.max(3, (pts / max) * 100))} />
+            <span className="wk-num">{label}</span>
           </div>
         );
       })}
@@ -49,29 +56,18 @@ function WeekBars({ weekly, boomLine, bustLine }: { weekly: WeekScore[]; boomLin
 function Detail({ d }: { d: PlayerDetail }) {
   const g = d.grade;
   const gradeClass = g.grade === "A" ? "keep" : g.grade === "B" ? "hold" : "cut";
+  const partial = g.firstWeek > 1 || g.lastWeek - g.firstWeek + 1 > g.games;
   return (
     <>
-      <div className="modal-head">
-        <div>
-          <h3 style={{ margin: 0, textTransform: "none", color: "var(--text)", fontSize: 18 }}>{d.name}</h3>
-          <div className="dim" style={{ fontSize: 13 }}>
-            <span className={"pos pos-" + d.position}>{d.position}</span> {d.nflTeam ?? "FA"} ·{" "}
-            {d.rostered ? `${d.teamName}${d.keeperCost == null ? "" : ` · keep ${money(d.keeperCost)}`}` : "free agent"}
-          </div>
+      {/* Grade and archetype are one judgement, so they read as one banner. */}
+      <div className="grade-banner">
+        <span className={"grade-mark " + gradeClass} title="consistency grade">
+          {g.grade}
+        </span>
+        <div className="grade-text">
+          <div className="grade-arch">{g.archetype.replace("-", " ")}</div>
+          <div className="grade-blurb">{ARCHETYPE_BLURB[g.archetype]}</div>
         </div>
-        <div className="grade-badge">
-          <span
-            className={"chip chip-solid " + (gradeClass === "keep" ? "chip-success" : gradeClass === "hold" ? "chip-warning" : "chip-danger")}
-            style={{ fontSize: 20, padding: "6px 14px" }}
-          >
-            {g.grade}
-          </span>
-          <div className="dim" style={{ fontSize: 11, marginTop: 4, textAlign: "center" }}>consistency</div>
-        </div>
-      </div>
-
-      <div className="arch-line">
-        <strong style={{ textTransform: "capitalize" }}>{g.archetype.replace("-", " ")}</strong> — {ARCHETYPE_BLURB[g.archetype]}
       </div>
 
       {d.finishes.length > 0 && (
@@ -86,32 +82,59 @@ function Detail({ d }: { d: PlayerDetail }) {
         </div>
       )}
 
-      <div className="stat-chips">
-        <span><b>{g.total}</b> total</span>
-        <span><b>{g.ppg}</b> ppg</span>
-        <span><b>{g.median}</b> median</span>
-        <span><b>{g.games}</b> games</span>
-        <span><b>{g.best}</b> best</span>
-        <span><b>{g.worst}</b> worst</span>
-        <span className="num pos"><b>{g.boomCount}</b> boom</span>
-        <span className="num neg"><b>{g.bustCount}</b> bust</span>
+      <div className="stat-grid">
+        <div className="stat-cell">
+          <div className="v">{g.total}</div>
+          <div className="k">total</div>
+        </div>
+        <div className="stat-cell">
+          <div className="v">{g.ppg}</div>
+          <div className="k">ppg</div>
+        </div>
+        <div className="stat-cell">
+          <div className="v">{g.median}</div>
+          <div className="k">median</div>
+        </div>
+        <div className="stat-cell">
+          <div className="v">{g.games}</div>
+          <div className="k">games</div>
+        </div>
+        <div className="stat-cell">
+          <div className="v">{g.best}</div>
+          <div className="k">best</div>
+        </div>
+        <div className="stat-cell">
+          <div className="v">{g.worst}</div>
+          <div className="k">worst</div>
+        </div>
+        <div className="stat-cell wide good">
+          <div className="v">{g.boomCount}</div>
+          <div className="k">boom weeks</div>
+        </div>
+        <div className="stat-cell wide bad">
+          <div className="v">{g.bustCount}</div>
+          <div className="k">bust weeks</div>
+        </div>
       </div>
 
-      <h4 className="dim" style={{ margin: "14px 0 4px", fontSize: 12, textTransform: "uppercase", letterSpacing: "0.04em" }}>
-        {d.season} week by week
-      </h4>
+      <h3>{d.season} week by week</h3>
       <WeekBars weekly={d.weekly} boomLine={g.boomLine} bustLine={g.bustLine} />
-      <div className="legend">
-        {(g.firstWeek > 1 || g.lastWeek - g.firstWeek + 1 > g.games) && (
+      <div className="wk-key">
+        <span className="chip chip-solid chip-success">boom ≥ {g.boomLine}</span>
+        <span className="chip chip-solid chip-accent">solid — a startable week</span>
+        <span className="chip chip-solid chip-danger">bust ≤ {g.bustLine}</span>
+      </div>
+      <p className="legend">
+        Bands are by {d.position} scoring. The grade is off the <strong>median</strong> week, so one huge game can't
+        fake it.
+        {partial && (
           <>
+            {" "}
             Only weeks <strong>rostered in the league</strong> are tracked, so earlier NFL weeks may be missing (this
-            log is wk {g.firstWeek}–{g.lastWeek}).<br />
+            log is wk {g.firstWeek}–{g.lastWeek}).
           </>
         )}
-        Bars: <span className="num pos">boom</span> (≥{g.boomLine}) · <span className="wk-mid-key">solid</span> = a
-        startable week · <span className="num neg">bust</span> (≤{g.bustLine}), by {d.position} scoring. Grade is off
-        the <strong>median</strong> week, so one huge game can't fake it.
-      </div>
+      </p>
     </>
   );
 }
@@ -119,27 +142,35 @@ function Detail({ d }: { d: PlayerDetail }) {
 export function PlayerModal() {
   const id = useOpenPlayer();
   const details = useAsync(() => api.playerDetails(), []);
-  useEffect(() => {
-    const h = (e: KeyboardEvent) => e.key === "Escape" && closePlayer();
-    window.addEventListener("keydown", h);
-    return () => window.removeEventListener("keydown", h);
-  }, []);
-  if (!id) return null;
-  const d = details.data?.[id];
+  const d = id ? details.data?.[id] : undefined;
   return (
-    <div className="modal-backdrop" onClick={closePlayer}>
-      <div className="modal" onClick={(e) => e.stopPropagation()}>
-        <button className="btn btn-icon modal-close" onClick={closePlayer} aria-label="Close">
-          ✕
-        </button>
-        {details.loading ? (
-          <p className="dim">Loading…</p>
-        ) : d ? (
-          <Detail d={d} />
-        ) : (
-          <p className="notice">No last-season game log for this player (e.g. a rookie or deep free agent).</p>
-        )}
-      </div>
-    </div>
+    <Sheet
+      open={!!id}
+      onClose={closePlayer}
+      labelledBy="player-sheet-title"
+      title={d?.name ?? (details.loading ? "Loading…" : "Player")}
+      meta={
+        d && (
+          <>
+            <span className={"pos pos-" + d.position}>{d.position}</span>
+            <span>{d.nflTeam ?? "FA"}</span>
+            <span>
+              ·{" "}
+              {d.rostered
+                ? `${d.teamName}${d.keeperCost == null ? "" : ` · keep ${money(d.keeperCost)}`}`
+                : "free agent"}
+            </span>
+          </>
+        )
+      }
+    >
+      {details.loading ? (
+        <p className="dim">Loading…</p>
+      ) : d ? (
+        <Detail d={d} />
+      ) : (
+        <p className="notice">No last-season game log for this player (e.g. a rookie or deep free agent).</p>
+      )}
+    </Sheet>
   );
 }

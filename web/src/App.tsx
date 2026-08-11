@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { BarChart3, Home, MoreHorizontal, RefreshCw, Search, Users } from "lucide-react";
 import { api } from "./api";
-import { useAsync } from "./ui";
+import { PickerSheet } from "./Sheet";
+import { useAsync, useIsDesktop } from "./ui";
 import { Dashboard } from "./views/Dashboard";
 import { TeamView } from "./views/Team";
 import { InflationView } from "./views/Inflation";
@@ -54,7 +55,8 @@ export function App() {
   const [teamId, setTeamId] = useState<number | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [isStatic, setIsStatic] = useState(false);
-  const [moreOpen, setMoreOpen] = useState(false);
+  const [picker, setPicker] = useState<"more" | "team" | "source" | null>(null);
+  const isDesktop = useIsDesktop();
   useEffect(() => {
     api.staticMode().then(setIsStatic);
   }, []);
@@ -63,10 +65,11 @@ export function App() {
   const activeSource = source || league.data?.valueSource || "";
   const updated = fmtUpdated(league.data?.updatedAt);
   const showTeamPicker = tab === "team" || tab === "trades";
+  const teamName = teams.find((t) => t.rosterId === teamId)?.teamName;
 
   function go(next: Tab) {
     setTab(next);
-    setMoreOpen(false);
+    setPicker(null);
   }
   function openTeam(id: number) {
     setTeamId(id);
@@ -113,38 +116,50 @@ export function App() {
         </div>
       </header>
 
-      {/* Context strip — only the controls that change WHAT you are looking at. */}
+      {/* Context strip — only the controls that change WHAT you are looking at. Native
+          selects on desktop (keyboard selection); picker sheets in the thumb zone on a phone. */}
       <div className="ctx">
-        {showTeamPicker && (
-          <select
-            className="ctx-control"
-            value={teamId ?? ""}
-            onChange={(e) => setTeamId(Number(e.target.value))}
-            aria-label="Team"
-          >
-            <option value="" disabled>
-              Pick a team…
-            </option>
-            {teams.map((t) => (
-              <option key={t.rosterId} value={t.rosterId}>
-                {t.teamName}
+        {showTeamPicker &&
+          (isDesktop ? (
+            <select
+              className="ctx-control"
+              value={teamId ?? ""}
+              onChange={(e) => setTeamId(Number(e.target.value))}
+              aria-label="Team"
+            >
+              <option value="" disabled>
+                Pick a team…
               </option>
-            ))}
-          </select>
-        )}
+              {teams.map((t) => (
+                <option key={t.rosterId} value={t.rosterId}>
+                  {t.teamName}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <button className="ctx-control" onClick={() => setPicker("team")} aria-label="Team">
+              {teamName ?? "Pick a team…"}
+            </button>
+          ))}
         {sources.length > 1 ? (
-          <select
-            className="ctx-control"
-            value={activeSource}
-            onChange={(e) => setSource(e.target.value)}
-            aria-label="Player value source"
-          >
-            {sources.map((src) => (
-              <option key={src} value={src}>
-                values: {src}
-              </option>
-            ))}
-          </select>
+          isDesktop ? (
+            <select
+              className="ctx-control"
+              value={activeSource}
+              onChange={(e) => setSource(e.target.value)}
+              aria-label="Player value source"
+            >
+              {sources.map((src) => (
+                <option key={src} value={src}>
+                  values: {src}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <button className="ctx-control" onClick={() => setPicker("source")} aria-label="Player value source">
+              values: {activeSource || "…"}
+            </button>
+          )
         ) : (
           <span className="ctx-meta">values: {activeSource || "…"}</span>
         )}
@@ -167,16 +182,30 @@ export function App() {
         Read-only · data from the Sleeper API + league salary sheet · keeper rules per <code>league-rules.ts</code>
       </footer>
 
-      {moreOpen && <div className="more-scrim" onClick={() => setMoreOpen(false)} />}
-      {moreOpen && (
-        <div className="more-menu" role="menu" aria-label="More sections">
-          {MORE.map((t) => (
-            <button key={t.id} role="menuitem" className={tab === t.id ? "is-on" : ""} onClick={() => go(t.id)}>
-              {t.label}
-            </button>
-          ))}
-        </div>
-      )}
+      <PickerSheet
+        open={picker === "more"}
+        onClose={() => setPicker(null)}
+        title="More"
+        options={MORE.map((t) => ({ value: t.id, label: t.label }))}
+        value={MORE.some((m) => m.id === tab) ? tab : null}
+        onPick={(id) => go(id)}
+      />
+      <PickerSheet
+        open={picker === "team"}
+        onClose={() => setPicker(null)}
+        title="Team"
+        options={teams.map((t) => ({ value: t.rosterId, label: t.teamName }))}
+        value={teamId}
+        onPick={setTeamId}
+      />
+      <PickerSheet
+        open={picker === "source"}
+        onClose={() => setPicker(null)}
+        title="Player value source"
+        options={sources.map((src) => ({ value: src, label: src }))}
+        value={activeSource}
+        onPick={setSource}
+      />
 
       <nav className="tabbar" aria-label="Sections">
         {PRIMARY.map(({ id, label, Icon }) => (
@@ -188,9 +217,9 @@ export function App() {
           </button>
         ))}
         <button
-          className={MORE.some((m) => m.id === tab) || moreOpen ? "is-on" : ""}
-          onClick={() => setMoreOpen((o) => !o)}
-          aria-expanded={moreOpen}
+          className={MORE.some((m) => m.id === tab) || picker === "more" ? "is-on" : ""}
+          onClick={() => setPicker((p) => (p === "more" ? null : "more"))}
+          aria-expanded={picker === "more"}
         >
           <span className="tabbar-icon">
             <MoreHorizontal size={22} strokeWidth={1.5} />
