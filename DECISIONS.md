@@ -2,6 +2,31 @@
 
 Non-obvious choices and their rationale, so we don't re-litigate them. Newest at top.
 
+## 2026-08-11 — Closing PR 1's token leaks, and `.gitattributes`
+**Three values never made it into the token set**, and PR 7's sweep did not catch them because it
+looked for dead rules, not for raw values. Found by re-running PR 1's own grep criteria against the
+finished stylesheet: two `rgba(76,141,255,…)` literals (the selected/kept row wash and its hover),
+`font-size: 15px` on `.seg button`, and `border-radius: 3px` on `.wk-bar`. The first two are now
+`--accent-wash` / `--accent-wash-hover` and `var(--text-body)` — 15px *is* the body step, it was just
+written out. Verified inert: every computed value is byte-identical before and after.
+
+**`.wk-bar` gets its own `--radius-bar: 3px` rather than mapping to `--radius-sm`.** The bars are 16px
+wide at 390px (30px on desktop). A 6px cap on a 16px bar rounds the entire top into a dome — the
+control radius scale is for controls, not for a data mark this narrow. A token keeps the "no raw radius
+outside `:root`" rule true while being explicit that this is a fifth value with exactly one caller.
+
+**Four sub-scale spacing values remain and should**: `padding: 1px`, `gap: 2px`, `margin: 2px` are
+optical nudges below the 4pt scale's own floor, and `padding: 0 14px` on inputs is specified verbatim
+by the handoff. Inventing `--space-0-5` for a 2px nudge would grow the token set to hide four numbers.
+
+**`.gitattributes` (`* text=auto eol=lf`).** `cli/src/index.ts` had sat "modified" with an empty
+`git diff` for the whole rollout. Cause: no `.gitattributes`, so normalization depended on each
+machine's `core.autocrlf`, and the file had picked up MIXED endings — some lines written by a tool
+(LF), some checked out by Git (CRLF). The repo content was never wrong (the index has always been
+uniformly LF; `git add --renormalize .` produced zero content changes). What was wrong was that
+correctness lived in a local setting instead of in the repo. `eol=lf` also makes the working tree
+consistent, so tool-written and Git-written files stop disagreeing.
+
 ## 2026-08-11 — PR 7: the stylesheet got BIGGER, and three other calls
 **The "meaningfully smaller than 17.6KB" criterion is not met — 17.6KB → 37.3KB source (26.8KB built).**
 Recording this rather than massaging it. The consolidation the handoff predicted did happen: 10 button

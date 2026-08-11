@@ -14,6 +14,18 @@
   (A.J. Brown $45, Pickens $35, Hurts $29, Achane $25, McConkey $16). Sheet salaries show `†`; players
   not in the sheet fall back to computed (`≈`).
 
+## Shipped 2026-08-11 (audit close-out + repo hygiene)
+- Re-ran **PR 1's own grep criteria** against the finished stylesheet and found three raw values the
+  sweep had missed: the kept-row wash rgba ×2 → `--accent-wash` / `--accent-wash-hover`, `.seg button`
+  `font-size: 15px` → `var(--text-body)`, `.wk-bar` `border-radius: 3px` → a dedicated `--radius-bar`
+  (mapping it to the 6px control step would dome a 16px-wide chart bar). No hex, rgba, px font-size or
+  px radius now exists outside `:root`; four sub-4px optical nudges remain by design.
+- **`.gitattributes` added** (`* text=auto eol=lf`). Fixes the long-standing phantom "modified"
+  `cli/src/index.ts` — it had mixed line endings in the working tree. Repo content was never wrong
+  (`git add --renormalize .` changed nothing); normalization just wasn't a repo property.
+- **There is no PR 8.** The plan is 7 PRs / 23 tasks and all are shipped. Phase 1 of the handoff is an
+  *inventory*; its remediation is Phases 2–3, i.e. the 7 PRs.
+
 ## Shipped 2026-08-11 (mobile design system, PR 7 — **rollout complete**)
 - **7.1 Dashboard + Rules**. Dashboard: team profiles and the standings table merge into **one** row
   list — archetype, record and roster value on the face, the scouting take and the rest behind the

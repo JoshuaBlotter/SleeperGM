@@ -1,0 +1,11 @@
+# Line endings are a property of the repo, not of whoever cloned it.
+#
+# Without this file, normalization depends on each machine's core.autocrlf. That is how
+# cli/src/index.ts ended up with MIXED endings in the working tree: some lines written by
+# a tool (LF), some checked out by Git (CRLF). It showed as permanently "modified" with an
+# empty `git diff`, which is noise nobody can act on.
+#
+# text=auto → Git stores text files with LF, whatever the working tree uses.
+# eol=lf     → and checks them back out as LF, so the working tree is consistent too.
+#              Node, TypeScript, Vite and every editor here handle LF on Windows fine.
+* text=auto eol=lf

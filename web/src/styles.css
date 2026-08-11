@@ -4,6 +4,9 @@
   --accent-line: #35507d;
   --accent: #4c8dff;
   --accent-soft: #7fb0ff;
+  /* A wash too faint to be a tint: the selected/kept row fill, and its hover. */
+  --accent-wash: rgba(76, 141, 255, 0.07);
+  --accent-wash-hover: rgba(76, 141, 255, 0.12);
 
   --success-tint: rgba(55, 209, 122, 0.15);
   --success-line: #2a5c40;
@@ -61,6 +64,8 @@
   --radius-md: 10px;   /* cards, segmented track, wells */
   --radius-lg: 14px;   /* sheet top corners */
   --radius-full: 999px;/* chips, pills */
+  --radius-bar: 3px;   /* chart bar cap ONLY — bars are 16px wide on a phone, so the
+                          6px control step would round the entire top into a dome */
 
   /* ---- Size ---- */
   --control-h: 44px;     /* default — every tappable control */
@@ -331,7 +336,7 @@ h3 { margin: var(--space-6) 0 var(--space-2); color: var(--text-muted); font-siz
 
 .wk-chart { display: flex; align-items: flex-end; gap: var(--space-1); height: 160px; margin: var(--space-2) 0; }
 .wk-col { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; height: 100%; justify-content: flex-end; }
-.wk-bar { width: 100%; flex: none; min-height: 3px; border-radius: 3px 3px 0 0; background: var(--accent); }
+.wk-bar { width: 100%; flex: none; min-height: 3px; border-radius: var(--radius-bar) var(--radius-bar) 0 0; background: var(--accent); }
 .wk-bar.boom { background: var(--success); }
 .wk-bar.bust { background: var(--danger); }
 .wk-bar.mid { background: var(--accent); }
@@ -362,7 +367,7 @@ h3 { margin: var(--space-6) 0 var(--space-2); color: var(--text-muted); font-siz
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
-  padding: 4px var(--space-2);
+  padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-full);
   font-size: var(--text-caption);
   font-weight: var(--weight-medium);
@@ -396,8 +401,8 @@ h3 { margin: var(--space-6) 0 var(--space-2); color: var(--text-muted); font-siz
 .scar-fill.cool { background: var(--success); }
 
 /* Segmented control (e.g. Players → All / Trending, Tiers position filter, Market sort) */
-.seg { display: flex; width: 100%; background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--radius-md); padding: 4px; gap: 4px; }
-.seg button { flex: 1; height: var(--control-h-sm); border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--text-muted); font-size: 15px; font-weight: var(--weight-medium); cursor: pointer; font-family: inherit; }
+.seg { display: flex; width: 100%; background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--radius-md); padding: var(--space-1); gap: var(--space-1); }
+.seg button { flex: 1; height: var(--control-h-sm); border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--text-muted); font-size: var(--text-body); font-weight: var(--weight-medium); cursor: pointer; font-family: inherit; }
 .seg button:hover { color: var(--text); }
 .seg button.is-on { background: var(--accent-tint); color: var(--text); }
 
@@ -429,7 +434,7 @@ h3 { margin: var(--space-6) 0 var(--space-2); color: var(--text-muted); font-siz
 /* ---------- Row card — the mobile list primitive ---------- */
 .row-list { border: 1px solid var(--line); border-radius: var(--radius-md); overflow: hidden; margin: var(--space-2) 0 var(--space-1); }
 .row + .row { border-top: 1px solid var(--line-soft); }
-.row.is-selected { background: rgba(76, 141, 255, 0.07); }
+.row.is-selected { background: var(--accent-wash); }
 
 .row-main { display: flex; align-items: center; gap: var(--space-3); min-height: var(--row-h); padding: var(--space-3) var(--space-4); cursor: default; }
 .row-main[role="button"] { cursor: pointer; }
@@ -536,7 +541,7 @@ th.check-col { width: 28px; }
   justify-content: center;
   min-width: 34px;
   text-align: center;
-  padding: 4px var(--space-2);
+  padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-full);
   font-size: var(--text-caption);
   font-weight: var(--weight-bold);
@@ -598,8 +603,8 @@ th.check-col { width: 28px; }
 .notice.error { border-color: var(--danger-line); color: var(--danger); }
 
 /* interactive keeper simulation */
-table.grid tr.kept td { background: rgba(76, 141, 255, 0.07); }
-table.grid tr.kept:hover td { background: rgba(76, 141, 255, 0.12); }
+table.grid tr.kept td { background: var(--accent-wash); }
+table.grid tr.kept:hover td { background: var(--accent-wash-hover); }
 
 /* Sim bar — the running keeper total, docked above the tab bar so cap left never
    scrolls away while you work down the roster. Desktop keeps the stat cards instead. */
