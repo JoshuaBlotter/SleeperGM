@@ -48,3 +48,36 @@ A personal Sleeper fantasy-football GM tool for the keeper/dynasty league **"Los
   (see `core/src/types.ts`).
 - Money is whole dollars (integers). Player ids are strings. Defenses are team codes ("SF", "DAL").
 - Prefer a small pure function + a test over a clever inline. Keep commands boring.
+
+## Design system (`web/`)
+The app is used on phones at 390–430px. Everything below is settled — reuse it, don't reinvent it.
+Full spec: `design_handoff_mobile_design_system/README.md`; the judgement calls are in `DECISIONS.md`.
+
+**Tokens.** Every color, size, space and radius is a `:root` custom property in `web/src/styles.css`.
+Nothing outside `:root` may contain a raw hex, `rgba()`, px font-size, px spacing or px radius. Four
+color roles (`accent` / `success` / `warning` / `danger`) × four steps (`-tint` fill, `-line` border,
+base, `-soft` text-on-tint), eight neutrals, eight type steps, a 4pt space scale, four radii.
+
+**Primitives — use these, don't add a tenth variant of one.**
+- `Row` / `RowList` (`web/src/Row.tsx`) — every list on mobile. Leading control, title block (name +
+  position chip, meta line), trailing metric with a micro label, optional expander for the columns a
+  table would have shown. `details: {k, v, wide?}[]`; `wide` spans both columns.
+- `Sheet` / `PickerSheet` (`web/src/Sheet.tsx`) — every modal and picker. Scroll lock, focus trap,
+  focus return, Escape / scrim / swipe dismiss are already handled.
+- `.btn` (primary/secondary/ghost/icon), `.seg` (segmented control, state class `.is-on`), `.chip`
+  (solid/outline/neutral, `.chip-interactive` when tappable), `.card` (one base rule shared by
+  `.info-card`, `.notice`, `.tier-band`, `.swap`), `.toolbar` (control bar inside a view body).
+
+**Invariants.** 44px minimum touch target with 8px between adjacent targets; 16px minimum font-size on
+every form control (below that iOS Safari zooms and stays zoomed); mobile-first CSS with exactly one
+`@media (min-width: 760px)` block; no horizontal scrolling and no nested scroll containers anywhere.
+
+**Mobile vs desktop.** Lists render as `Row`s below 760px and as tables above, via `useIsDesktop()`
+in `web/src/ui.tsx`. Exceptions, both deliberate: rookie prospects and swap cards are the same at
+every width.
+
+**Icons are Lucide** (`lucide-react`), 24px, stroke 1.5, colored by `currentColor`. No emoji, no glyph
+characters. `†` and `≈` stay — they are salary notation, not icons.
+
+**`npm run check` does NOT cover `web/`.** Verify it with `npx tsc -p web/tsconfig.json --noEmit` and
+`npm run web:build`.

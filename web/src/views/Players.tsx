@@ -90,7 +90,7 @@ function AllPlayers() {
       onClick={() => (sort === key ? setAsc(!asc) : (setSort(key), setAsc(false)))}
     >
       {label}
-      {sort === key ? (asc ? " ▲" : " ▼") : ""}
+      {sort === key && <Dir className="th-dir" size={13} strokeWidth={2} aria-label={asc ? "ascending" : "descending"} />}
     </th>
   );
 

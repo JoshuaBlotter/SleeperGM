@@ -14,7 +14,27 @@
   (A.J. Brown $45, Pickens $35, Hurts $29, Achane $25, McConkey $16). Sheet salaries show `†`; players
   not in the sheet fall back to computed (`≈`).
 
-## Shipped 2026-08-11 (mobile design system, task 6.4 — **PR 6 complete**)
+## Shipped 2026-08-11 (mobile design system, PR 7 — **rollout complete**)
+- **7.1 Dashboard + Rules**. Dashboard: team profiles and the standings table merge into **one** row
+  list — archetype, record and roster value on the face, the scouting take and the rest behind the
+  expander; tapping the name still opens the team. Season and team count moved to the context strip,
+  leaving two stat cards. Rules: keeper escalation becomes rows; the rookie cost matrix stays a table,
+  full at 760px+ and **one position at a time** behind a segmented control on a phone.
+- **Card is now one rule.** `.card`, `.info-card`, `.notice`, `.tier-band` and `.swap` share a single
+  base (surface / 1px line / radius-md / `--space-4`); variants add only a border color or a 3px left
+  accent. `.brain-card`, `.brain-grid` and the archetype border rules are gone with the merge.
+- **7.2 Sweep.** `table.grid`'s `display:block; overflow-x:auto` is **deleted** — the debt PR 5 took on
+  is paid, and no mobile screen has a scroll container. Glyph icons (`↺ ▲ ▼ →`) are Lucide; the League
+  Brain superlative emoji no longer render; `.chip-outline` (dead since `.pos` absorbed it) is gone.
+  One inline style remains by design (the scarcity bar's data-driven width). `CLAUDE.md` gained a
+  **Design system** section so future work reuses the tokens and primitives.
+- **One acceptance criterion is NOT met and cannot be**: "stylesheet meaningfully smaller than 17.6KB".
+  It is 37.3KB (26.8KB built). The rollout *added* seven components the 17.6KB version never had —
+  Sheet, Row, bottom tab bar, context strip, sim bar, swap card, list bar — plus focus/disabled states
+  and a desktop layer. Consolidation happened (10 button styles → 4, 10 chips → 3, 4 card rules → 1);
+  it was outweighed. See DECISIONS 2026-08-11.
+
+## Shipped 2026-08-11 (mobile design system, task 6.4 — PR 6 complete)
 - **6.4 Trades**: chips / dead weight / buy-low targets become rows below 760px (surplus trailing,
   worth and salary in the expander), tables above. The six-column swap table becomes a **swap card** at
   every width — give above, get below, `my surplus` and `my cap` as trailing metrics, with `from <team>`,
@@ -65,8 +85,8 @@
 - **Next open task: 6.2 Market.**
 
 ## Shipped 2026-08-10 (mobile design system, PRs 1–5 of 7)
-Rollout plan: `design_handoff_mobile_design_system/TASKS.md` (7 PRs, 23 tasks). **PRs 1–6 are on `main`;
-PR 7 is not started.** Nothing in `core/` changed — `web/` only.
+Rollout plan: `design_handoff_mobile_design_system/TASKS.md` (7 PRs, 23 tasks). **All 7 PRs are on
+`main` — the rollout is complete.** Nothing in `core/` changed — `web/` only.
 - **PR1 tokens / PR2 controls** (earlier session): the `:root` token set, mobile-first CSS with one
   760px breakpoint, and `.btn` / `.seg` / `.input` / `.chip` collapsing ~20 ad-hoc treatments.
 - **PR3 shell**: fixed bottom tab bar (Home · Team · Market · Players · More; Tiers/Trades/Rookies/

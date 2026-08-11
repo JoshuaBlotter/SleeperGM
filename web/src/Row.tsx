@@ -25,7 +25,8 @@ export function Row({
   metricLabel?: ReactNode;
   /** Colors the trailing metric: the number the screen is about. */
   metricRole?: "success" | "danger" | "muted";
-  details?: { k: string; v: ReactNode }[];
+  /** `wide` spans both columns — for prose, or a chip row that would otherwise be cramped. */
+  details?: { k: string; v: ReactNode; wide?: boolean }[];
   selected?: boolean;
 }) {
   const [open, setOpen] = useState(false);
@@ -71,7 +72,7 @@ export function Row({
       {expandable && open && (
         <dl className="row-details">
           {details!.map((d) => (
-            <div className="row-detail" key={d.k}>
+            <div className={"row-detail" + (d.wide ? " is-wide" : "")} key={d.k}>
               <dt>{d.k}</dt>
               <dd>{d.v}</dd>
             </div>

@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { AlertTriangle } from "lucide-react";
 import { api, type ScoredTarget, type TargetCandidate } from "../api";
 import { Row, RowList } from "../Row";
 import { ErrorBox, Loading, money, useAsync, useIsDesktop } from "../ui";
@@ -45,18 +46,25 @@ function scoreTargets(
     .slice(0, 40);
 }
 
-/** Why a player scores where they do: need > stack > over-stack warning > tier. */
+/**
+ * Why a player scores where they do: need > stack > over-stack warning > tier.
+ * The over-stack reason arrives from the engine prefixed with a warning glyph — the CLI
+ * prints it that way. The web UI shows an icon instead, so the glyph is stripped here
+ * rather than changed in `core`.
+ */
 function whyChip(reason: string, i: number) {
+  const warn = reason.startsWith("⚠");
   const role = reason.startsWith("fills")
     ? "chip-solid chip-success"
     : reason.startsWith("stacks")
       ? "chip-solid chip-accent"
-      : reason.startsWith("⚠")
+      : warn
         ? "chip-solid chip-warning"
         : "chip-neutral";
   return (
     <span key={i} className={"chip " + role}>
-      {reason}
+      {warn && <AlertTriangle size={12} strokeWidth={2} aria-hidden="true" />}
+      {warn ? reason.slice(1).trim() : reason}
     </span>
   );
 }
@@ -99,7 +107,7 @@ export function TargetsView({ teamId, source }: { teamId: number; source?: strin
 
   return (
     <>
-      <p className="dim" style={{ marginTop: 0 }}>
+      <p className="dim lede">
         Who to target in the auction, based on <strong>your {result.keptCount} kept players</strong> (checked on the
         Keepers tab). Blends positional need, value/tier, QB-stacks, and NFL-team diversity. Click a name for the
         drilldown.

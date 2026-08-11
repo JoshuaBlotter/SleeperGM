@@ -163,6 +163,12 @@ export function App() {
         ) : (
           <span className="ctx-meta">values: {activeSource || "…"}</span>
         )}
+        {/* League facts the Dashboard used to spend two stat cards on. */}
+        {tab === "dashboard" && (
+          <span className="ctx-meta">
+            {league.data?.season ?? "…"} · {teams.length} teams
+          </span>
+        )}
       </div>
 
       <main>

@@ -24,7 +24,7 @@ function acquired(l: Line): string {
     : l.acquiredVia;
 }
 
-/** An editable Worth cell: click to set a custom value; ↺ resets to the source value. */
+/** An editable Worth cell: click to set a custom value; the undo button resets it. */
 function WorthCell({ line, onSet, onReset }: { line: Line; onSet: (v: number) => void; onReset: () => void }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState("");
@@ -63,8 +63,8 @@ function WorthCell({ line, onSet, onReset }: { line: Line; onSet: (v: number) =>
         {money(line.worth)}
       </button>
       {line.overridden && (
-        <button className="ov-reset" title="Reset to source value" onClick={onReset}>
-          ↺
+        <button className="ov-reset" title="Reset to source value" aria-label="Reset to source value" onClick={onReset}>
+          <RotateCcw size={16} strokeWidth={1.5} />
         </button>
       )}
     </span>

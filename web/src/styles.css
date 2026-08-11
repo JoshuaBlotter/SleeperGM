@@ -339,32 +339,21 @@ h3 { margin: var(--space-6) 0 var(--space-2); color: var(--text-muted); font-siz
 .wk-num { flex: none; height: 14px; font-size: var(--text-micro); line-height: var(--lh-micro); color: var(--text-muted); margin-top: 3px; }
 .wk-key { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-2); }
 
-/* Definition/info cards (e.g. Rules → value-source glossary). Prose wraps; no horizontal scroll. */
+/* ---------- Card — ONE base rule. Stat cards, info/award cards, notices, tier bands and
+   swap cards are all this; variants add only a border color or a 3px left accent. ---------- */
+.card, .info-card, .notice, .tier-band, .swap {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+}
+
+/* Definition/info cards (e.g. Rules → value-source glossary, Dashboard → superlatives). */
 .deck { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--space-3); margin: var(--space-2) 0 var(--space-1); }
-.info-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-md); padding: var(--space-4); }
 .info-card h4 { margin: 0 0 var(--space-1); font-size: var(--text-body); font-weight: var(--weight-bold); display: flex; align-items: center; gap: var(--space-2); text-transform: none; letter-spacing: 0; color: var(--text); }
 .info-card p { margin: 0; color: var(--text-muted); font-size: var(--text-label); line-height: 1.55; }
-/* League Brain — superlative award cards + team profile cards */
-.info-card.award .award-winner { font-weight: var(--weight-bold); font-size: var(--text-body); margin: 2px 0 var(--space-2); }
-.info-card.award .award-winner .dim { font-weight: var(--weight-regular); }
-
-.brain-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: var(--space-3); margin: var(--space-2) 0 var(--space-1); }
-.brain-card {
-  text-align: left; background: var(--surface); border: 1px solid var(--line); border-left: 3px solid var(--line);
-  border-radius: var(--radius-md); padding: var(--space-4); cursor: pointer; color: var(--text); font: inherit; display: flex; flex-direction: column; gap: var(--space-2);
-}
-.brain-card:hover { border-color: var(--accent); }
-.brain-card-head { display: flex; justify-content: space-between; align-items: center; gap: var(--space-2); }
-.brain-card-head .team { font-weight: var(--weight-bold); font-size: var(--text-body); }
-.brain-scout { color: var(--text-muted); font-size: var(--text-label); line-height: 1.5; }
-.brain-tags { display: flex; flex-wrap: wrap; gap: var(--space-1); }
-.brain-stats { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-3); font-size: var(--text-caption); color: var(--text-muted); border-top: 1px solid var(--line); padding-top: var(--space-2); }
-.brain-stats b { color: var(--text); font-weight: var(--weight-bold); }
-
-/* Archetype accent (team profile card border): contenders warm, rebuilds cool, middle neutral */
-.brain-card.arch-contender { border-left-color: var(--success); }
-.brain-card.arch-win-now { border-left-color: var(--warning); }
-.brain-card.arch-rebuilding { border-left-color: var(--accent); }
+.award-winner { font-weight: var(--weight-bold); font-size: var(--text-body); margin: 2px 0 var(--space-2); }
+.award-winner .dim { font-weight: var(--weight-regular); }
 
 .why { display: inline-flex; flex-wrap: wrap; gap: var(--space-1); }
 
@@ -386,12 +375,8 @@ h3 { margin: var(--space-6) 0 var(--space-2); color: var(--text-muted); font-siz
 .chip-solid.chip-warning { background: var(--warning-tint); color: var(--warning); }
 .chip-solid.chip-danger { background: var(--danger-tint); color: var(--danger); }
 .chip-solid.chip-accent { background: var(--accent-tint); color: var(--accent); }
-/* Outline — position: transparent fill, colored border + text, bold */
-.chip-outline { background: transparent; border: 1px solid var(--line); color: var(--text-muted); font-weight: var(--weight-bold); }
-.chip-outline.chip-danger { border-color: var(--danger-line); color: var(--danger-soft); }
-.chip-outline.chip-success { border-color: var(--success-line); color: var(--success-soft); }
-.chip-outline.chip-accent { border-color: var(--accent-line); color: var(--accent-soft); }
-.chip-outline.chip-warning { border-color: var(--warning-line); color: var(--warning-soft); }
+/* The outline variant lives on `.pos` — see the position indicator below, which is the
+   only thing that ever used it. */
 /* Neutral — meta */
 .chip-neutral { background: var(--surface-2); border: 1px solid var(--line); color: var(--text-muted); }
 /* Interactive chips are 44px tall and otherwise identical — shape signals tappability */
@@ -400,7 +385,6 @@ h3 { margin: var(--space-6) 0 var(--space-2); color: var(--text-muted); font-siz
 
 /* Tier board (Tiers) */
 .tier-list { display: flex; flex-direction: column; gap: var(--space-3); }
-.tier-band { border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--surface); padding: var(--space-4); }
 .tier-band .tier-label { display: flex; justify-content: space-between; font-size: var(--text-caption); margin-bottom: var(--space-2); }
 .tier-chips { display: flex; flex-wrap: wrap; gap: var(--space-2); }
 
@@ -432,14 +416,7 @@ h3 { margin: var(--space-6) 0 var(--space-2); color: var(--text-muted); font-siz
 .toggle { color: var(--text-muted); font-size: var(--text-control); display: inline-flex; align-items: center; gap: var(--space-3); min-height: var(--control-h); cursor: pointer; }
 
 .cards { display: flex; gap: var(--space-2); flex-wrap: wrap; margin: var(--space-1) 0 var(--space-2); }
-.card {
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-md);
-  padding: var(--space-3) var(--space-3);
-  min-width: 130px;
-  flex: 1 1 42%;
-}
+.card { min-width: 130px; flex: 1 1 42%; }
 .card .k { color: var(--text-muted); font-size: var(--text-micro); text-transform: uppercase; letter-spacing: var(--ls-micro); }
 .card .v { font-size: var(--text-heading); font-weight: var(--weight-bold); margin-top: 2px; }
 .card.highlight { background: linear-gradient(135deg, var(--accent-tint), var(--surface)); border-color: var(--accent-line); }
@@ -477,8 +454,10 @@ h3 { margin: var(--space-6) 0 var(--space-2); color: var(--text-muted); font-siz
 
 .row-details { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2) var(--space-3); margin: 0; padding: 0 var(--space-4) var(--space-3); }
 .row-detail { min-width: 0; }
+.row-detail.is-wide { grid-column: 1 / -1; }
 .row-details dt { color: var(--text-muted); font-size: var(--text-micro); line-height: var(--lh-micro); text-transform: uppercase; letter-spacing: var(--ls-micro); }
 .row-details dd { margin: 0; font-size: var(--text-label); line-height: var(--lh-label); }
+.tag-row { display: flex; flex-wrap: wrap; gap: var(--space-1); }
 
 /* A card's own disclosure: the <details> reveal at 44px, with the row chevron. */
 .card-expander {
@@ -496,13 +475,7 @@ h3 { margin: var(--space-6) 0 var(--space-2); color: var(--text-muted); font-siz
    Replaces the six-column swap table, which needed sideways scrolling to reach the
    numbers the swap is about. The left accent is what tells the two modes apart. */
 .swap-list { display: grid; grid-template-columns: 1fr; gap: var(--space-2); margin: var(--space-2) 0 var(--space-1); }
-.swap {
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-left: 3px solid var(--success);
-  border-radius: var(--radius-md);
-  padding: var(--space-3) var(--space-4);
-}
+.swap { border-left: 3px solid var(--success); }
 .swap.is-sharky { border-left-color: var(--warning); }
 .swap-main { display: flex; align-items: center; gap: var(--space-3); }
 .swap-sides { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: var(--space-1); }
@@ -530,10 +503,9 @@ h3 { margin: var(--space-6) 0 var(--space-2); color: var(--text-muted); font-siz
 .row-title .plink { min-height: var(--control-h); }
 .row-rank { color: var(--text-muted); font-size: var(--text-label); font-variant-numeric: tabular-nums; }
 
-/* Still block-scrolling on mobile for the lists PR 6 and 7 have yet to convert to rows;
-   deleting it before then would push five tables into page-level horizontal scroll. It is
-   now the ONLY scroll container in a list — .table-scroll no longer scrolls. */
-table.grid { width: 100%; border-collapse: collapse; margin: var(--space-2) 0 var(--space-1); display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; max-width: 100%; }
+/* Every mobile list is rows now, so the block-scroll hack this rule carried since PR 5 is
+   gone: the only table that renders below 760px is the rookie cost matrix, and it fits. */
+table.grid { width: 100%; max-width: 100%; border-collapse: collapse; margin: var(--space-2) 0 var(--space-1); }
 table.grid th {
   text-align: left;
   color: var(--text-muted);
@@ -622,7 +594,7 @@ th.check-col { width: 28px; }
 .needs { display: flex; gap: var(--space-2); flex-wrap: wrap; margin: var(--space-1) 0 var(--space-2); color: var(--text-muted); align-items: center; font-size: var(--text-label); }
 .toolbar .needs { margin: 0; }
 
-.notice { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-md); padding: var(--space-4); margin-bottom: var(--space-4); color: var(--text-muted); }
+.notice { margin-bottom: var(--space-4); color: var(--text-muted); }
 .notice.error { border-color: var(--danger-line); color: var(--danger); }
 
 /* interactive keeper simulation */
@@ -694,6 +666,11 @@ table.grid tr.kept:hover td { background: rgba(76, 141, 255, 0.12); }
 th.sortable { cursor: pointer; user-select: none; }
 th.sortable:hover { color: var(--text); }
 th.sorted { color: var(--accent); }
+.th-dir { vertical-align: -1px; margin-left: var(--space-1); }
+
+/* A table that would look silly stretched: the rookie cost matrix. Needs to out-specify
+   `table.grid`'s own max-width. */
+table.table-narrow { max-width: 420px; }
 
 .rules-list { color: var(--text); line-height: 1.8; padding-left: var(--space-5); }
 .rules-list li { margin-bottom: 2px; }
@@ -725,7 +702,6 @@ footer { margin-top: var(--space-6); padding-top: var(--space-3); border-top: 1p
 
   .head-row { align-items: center; }
 
-  table.grid { display: table; overflow-x: visible; }
   table.grid td, table.grid th { white-space: normal; }
 
   .two-col { grid-template-columns: 1fr 1fr; gap: var(--space-6); }

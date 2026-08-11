@@ -1,6 +1,7 @@
 import { Brain } from "lucide-react";
-import { api, type LeagueBrain, type LeagueResp, type TeamProfile } from "../api";
-import { ErrorBox, Loading, useAsync } from "../ui";
+import { api, type LeagueBrain, type LeagueResp, type TeamProfile, type TeamRow } from "../api";
+import { Row, RowList } from "../Row";
+import { ErrorBox, Loading, money, record, useAsync } from "../ui";
 
 const ARCH_LABEL: Record<TeamProfile["archetype"], string> = {
   contender: "Contender",
@@ -17,45 +18,57 @@ const ARCH_CHIP: Record<TeamProfile["archetype"], string> = {
   rebuilding: "chip-solid chip-accent",
 };
 
-function ProfileCard({ p, onOpen }: { p: TeamProfile; onOpen: (id: number) => void }) {
+/**
+ * One row per team, carrying what the standings table and the profile card each used to
+ * show separately: archetype, record and roster value on the face, the scouting take and
+ * the rest of both sources behind the expander. Tapping the name opens the team.
+ */
+function TeamRowCard({ t, p, onOpen }: { t: TeamRow; p?: TeamProfile; onOpen: (id: number) => void }) {
+  const details: { k: string; v: React.ReactNode; wide?: boolean }[] = [];
+  if (p) {
+    details.push({ k: "scouting", v: p.scouting, wide: true });
+    if (p.tags.length)
+      details.push({
+        k: "tendencies",
+        wide: true,
+        v: (
+          <span className="tag-row">
+            {p.tags.map((tag) => (
+              <span key={tag} className="chip chip-neutral">
+                {tag}
+              </span>
+            ))}
+          </span>
+        ),
+      });
+    details.push({ k: "contender index", v: p.contenderIndex });
+    details.push({ k: "keeper surplus", v: money(p.keeperSurplus) });
+    details.push({ k: "trades", v: p.tradeCount });
+    details.push({ k: "rookie picks", v: p.rookiePicks });
+  }
+  details.push({ k: "players", v: t.players });
+  details.push({ k: "taxi", v: t.taxi });
+
   return (
-    <button className={`brain-card arch-${p.archetype}`} onClick={() => onOpen(p.rosterId)} title="Open team">
-      <div className="brain-card-head">
-        <span className="team">{p.teamName}</span>
-        <span className={`chip ${ARCH_CHIP[p.archetype]}`}>{ARCH_LABEL[p.archetype]}</span>
-      </div>
-      <div className="brain-scout">{p.scouting}</div>
-      {p.tags.length > 0 && (
-        <div className="brain-tags">
-          {p.tags.map((t) => (
-            <span key={t} className="chip chip-neutral">
-              {t}
-            </span>
-          ))}
-        </div>
-      )}
-      <div className="brain-stats">
-        <span>
-          Idx <b>{p.contenderIndex}</b>
-        </span>
-        <span>
-          Value <b>${p.rosterValue}</b>
-        </span>
-        <span>
-          Keepers <b>${p.keeperSurplus}</b>
-        </span>
-        <span>
-          Trades <b>{p.tradeCount}</b>
-        </span>
-        <span>
-          Picks <b>{p.rookiePicks}</b>
-        </span>
-      </div>
-    </button>
+    <Row
+      leading={<span className="row-rank">{t.rosterId}</span>}
+      title={
+        <>
+          <button className="plink" onClick={() => onOpen(t.rosterId)} title="Open team">
+            {t.teamName}
+          </button>
+          {p && <span className={`chip ${ARCH_CHIP[p.archetype]}`}>{ARCH_LABEL[p.archetype]}</span>}
+        </>
+      }
+      meta={`${record(t.wins, t.losses, t.ties)} · ${t.manager}`}
+      metric={p ? money(p.rosterValue) : "—"}
+      metricLabel="roster value"
+      details={details}
+    />
   );
 }
 
-function BrainSection({ brain, onOpenTeam }: { brain: { data?: LeagueBrain; error?: string; loading: boolean }; onOpenTeam: (id: number) => void }) {
+function Superlatives({ brain }: { brain: { data?: LeagueBrain; error?: string; loading: boolean } }) {
   if (brain.loading) return <Loading what="league brain" />;
   if (brain.error) return <ErrorBox message={brain.error} />;
   const b = brain.data!;
@@ -69,22 +82,13 @@ function BrainSection({ brain, onOpenTeam }: { brain: { data?: LeagueBrain; erro
       </div>
       <div className="deck">
         {b.superlatives.map((s) => (
-          <div key={s.id} className="info-card award">
-            <h4>
-              <span>{s.emoji}</span> {s.title}
-            </h4>
+          <div key={s.id} className="info-card">
+            <h4>{s.title}</h4>
             <div className="award-winner">
               {s.teamName} <span className="dim">· {s.stat}</span>
             </div>
             <p>{s.blurb}</p>
           </div>
-        ))}
-      </div>
-
-      <h3>Team profiles</h3>
-      <div className="brain-grid">
-        {b.profiles.map((p) => (
-          <ProfileCard key={p.rosterId} p={p} onOpen={onOpenTeam} />
         ))}
       </div>
     </>
@@ -104,64 +108,31 @@ export function Dashboard({
   if (league.loading) return <Loading what="league" />;
   if (league.error) return <ErrorBox message={league.error} />;
   const d = league.data!;
+  const profiles = new Map((brain.data?.profiles ?? []).map((p) => [p.rosterId, p] as const));
   return (
     <section>
       <h2>League Dashboard</h2>
+      {/* Season and team count live in the context strip; these are the two numbers you act on. */}
       <div className="cards">
-        <div className="card">
-          <div className="k">Season</div>
-          <div className="v">{d.season}</div>
-        </div>
         <div className="card">
           <div className="k">Salary cap</div>
           <div className="v">${d.capBudget}</div>
+          <div className="k">auction budget</div>
         </div>
-        <div className="card">
-          <div className="k">Teams</div>
-          <div className="v">{d.teams.length}</div>
-        </div>
-        <div className="card highlight">
+        <div className="card highlight big">
           <div className="k">Auction inflation</div>
           <div className="v">×{d.multiplier.toFixed(2)}</div>
         </div>
       </div>
 
-      <BrainSection brain={brain} onOpenTeam={onOpenTeam} />
+      <Superlatives brain={brain} />
 
-      <h3>Standings & rosters</h3>
-      <table className="grid">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Team</th>
-            <th>Manager</th>
-            <th>Record</th>
-            <th className="r">Players</th>
-            <th className="r">Taxi</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          {d.teams.map((t) => (
-            <tr key={t.rosterId}>
-              <td className="dim">{t.rosterId}</td>
-              <td className="strong">{t.teamName}</td>
-              <td className="dim">{t.manager}</td>
-              <td>
-                {t.wins}-{t.losses}
-                {t.ties ? `-${t.ties}` : ""}
-              </td>
-              <td className="r">{t.players}</td>
-              <td className="r">{t.taxi}</td>
-              <td className="r">
-                <button className="btn btn-ghost" onClick={() => onOpenTeam(t.rosterId)}>
-                  View →
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <h3>Teams</h3>
+      <RowList>
+        {d.teams.map((t) => (
+          <TeamRowCard key={t.rosterId} t={t} p={profiles.get(t.rosterId)} onOpen={onOpenTeam} />
+        ))}
+      </RowList>
     </section>
   );
 }

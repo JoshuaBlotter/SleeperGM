@@ -2,6 +2,38 @@
 
 Non-obvious choices and their rationale, so we don't re-litigate them. Newest at top.
 
+## 2026-08-11 — PR 7: the stylesheet got BIGGER, and three other calls
+**The "meaningfully smaller than 17.6KB" criterion is not met — 17.6KB → 37.3KB source (26.8KB built).**
+Recording this rather than massaging it. The consolidation the handoff predicted did happen: 10 button
+treatments → 4, 10 chip styles → 3, three toggle-group implementations → 1, four card rules → 1, and
+28 colors / 14 font sizes / 21 spacing values / 9 radii → a 24-token set. It was outweighed, because
+the same rollout *added* seven components the 17.6KB stylesheet never had — Sheet, Row, bottom tab bar,
+context strip, sim bar, swap card, list bar — plus a focus-visible layer, disabled states, and an
+explicit desktop layer where before there were two `max-width` queries. The criterion assumed this was
+a pure consolidation pass; it was a consolidation *and* a build-out. The honest metric is rule count
+per concept, not bytes.
+
+**Rules keeps one table, against the letter of 6.3's sibling line.** 7.1 says "the two `maxWidth:420`
+tables become rows" and then, in the same sentence, that the rookie cost table stays a table. There are
+exactly two such tables, so the sentence contradicts itself. The specific instruction wins: keeper
+escalation (5 rows × 3 columns, a list) becomes rows; the rookie cost matrix (12 slots × 4 positions,
+genuinely two-dimensional) stays a table, showing one position at a time on a phone.
+
+**No sticky first column on the rookie table.** 7.1 asks for one on desktop. That table is five narrow
+columns capped at 420px — it cannot overflow at any width we support, so the rule would never fire, and
+7.2 in the same PR asks me to delete rules nothing references. Writing inert CSS to satisfy one line
+item while another forbids it is the wrong trade.
+
+**One inline style survives.** `grep "style={" web/src` returns exactly one hit: the scarcity bar's
+`width: <score>%`. A data-driven dimension is what the style attribute is for; the alternatives are a
+ref + effect, or ~21 width utility classes. The criterion was aimed at the ~25 *static* style objects
+(`marginTop: 0` copy-pasted across six views), and those are all gone.
+
+**`table.grid`'s block-scroll is finally deleted.** PR 5 kept `display:block; overflow-x:auto` because
+five un-migrated tables would otherwise have pushed page-level horizontal scroll. With Dashboard's
+standings merged into rows, the only table that renders below 760px is the rookie cost matrix, and it
+measures 358px at 390px. Verified: zero scroll containers in `main` on all eight destinations.
+
 ## 2026-08-11 — Task 6.4 (Trades): the swap card is not a mobile variant
 **The swap card replaces the table at every width, unlike every other list in PR 6.** Those lists render
 rows on mobile and the old table above 760px because the Row spec explicitly allows it. The handoff

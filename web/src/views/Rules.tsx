@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { api } from "../api";
-import { ErrorBox, Loading, useAsync } from "../ui";
+import { Row, RowList } from "../Row";
+import { ErrorBox, Loading, useAsync, useIsDesktop } from "../ui";
 
 const SLOTS = Array.from({ length: 12 }, (_, i) => String(i + 1));
 const POS = ["QB", "RB", "WR", "TE"];
@@ -24,6 +26,50 @@ const SOURCE_INFO: Record<string, { label: string; blurb: string }> = {
   },
 };
 
+/** 12 slots × 4 positions is a matrix, so it stays a table — one position at a time on a phone. */
+function RookieCostTable({ table }: { table: Record<string, Record<string, number>> }) {
+  const isDesktop = useIsDesktop();
+  const [pos, setPos] = useState("RB");
+  const columns = isDesktop ? POS : [pos];
+  return (
+    <>
+      {!isDesktop && (
+        <div className="seg">
+          {POS.map((p) => (
+            <button key={p} className={pos === p ? "is-on" : ""} onClick={() => setPos(p)}>
+              {p}
+            </button>
+          ))}
+        </div>
+      )}
+      <table className="grid table-narrow">
+        <thead>
+          <tr>
+            <th>Slot</th>
+            {columns.map((p) => (
+              <th key={p} className="r">
+                {p}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {SLOTS.map((slot) => (
+            <tr key={slot}>
+              <td className="dim">{slot}</td>
+              {columns.map((p) => (
+                <td key={p} className="r">
+                  ${table[slot]?.[p] ?? "-"}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </>
+  );
+}
+
 export function RulesView() {
   const s = useAsync(() => api.rules(), []);
   const league = useAsync(() => api.league(), []);
@@ -38,11 +84,7 @@ export function RulesView() {
     <section>
       <h2>League Rulebook</h2>
 
-      {outstanding.length > 0 && (
-        <div className="notice error">
-          Outstanding (placeholders): {outstanding.join(" · ")}
-        </div>
-      )}
+      {outstanding.length > 0 && <div className="notice error">Outstanding (placeholders): {outstanding.join(" · ")}</div>}
 
       <div className="cards">
         <div className="card">
@@ -58,67 +100,32 @@ export function RulesView() {
       </div>
 
       <h3>Keeper escalation (every offseason)</h3>
-      <p className="dim" style={{ marginTop: 0 }}>
-        new salary = old salary + increase.
-      </p>
-      <table className="grid" style={{ maxWidth: 420 }}>
-        <thead>
-          <tr>
-            <th>Position</th>
-            <th className="r">Base increase</th>
-            <th>Plus</th>
-          </tr>
-        </thead>
-        <tbody>
-          {POS.map((p) => (
-            <tr key={p}>
-              <td>
-                <span className={"pos pos-" + p}>{p}</span>
-              </td>
-              <td className="r strong">+${esc.positionalBase[p] ?? 0}</td>
-              <td className="dim">+ years kept</td>
-            </tr>
-          ))}
-          <tr>
-            <td>
-              <span className="pos">K / DEF</span>
-            </td>
-            <td className="r strong">+${esc.flatIncrease}</td>
-            <td className="dim">flat, per year</td>
-          </tr>
-        </tbody>
-      </table>
+      <p className="dim lede">new salary = old salary + increase.</p>
+      <RowList>
+        {POS.map((p) => (
+          <Row
+            key={p}
+            title={<span className={"pos pos-" + p}>{p}</span>}
+            meta="+ years kept"
+            metric={`+$${esc.positionalBase[p] ?? 0}`}
+            metricLabel="base increase"
+          />
+        ))}
+        <Row
+          title={<span className="pos">K / DEF</span>}
+          meta="flat, per year"
+          metric={`+$${esc.flatIncrease}`}
+          metricLabel="base increase"
+        />
+      </RowList>
 
       <h3>Rookie starting salary (by draft slot × position)</h3>
-      <table className="grid" style={{ maxWidth: 420 }}>
-        <thead>
-          <tr>
-            <th>Slot</th>
-            {POS.map((p) => (
-              <th key={p} className="r">
-                {p}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {SLOTS.map((slot) => (
-            <tr key={slot}>
-              <td className="dim">{slot}</td>
-              {POS.map((p) => (
-                <td key={p} className="r">
-                  ${rules.rookieCost.table[slot]?.[p] ?? "-"}
-                </td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <RookieCostTable table={rules.rookieCost.table} />
 
       <h3>Player value — how "worth" is calculated</h3>
-      <p className="dim" style={{ marginTop: 0 }}>
-        "Worth" is the auction dollars a player is projected to command. The <strong>values</strong> dropdown in
-        the header switches which source drives worth, surplus, inflation, and trades. Manual overrides (if any)
+      <p className="dim lede">
+        "Worth" is the auction dollars a player is projected to command. The <strong>values</strong> picker in the
+        context strip switches which source drives worth, surplus, inflation, and trades. Manual overrides (if any)
         always win. {activeSource ? <>Currently active: <strong>{activeSource}</strong>.</> : null}
       </p>
       <div className="deck">
