@@ -2,6 +2,25 @@
 
 Non-obvious choices and their rationale, so we don't re-litigate them. Newest at top.
 
+## 2026-08-11 — Task 6.4 (Trades): the swap card is not a mobile variant
+**The swap card replaces the table at every width, unlike every other list in PR 6.** Those lists render
+rows on mobile and the old table above 760px because the Row spec explicitly allows it. The handoff
+describes the swap card differently — as what the six-column table *becomes*, not as a phone layout —
+and the card is genuinely the better read at any width, so there is no desktop table to fall back to.
+Above 760px the cards pair two-up instead. This also removes the last three block-scrolling tables
+outside Dashboard.
+
+**Sharky vs mutual-fit is carried on two channels, not one.** Before, the only difference between the
+modes was a "both ✓" column that the sharky table omitted — invisible if you were not comparing. Now the
+card takes a 3px left accent (success for mutual-fit, warning for sharky) and the footer mark states
+which it is ("both fill a need" / "favors you"). The 3px left border is the variant mechanism the
+handoff's Card section sanctions, so this adds no new pattern.
+
+**Salaries moved from the name line to the footer.** `GIVE Christian McCaffrey RB $69` on one line
+leaves ~110px for the name at 390px, which truncates real names. In the footer the pair reads as
+`$72 → $25` — the salary swap, which is more useful than two isolated numbers — and every name then
+fits: 24 of 24 unclipped across the 12-card sharky list.
+
 ## 2026-08-11 — Task 6.3 (Tiers + Rookies): compact pills, and one asymmetry
 **Prospects render as rows at every width; the pick board keeps its desktop table.** That looks
 inconsistent until you read the criteria: 6.3 explicitly requires deleting `.prospect-grid` *and its

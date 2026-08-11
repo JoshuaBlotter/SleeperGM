@@ -1,74 +1,115 @@
 import { useState } from "react";
 import { api, type Swap, type TeamRow, type TradePlayer } from "../api";
-import { ErrorBox, Loading, Surplus, money, signed, useAsync } from "../ui";
+import { Row, RowList } from "../Row";
+import { ErrorBox, Loading, Surplus, money, signed, useAsync, useIsDesktop } from "../ui";
 
-function playerTable(players: TradePlayer[], showTeam = false) {
-  return (
-    <table className="grid">
-      <thead>
-        <tr>
-          <th>Player</th>
-          <th>Pos</th>
-          {showTeam && <th>Team</th>}
-          <th className="r">Worth</th>
-          <th className="r">Salary</th>
-          <th className="r">Surplus</th>
-        </tr>
-      </thead>
-      <tbody>
-        {players.map((p) => (
-          <tr key={p.playerId}>
-            <td className="strong">{p.name}</td>
-            <td>
-              <span className={"pos pos-" + p.position}>{p.position}</span>
-            </td>
-            {showTeam && <td className="dim">{p.teamName}</td>}
-            <td className="r">{money(p.worth)}</td>
-            <td className="r">{money(p.salary)}</td>
-            <td className="r">
-              <Surplus value={p.surplus} />
-            </td>
+/** Colors a trailing metric that can go either way. */
+function sign(n: number): "success" | "danger" | "muted" {
+  return n > 0 ? "success" : n < 0 ? "danger" : "muted";
+}
+
+function PlayerList({ players, showTeam = false }: { players: TradePlayer[]; showTeam?: boolean }) {
+  const isDesktop = useIsDesktop();
+  if (isDesktop) {
+    return (
+      <table className="grid">
+        <thead>
+          <tr>
+            <th>Player</th>
+            <th>Pos</th>
+            {showTeam && <th>Team</th>}
+            <th className="r">Worth</th>
+            <th className="r">Salary</th>
+            <th className="r">Surplus</th>
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {players.map((p) => (
+            <tr key={p.playerId}>
+              <td className="strong">{p.name}</td>
+              <td>
+                <span className={"pos pos-" + p.position}>{p.position}</span>
+              </td>
+              {showTeam && <td className="dim">{p.teamName}</td>}
+              <td className="r">{money(p.worth)}</td>
+              <td className="r">{money(p.salary)}</td>
+              <td className="r">
+                <Surplus value={p.surplus} />
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    );
+  }
+  return (
+    <RowList>
+      {players.map((p) => (
+        <Row
+          key={p.playerId}
+          title={
+            <>
+              <span>{p.name}</span>
+              <span className={"pos pos-" + p.position}>{p.position}</span>
+            </>
+          }
+          meta={showTeam ? p.teamName : undefined}
+          metric={signed(p.surplus)}
+          metricLabel="surplus"
+          metricRole={sign(p.surplus)}
+          details={[
+            { k: "worth", v: money(p.worth) },
+            { k: "salary", v: money(p.salary) },
+          ]}
+        />
+      ))}
+    </RowList>
   );
 }
 
-function swapTable(swaps: Swap[], sharky: boolean) {
+/**
+ * One swap, readable without scrolling sideways: give above, get below, the two deltas
+ * trailing. Sharky and mutual-fit are told apart by the accent border and the footer mark,
+ * not just by the heading above the list.
+ */
+function SwapCard({ s, sharky }: { s: Swap; sharky: boolean }) {
+  const side = (label: string, p: TradePlayer) => (
+    <div className="swap-side">
+      <span className="swap-k">{label}</span>
+      <span className="swap-name">{p.name}</span>
+      <span className={"pos pos-" + p.position}>{p.position}</span>
+    </div>
+  );
   return (
-    <table className="grid">
-      <thead>
-        <tr>
-          <th>Give</th>
-          <th>Get</th>
-          <th>From</th>
-          <th className="r">My surplus</th>
-          <th className="r">My cap</th>
-          {!sharky && <th>Fit</th>}
-        </tr>
-      </thead>
-      <tbody>
-        {swaps.map((s, i) => (
-          <tr key={i}>
-            <td>
-              {s.give.name} <span className="dim">({s.give.position} ${s.give.salary})</span>
-            </td>
-            <td className="strong">
-              {s.get.name} <span className="dim">({s.get.position} ${s.get.salary})</span>
-            </td>
-            <td className="dim">{s.get.teamName}</td>
-            <td className="r">{signed(s.myGain)}</td>
-            <td className="r">{signed(s.capRelief)}</td>
-            {!sharky && (
-              <td>
-                <span className="chip chip-solid chip-success">both ✓</span>
-              </td>
-            )}
-          </tr>
-        ))}
-      </tbody>
-    </table>
+    <div className={"swap" + (sharky ? " is-sharky" : "")}>
+      <div className="swap-main">
+        <div className="swap-sides">
+          {side("give", s.give)}
+          {side("get", s.get)}
+        </div>
+        <div className="swap-metrics">
+          <div className={"swap-metric is-" + sign(s.myGain)}>
+            <span className="v">{signed(s.myGain)}</span>
+            <span className="k">my surplus</span>
+          </div>
+          <div className={"swap-metric is-" + sign(s.capRelief)}>
+            <span className="v">{signed(s.capRelief)}</span>
+            <span className="k">my cap</span>
+          </div>
+        </div>
+      </div>
+      <div className="swap-foot">
+        <span>from {s.get.teamName}</span>
+        <span>
+          {money(s.give.salary)} → {money(s.get.salary)}
+        </span>
+        {sharky ? (
+          <span className="chip chip-solid chip-warning">favors you</span>
+        ) : (
+          <span className="chip chip-solid chip-success">both fill a need</span>
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -126,23 +167,27 @@ export function TradesView({ teamId, teams, source }: { teamId: number | null; t
               <div className="two-col">
                 <div>
                   <h3>Your chips</h3>
-                  {playerTable(d.myChips)}
+                  <PlayerList players={d.myChips} />
                 </div>
                 <div>
                   <h3>Dead weight (shop these)</h3>
-                  {d.myDeadWeight.length ? playerTable(d.myDeadWeight) : <p className="dim">None.</p>}
+                  {d.myDeadWeight.length ? <PlayerList players={d.myDeadWeight} /> : <p className="dim">None.</p>}
                 </div>
               </div>
 
               <h3>Buy-low targets{partnerName ? ` on ${partnerName}` : " on other rosters"}</h3>
-              {d.targets.length ? playerTable(d.targets, true) : <p className="dim">None.</p>}
+              {d.targets.length ? <PlayerList players={d.targets} showTeam /> : <p className="dim">None.</p>}
 
               <h3>
                 {sharky ? "Sharky swaps — maximize your surplus" : "Mutual-fit trades — both teams fill a need"}
                 {partnerName ? ` (with ${partnerName})` : ""}
               </h3>
               {swaps.length ? (
-                swapTable(swaps, sharky)
+                <div className="swap-list">
+                  {swaps.map((sw, i) => (
+                    <SwapCard key={i} s={sw} sharky={sharky} />
+                  ))}
+                </div>
               ) : (
                 <p className="dim">
                   {sharky

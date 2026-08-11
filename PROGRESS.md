@@ -14,6 +14,18 @@
   (A.J. Brown $45, Pickens $35, Hurts $29, Achane $25, McConkey $16). Sheet salaries show `†`; players
   not in the sheet fall back to computed (`≈`).
 
+## Shipped 2026-08-11 (mobile design system, task 6.4 — **PR 6 complete**)
+- **6.4 Trades**: chips / dead weight / buy-low targets become rows below 760px (surplus trailing,
+  worth and salary in the expander), tables above. The six-column swap table becomes a **swap card** at
+  every width — give above, get below, `my surplus` and `my cap` as trailing metrics, with `from <team>`,
+  the salary swap and the fit mark in a footer. Sharky and mutual-fit are told apart by a 3px left
+  accent (warning vs success) and the footer chip, not only by the heading. Partner select and the
+  Sharky toggle were already in `.toolbar` from PR3. All empty-state copy is unchanged.
+- **PR 6 is done.** The only block-scrolling table left on mobile is the Dashboard standings; Rules'
+  two tables fit at 390px. Both belong to **PR 7.1**, after which `table.grid`'s
+  `display:block; overflow-x:auto` can finally go (7.2).
+- **Next open task: 7.1 Dashboard + Rules.**
+
 ## Shipped 2026-08-11 (mobile design system, task 6.3)
 - **6.3 Tiers + Rookies**. **Tiers** — chips were already `.chip-interactive` from PR2 and measure a
   true 44px; the tier bands take the card padding step (`--space-3` → `--space-4`). **Rookies** — the
@@ -53,8 +65,8 @@
 - **Next open task: 6.2 Market.**
 
 ## Shipped 2026-08-10 (mobile design system, PRs 1–5 of 7)
-Rollout plan: `design_handoff_mobile_design_system/TASKS.md` (7 PRs, 23 tasks). **PRs 1–5 and tasks
-6.1–6.3 are on `main`; 6.4 and PR 7 are not started.** Nothing in `core/` changed — `web/` only.
+Rollout plan: `design_handoff_mobile_design_system/TASKS.md` (7 PRs, 23 tasks). **PRs 1–6 are on `main`;
+PR 7 is not started.** Nothing in `core/` changed — `web/` only.
 - **PR1 tokens / PR2 controls** (earlier session): the `:root` token set, mobile-first CSS with one
   760px breakpoint, and `.btn` / `.seg` / `.input` / `.chip` collapsing ~20 ad-hoc treatments.
 - **PR3 shell**: fixed bottom tab bar (Home · Team · Market · Players · More; Tiers/Trades/Rookies/
