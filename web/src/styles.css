@@ -87,26 +87,33 @@ body {
 h1, h2, h3 { font-weight: var(--weight-bold); }
 code { background: var(--surface-2); padding: 1px var(--space-2); border-radius: var(--radius-sm); font-size: 0.85em; }
 
-.app { max-width: 1100px; margin: 0 auto; padding: 0 var(--space-4) var(--space-8); }
-
-header {
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: var(--space-3);
-  padding: var(--space-4) 0;
-  border-bottom: 1px solid var(--line);
-  background: var(--bg);
-  z-index: 5;
+/* Bottom padding clears the fixed tab bar (and the iOS home indicator beneath it). */
+.app {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 var(--space-4) calc(var(--control-h-lg) + var(--safe-b) + var(--space-6));
 }
-header > * { min-width: 0; max-width: 100%; }
-.brand { display: flex; align-items: center; gap: var(--space-3); }
-.brand .logo { font-size: var(--text-display); }
-.brand h1 { margin: 0; font-size: var(--text-title); line-height: var(--lh-title); letter-spacing: var(--ls-title); }
-.brand .sub { color: var(--text-muted); font-size: var(--text-caption); white-space: normal; }
 
-nav { display: none; }
-nav button {
+/* ---------- Top bar — 52px, wordmark + the one global action ---------- */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: var(--control-h-lg);
+  background: var(--bg);
+  border-bottom: 1px solid var(--line);
+}
+.topbar > * { min-width: 0; }
+.wordmark { display: flex; flex-direction: column; justify-content: center; min-width: 0; flex: 1 1 auto; }
+.wordmark-name { font-size: var(--text-heading); line-height: var(--lh-heading); font-weight: var(--weight-bold); letter-spacing: var(--ls-title); }
+.wordmark-sub { color: var(--text-muted); font-size: var(--text-micro); line-height: var(--lh-micro); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Desktop tab row; on mobile the bottom tab bar takes over. */
+.tabs { display: none; }
+.tabs button {
   background: transparent;
   color: var(--text-muted);
   border: 0;
@@ -114,15 +121,110 @@ nav button {
   border-radius: var(--radius-md);
   cursor: pointer;
   font-size: var(--text-body);
+  font-family: inherit;
 }
-nav button:hover { color: var(--text); background: var(--surface); }
-nav button.active { color: var(--text); background: var(--accent-tint); }
+.tabs button:hover { color: var(--text); background: var(--surface); }
+.tabs button.is-on { color: var(--text); background: var(--accent-tint); }
 
-/* Mobile-only tab dropdown; hidden on desktop where the button row is shown. */
-.nav-select { display: block; width: 100%; }
+.controls { display: flex; gap: var(--space-2); align-items: center; flex: 0 0 auto; }
 
-.controls { margin-left: 0; width: 100%; display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap; }
-.controls select, .controls .btn { flex: 1 1 auto; min-width: 0; }
+/* ---------- Context strip — sticky under the top bar ---------- */
+.ctx {
+  position: sticky;
+  top: var(--control-h-lg);
+  z-index: 9;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) 0;
+  background: var(--bg);
+  border-bottom: 1px solid var(--line);
+}
+.ctx-control {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: var(--control-h);
+  border-radius: var(--radius-full);
+  background: var(--surface-2);
+  padding: 0 var(--space-3);
+  font-size: var(--text-label);
+  font-weight: var(--weight-medium);
+}
+.ctx-meta { color: var(--text-muted); font-size: var(--text-label); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ---------- Bottom tab bar — primary nav, always in the thumb zone ---------- */
+.tabbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 30;
+  display: flex;
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+  padding-bottom: var(--safe-b);
+}
+.tabbar button {
+  flex: 1 1 0;
+  min-width: 0;
+  height: var(--control-h-lg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: var(--text-micro);
+  line-height: var(--lh-micro);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--ls-micro);
+  white-space: nowrap;
+  cursor: pointer;
+}
+.tabbar button.is-on { color: var(--accent); }
+.tabbar-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 24px;
+  border-radius: var(--radius-full);
+}
+.tabbar button.is-on .tabbar-icon { background: var(--accent-tint); }
+
+/* More — the overflow destinations. Becomes a Sheet in PR 4.3. */
+.more-scrim { position: fixed; inset: 0; background: var(--scrim); z-index: 29; }
+.more-menu {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: calc(var(--control-h-lg) + var(--safe-b));
+  z-index: 30;
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+}
+.more-menu button {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: var(--control-h);
+  padding: 0 var(--space-4);
+  border: 0;
+  border-bottom: 1px solid var(--line-soft);
+  background: transparent;
+  color: var(--text);
+  font-family: inherit;
+  font-size: var(--text-control);
+  cursor: pointer;
+}
+.more-menu button.is-on { color: var(--accent); background: var(--accent-tint); }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+.spin { animation: spin 1s linear infinite; }
 
 input, select {
   height: var(--control-h);
@@ -164,6 +266,8 @@ section > h2 { margin: 0 0 var(--space-4); font-size: var(--text-title); line-he
 h3 { margin: var(--space-6) 0 var(--space-2); color: var(--text-muted); font-size: var(--text-label); text-transform: uppercase; letter-spacing: 0.04em; font-weight: var(--weight-medium); }
 
 .head-row { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: var(--space-2); }
+.h3-icon { display: flex; align-items: center; gap: var(--space-2); }
+.caption { font-size: var(--text-caption); }
 
 /* Player drilldown: clickable name + modal + weekly bar chart */
 .plink { background: transparent; border: 0; padding: 0; color: var(--text); font: inherit; font-weight: var(--weight-medium); cursor: pointer; text-align: left; display: inline-flex; align-items: center; min-height: var(--control-h); }
@@ -310,6 +414,7 @@ table.grid th {
 table.grid td { padding: var(--space-2) var(--space-3); border-bottom: 1px solid var(--line-soft); white-space: nowrap; }
 table.grid tr:hover td { background: var(--surface); }
 .r { text-align: right; }
+.push { margin-left: auto; }
 .strong { font-weight: var(--weight-medium); }
 .dim { color: var(--text-muted); }
 
@@ -377,7 +482,15 @@ table.grid tr:hover td { background: var(--surface); }
 .table-scroll table.grid { display: table; margin: 0; overflow-x: visible; }
 .table-scroll thead th { position: sticky; top: 0; background: var(--bg); z-index: 1; }
 
-.needs { display: flex; gap: var(--space-2); flex-wrap: wrap; margin: var(--space-1) 0 var(--space-2); color: var(--text-muted); align-items: center; }
+/* Generic control bar inside a view body. Stacks full-width on mobile so every
+   control clears 44px; .controls is the app shell's and is never reused here. */
+.toolbar { display: flex; flex-direction: column; align-items: stretch; gap: var(--space-2); margin: var(--space-2) 0 var(--space-3); }
+.toolbar > * { width: 100%; }
+.toolbar .btn, .toolbar select, .toolbar input { width: 100%; }
+
+/* Positional need pills — a pill row and nothing else. */
+.needs { display: flex; gap: var(--space-2); flex-wrap: wrap; margin: var(--space-1) 0 var(--space-2); color: var(--text-muted); align-items: center; font-size: var(--text-label); }
+.toolbar .needs { margin: 0; }
 
 .notice { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-md); padding: var(--space-4); color: var(--text-muted); }
 .notice.error { border-color: var(--danger-line); color: var(--danger); }
@@ -402,22 +515,16 @@ footer { margin-top: var(--space-6); padding-top: var(--space-3); border-top: 1p
 @media (min-width: 760px) {
   .app { padding: 0 var(--space-5) var(--space-8); }
 
-  header {
-    flex-direction: row;
-    align-items: center;
-    gap: var(--space-5);
-    flex-wrap: wrap;
-    position: sticky;
-    top: 0;
-  }
+  .topbar { gap: var(--space-5); padding: var(--space-2) 0; }
+  .wordmark { flex: 0 0 auto; }
+  .wordmark-name { font-size: var(--text-title); line-height: var(--lh-title); }
 
-  .brand h1 { font-size: var(--text-title); }
+  .tabs { display: flex; gap: var(--space-1); flex: 1 1 auto; flex-wrap: wrap; }
 
-  nav { display: flex; gap: var(--space-1); }
-  .nav-select { display: none; }
+  .ctx { top: calc(var(--control-h-lg) + var(--space-4)); justify-content: flex-end; }
+  .ctx-control { flex: 0 0 auto; max-width: 240px; }
 
-  .controls { margin-left: auto; width: auto; flex-wrap: nowrap; }
-  .controls select, .controls .btn { flex: 0 0 auto; }
+  .tabbar, .more-menu, .more-scrim { display: none; }
 
   main { padding-top: var(--space-6); }
   section > h2 { font-size: var(--text-title); }
@@ -438,4 +545,9 @@ footer { margin-top: var(--space-6); padding-top: var(--space-3); border-top: 1p
 
   .seg { width: auto; }
   .seg button { flex: 0 1 auto; padding: 0 var(--space-4); }
+
+  .toolbar { flex-direction: row; align-items: center; flex-wrap: wrap; }
+  .toolbar > * { width: auto; }
+  .toolbar .btn, .toolbar select, .toolbar input { width: auto; }
+  .toolbar .spacer { flex: 1 1 auto; }
 }

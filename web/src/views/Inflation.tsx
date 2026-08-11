@@ -25,9 +25,7 @@ function Scarcity({ source }: { source?: string }) {
           <div className="info-card" key={pos.position}>
             <h4>
               <span className={"pos pos-" + pos.position}>{pos.position}</span>
-              <span style={{ marginLeft: "auto" }} className="dim">
-                {Math.round(pos.scarcityScore * 100)}% scarce
-              </span>
+              <span className="dim push">{Math.round(pos.scarcityScore * 100)}% scarce</span>
             </h4>
             <div className="scar-bar">
               <div className={"scar-fill " + scarcityBand(pos.scarcityScore)} style={{ width: `${pos.scarcityScore * 100}%` }} />

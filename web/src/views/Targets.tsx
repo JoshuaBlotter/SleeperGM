@@ -78,14 +78,17 @@ export function TargetsView({ teamId, source }: { teamId: number; source?: strin
         drilldown.
       </p>
 
-      <div className="needs">
-        Roster after keepers:{" "}
-        {needChips.map((n) => (
-          <span key={n.pos} className={"chip " + (n.need > 0 ? "chip-solid chip-warning" : n.need < 0 ? "chip-solid chip-success" : "chip-neutral")}>
-            {n.pos}: {n.need > 0 ? `need ${n.need}` : n.need < 0 ? `depth ${-n.need}` : "set"}
-          </span>
-        ))}
-        <label className="toggle" style={{ marginLeft: "auto" }}>
+      <div className="toolbar">
+        <div className="needs">
+          Roster after keepers:{" "}
+          {needChips.map((n) => (
+            <span key={n.pos} className={"chip " + (n.need > 0 ? "chip-solid chip-warning" : n.need < 0 ? "chip-solid chip-success" : "chip-neutral")}>
+              {n.pos}: {n.need > 0 ? `need ${n.need}` : n.need < 0 ? `depth ${-n.need}` : "set"}
+            </span>
+          ))}
+        </div>
+        <span className="spacer" />
+        <label className="toggle">
           <input type="checkbox" checked={assumeAll} onChange={(e) => setAssumeAll(e.target.checked)} /> Assume everyone
           available
         </label>

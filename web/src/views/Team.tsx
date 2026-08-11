@@ -104,7 +104,7 @@ function Keepers({ teamId, source }: { teamId: number; source?: string }) {
 
   return (
     <>
-      <div className="needs" style={{ marginTop: 4 }}>
+      <div className="toolbar">
         <label className="toggle">
           <input type="checkbox" checked={inflated} onChange={(e) => setInflated(e.target.checked)} /> Inflation-adjusted
           worth {d.inflated ? `(×${d.multiplier.toFixed(2)})` : ""}
@@ -133,8 +133,8 @@ function Keepers({ teamId, source }: { teamId: number; source?: string }) {
         </div>
       </div>
 
-      <div className="needs">
-        <button className="btn btn-secondary" onClick={resetRecommended}>
+      <div className="toolbar">
+        <button className="btn btn-secondary btn-block" onClick={resetRecommended}>
           Reset to recommended
         </button>
         <span className="dim">Your kept set feeds the Targets tab.</span>

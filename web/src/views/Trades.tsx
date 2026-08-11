@@ -87,21 +87,21 @@ export function TradesView({ teamId, teams, source }: { teamId: number | null; t
     <section>
       <div className="head-row">
         <h2>Trade Explorer</h2>
-        <div className="controls">
-          <select value={partner} onChange={(e) => setPartner(e.target.value)}>
-            <option value="">All partners</option>
-            {teams
-              .filter((t) => t.rosterId !== teamId)
-              .map((t) => (
-                <option key={t.rosterId} value={t.rosterId}>
-                  vs {t.teamName}
-                </option>
-              ))}
-          </select>
-          <label className="toggle">
-            <input type="checkbox" checked={sharky} onChange={(e) => setSharky(e.target.checked)} /> Sharky (surplus-max)
-          </label>
-        </div>
+      </div>
+      <div className="toolbar">
+        <select value={partner} onChange={(e) => setPartner(e.target.value)} aria-label="Trade partner">
+          <option value="">All partners</option>
+          {teams
+            .filter((t) => t.rosterId !== teamId)
+            .map((t) => (
+              <option key={t.rosterId} value={t.rosterId}>
+                vs {t.teamName}
+              </option>
+            ))}
+        </select>
+        <label className="toggle">
+          <input type="checkbox" checked={sharky} onChange={(e) => setSharky(e.target.checked)} /> Sharky (surplus-max)
+        </label>
       </div>
 
       {s.loading ? (

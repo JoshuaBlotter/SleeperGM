@@ -1,3 +1,4 @@
+import { Brain } from "lucide-react";
 import { api, type LeagueBrain, type LeagueResp, type TeamProfile } from "../api";
 import { ErrorBox, Loading, useAsync } from "../ui";
 
@@ -61,10 +62,10 @@ function BrainSection({ brain, onOpenTeam }: { brain: { data?: LeagueBrain; erro
   return (
     <>
       <div className="head-row">
-        <h3>🧠 League Brain — superlatives</h3>
-        <span className="dim" style={{ fontSize: 12 }}>
-          {b.generatedNote}
-        </span>
+        <h3 className="h3-icon">
+          <Brain size={18} strokeWidth={1.5} /> League Brain — superlatives
+        </h3>
+        <span className="dim caption">{b.generatedNote}</span>
       </div>
       <div className="deck">
         {b.superlatives.map((s) => (
