@@ -404,7 +404,8 @@ h3 { margin: var(--space-6) 0 var(--space-2); color: var(--text-muted); font-siz
 .chip-neutral { background: var(--surface-2); border: 1px solid var(--line); color: var(--text-muted); }
 /* Interactive chips are 44px tall and otherwise identical — shape signals tappability */
 .chip-interactive { height: var(--control-h); padding: 0 var(--space-3); cursor: pointer; font: inherit; border: 1px solid var(--line); }
-.chip-interactive:hover { border-color: var(--accent); }
+.chip-interactive:hover:not(:disabled) { border-color: var(--accent); }
+.chip-interactive:disabled { opacity: 0.45; cursor: default; }
 
 /* Tier board (Tiers) */
 .tier-list { display: flex; flex-direction: column; gap: var(--space-3); }
@@ -621,6 +622,9 @@ th.check-col { width: 28px; }
 .toolbar > * { width: 100%; }
 /* Checkboxes keep their 24px box — only text/select controls go full width. */
 .toolbar .btn, .toolbar select, .toolbar input:not([type="checkbox"]) { width: 100%; }
+/* A chip is a chip at any width: stretching one to the gutters makes it read as a form submit,
+   which is exactly the weight this variant exists to avoid. */
+.toolbar .chip-interactive { width: auto; align-self: flex-start; }
 
 /* Positional need pills — a pill row and nothing else. */
 .needs { display: flex; gap: var(--space-2); flex-wrap: wrap; margin: var(--space-1) 0 var(--space-2); color: var(--text-muted); align-items: center; font-size: var(--text-label); }

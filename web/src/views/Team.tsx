@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { RotateCcw } from "lucide-react";
+import { CheckCheck, RotateCcw } from "lucide-react";
 import { api, type KeeperLine } from "../api";
 import { Row, RowList } from "../Row";
 import { Call, ErrorBox, Loading, Surplus, money, signed, useAsync, useIsDesktop } from "../ui";
@@ -116,48 +116,58 @@ function Keepers({ teamId, source }: { teamId: number; source?: string }) {
   };
   const allChecked = lines.length > 0 && kept.size === lines.length;
   const toggleAll = () => setKept(allChecked ? new Set() : new Set(lines.map((l) => l.playerId)));
-  const resetRecommended = () => setKept(new Set(lines.filter((l) => l.recommendation === "keep").map((l) => l.playerId)));
+  const recommended = lines.filter((l) => l.recommendation === "keep").map((l) => l.playerId);
+  const resetRecommended = () => setKept(new Set(recommended));
+  // Nothing to apply when the board already matches — say so by disabling rather than no-oping.
+  const atRecommended = recommended.length === kept.size && recommended.every((id) => kept.has(id));
 
   return (
     <>
+      {/* One place to act on the keeper set, named for what it does. It used to be two buttons
+          both labelled "Reset" — one here, one in the sim bar — plus a third "Reset all" that
+          meant something else entirely (custom worths). */}
       <div className="toolbar">
         <label className="toggle">
           <input type="checkbox" checked={inflated} onChange={(e) => setInflated(e.target.checked)} /> Inflation-adjusted
           worth {d.inflated ? `(×${d.multiplier.toFixed(2)})` : ""}
         </label>
+        <button
+          className="chip chip-neutral chip-interactive"
+          onClick={resetRecommended}
+          disabled={atRecommended}
+          title={
+            atRecommended
+              ? "Already matches the recommended keepers"
+              : `Check exactly the ${recommended.length} player${recommended.length === 1 ? "" : "s"} rated as keeps, replacing your current picks`
+          }
+        >
+          <CheckCheck size={16} strokeWidth={1.5} aria-hidden="true" />
+          Use recommended ({recommended.length})
+        </button>
       </div>
 
       {isDesktop && (
-        <>
-          <div className="cards">
-            <div className="card">
-              <div className="k">Keeping</div>
-              <div className="v">{sim.count}</div>
-              <div className="k">check rows to simulate</div>
-            </div>
-            <div className="card">
-              <div className="k">Sim cap used</div>
-              <div className="v">
-                {money(sim.used)} <span className="dim">/ ${budget}</span>
-              </div>
-            </div>
-            <div className={"card " + (over ? "bad" : "good")}>
-              <div className="k">Cap {over ? "over by" : "left for auction"}</div>
-              <div className="v">{money(Math.abs(sim.left))}</div>
-            </div>
-            <div className="card">
-              <div className="k">Sim surplus</div>
-              <div className="v">{signed(sim.surplus)}</div>
+        <div className="cards">
+          <div className="card">
+            <div className="k">Keeping</div>
+            <div className="v">{sim.count}</div>
+            <div className="k">check rows to simulate</div>
+          </div>
+          <div className="card">
+            <div className="k">Sim cap used</div>
+            <div className="v">
+              {money(sim.used)} <span className="dim">/ ${budget}</span>
             </div>
           </div>
-
-          <div className="toolbar">
-            <button className="btn btn-secondary" onClick={resetRecommended}>
-              Reset to recommended
-            </button>
-            <span className="dim">Your kept set feeds the Targets tab.</span>
+          <div className={"card " + (over ? "bad" : "good")}>
+            <div className="k">Cap {over ? "over by" : "left for auction"}</div>
+            <div className="v">{money(Math.abs(sim.left))}</div>
           </div>
-        </>
+          <div className="card">
+            <div className="k">Sim surplus</div>
+            <div className="v">{signed(sim.surplus)}</div>
+          </div>
+        </div>
       )}
 
       {overrideCount > 0 && (
@@ -165,7 +175,7 @@ function Keepers({ teamId, source }: { teamId: number; source?: string }) {
           <span className="ov-note">
             {overrideCount} custom value{overrideCount === 1 ? "" : "s"} ·{" "}
             <button className="btn btn-ghost" onClick={clearAllOverrides}>
-              Reset all
+              Clear custom values
             </button>
           </span>
         </div>
@@ -264,6 +274,9 @@ function Keepers({ teamId, source }: { teamId: number; source?: string }) {
       {!isDesktop && (
         <>
           <div className="sim-spacer" />
+          {/* The bar reports; the toolbar acts. It used to carry a "Reset" button in the
+              bottom-right corner — the easiest place on a phone to hit by accident, for an
+              action that wipes every pick you made. The space it freed goes to surplus. */}
           <div className={"sim-bar" + (over ? " is-over" : "")}>
             <div className="sim-figs">
               <div className="sim-fig cap">
@@ -274,17 +287,13 @@ function Keepers({ teamId, source }: { teamId: number; source?: string }) {
                 <span className="v">{sim.count}</span>
                 <span className="k">keeping</span>
               </div>
+              <div className="sim-fig">
+                <span className="v">{signed(sim.surplus)}</span>
+                <span className="k">surplus</span>
+              </div>
             </div>
-            <button
-              className="btn btn-secondary push"
-              onClick={resetRecommended}
-              title="Reset to recommended"
-              aria-label="Reset to recommended"
-            >
-              <RotateCcw size={18} strokeWidth={1.5} /> Reset
-            </button>
             <div className="sim-meta">
-              used {money(sim.used)} / ${budget} · sim surplus {signed(sim.surplus)}
+              used {money(sim.used)} of ${budget}
             </div>
           </div>
         </>

@@ -14,6 +14,19 @@
   (A.J. Brown $45, Pickens $35, Hurts $29, Achane $25, McConkey $16). Sheet salaries show `†`; players
   not in the sheet fall back to computed (`≈`).
 
+## Shipped 2026-08-11 (issue #9 — Team page reset buttons)
+- The screen had **three** buttons saying "Reset": two for the keeper set (sim bar + desktop toolbar,
+  same action) and one that cleared custom Worth values. Same word, two meanings.
+- Now one keeper-set action, `Use recommended (N)`, in the toolbar on both breakpoints — count shows
+  the outcome, and it **disables** when the board already matches. Overrides action renamed
+  `Clear custom values`.
+- **Sim bar is a pure readout now**: its Reset button sat bottom-right, the easiest spot to hit by
+  accident on a phone, for an action that discards every pick with no undo. The freed space became a
+  third figure, so it reads cap left · keeping · surplus.
+- Built as `.chip-interactive` rather than `.btn-secondary`, which `.toolbar > *` stretches to the
+  gutters and makes read like a form submit. Added a disabled state for chips and a toolbar
+  width opt-out.
+
 ## Shipped 2026-08-11 (Dashboard team names were being truncated)
 - Team names were cut off ("Comedor D…", "Kupp my b…") because the archetype chip shared the title
   line and took fixed width. Three changes, and the name now gets the whole first line:

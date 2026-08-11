@@ -2,6 +2,34 @@
 
 Non-obvious choices and their rationale, so we don't re-litigate them. Newest at top.
 
+## 2026-08-11 — Issue #9: the Team page had three buttons called "Reset"
+Design review of the Team screen. The two the issue names are worse together than either is alone,
+and there was a third nobody mentioned:
+
+1. sim bar `Reset` — sets the kept board to the recommended keepers
+2. desktop toolbar `Reset to recommended` — the *same action*, different place and label
+3. overrides note `Reset all` — clears custom Worth values, a **completely different** thing
+
+Three controls, one word, two meanings. That is the actual defect; the styling complaints follow from it.
+
+**One action, one place, named for its outcome.** Both keeper-set buttons collapse into a single
+`Use recommended (N)` in the toolbar above the list, on both breakpoints. The count tells you what
+you are about to get, "use" describes the result where "reset" described the mechanism, and it
+**disables when the board already matches** rather than silently no-oping. The overrides action becomes
+`Clear custom values`, which can no longer be confused with it.
+
+**The sim bar loses its button entirely — the bar reports, the toolbar acts.** A destructive action
+that discards every pick you made was sitting bottom-right on a phone: the single easiest place to hit
+by accident, and there is no undo. Moving it above the list also matches how it is used, since "start
+from the recommendation" is a beginning-of-session move, not something you reach for mid-scroll. The
+freed width goes to a third figure (surplus), so the bar now reads cap left · keeping · surplus.
+
+**An interactive chip, not a `.btn`.** `.btn-secondary` stretched to the gutters by `.toolbar > *`
+reads as a form submit, which is the weight this action should not have — checking boxes is the
+screen's real work. `.chip-interactive` is already the system's 44px "tappable, secondary" primitive,
+and it sizes to content. Needed two small rules: a disabled state for chips, and an opt-out from the
+toolbar's full-width stretch.
+
 ## 2026-08-11 — Issue #7: a readout, not a tooltip
 Asked for "an on hover action to display the number they scored that week". A `title` tooltip already
 existed and was doing that badly — **it never fires on touch at all**, and this app is used almost
