@@ -52,7 +52,7 @@ export function TiersView({ source }: { source?: string }) {
         </div>
       </div>
 
-      <p className="dim" style={{ marginTop: 0 }}>
+      <p className="dim lede">
         Players gap-clustered by projected value — a new tier starts at a real value cliff, not just the next rank. Draft
         by tier: reach for the last player in a tier before it breaks. Click a name for the drilldown.
       </p>

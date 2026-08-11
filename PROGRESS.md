@@ -14,6 +14,19 @@
   (A.J. Brown $45, Pickens $35, Hurts $29, Achane $25, McConkey $16). Sheet salaries show `†`; players
   not in the sheet fall back to computed (`≈`).
 
+## Shipped 2026-08-11 (mobile design system, task 6.3)
+- **6.3 Tiers + Rookies**. **Tiers** — chips were already `.chip-interactive` from PR2 and measure a
+  true 44px; the tier bands take the card padding step (`--space-3` → `--space-4`). **Rookies** — the
+  prospect grid becomes rows at every width, and `.prospect-grid` / `.prospect` / `.prospect-rank` /
+  `.prospect-name` plus the 760px query are deleted. The pick board and draft-capital tables become
+  rows below 760px (pick label as a leading chip, slot costs on the meta line, net as the trailing
+  metric); the base-order reveal keeps its `<details>` and gets the new summary: 44px, Lucide chevron,
+  no `▸`/`▾` glyph.
+- New: `.cost-pills.is-compact` unwraps the nested position chip to colored text so four slot-cost
+  pills fit one row. Shared touch-ups: `.notice` gets a bottom margin, `.two-col > * > h3:first-child`
+  loses its top margin (also tidies Inflation and Trades), three more inline styles gone.
+- **Next open task: 6.4 Trades.**
+
 ## Shipped 2026-08-11 (mobile design system, task 6.2)
 - **6.2 Market**: all three sub-tabs. **Inflation** — the two `.two-col` tables (biggest discounts,
   surplus by team) become rows below 760px with surplus as the trailing metric; `.two-col` already
@@ -41,7 +54,7 @@
 
 ## Shipped 2026-08-10 (mobile design system, PRs 1–5 of 7)
 Rollout plan: `design_handoff_mobile_design_system/TASKS.md` (7 PRs, 23 tasks). **PRs 1–5 and tasks
-6.1–6.2 are on `main`; 6.3, 6.4 and PR 7 are not started.** Nothing in `core/` changed — `web/` only.
+6.1–6.3 are on `main`; 6.4 and PR 7 are not started.** Nothing in `core/` changed — `web/` only.
 - **PR1 tokens / PR2 controls** (earlier session): the `:root` token set, mobile-first CSS with one
   760px breakpoint, and `.btn` / `.seg` / `.input` / `.chip` collapsing ~20 ad-hoc treatments.
 - **PR3 shell**: fixed bottom tab bar (Home · Team · Market · Players · More; Tiers/Trades/Rookies/

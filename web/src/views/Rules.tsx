@@ -39,7 +39,7 @@ export function RulesView() {
       <h2>League Rulebook</h2>
 
       {outstanding.length > 0 && (
-        <div className="notice error" style={{ marginBottom: 16 }}>
+        <div className="notice error">
           Outstanding (placeholders): {outstanding.join(" · ")}
         </div>
       )}

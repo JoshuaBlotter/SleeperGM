@@ -2,6 +2,26 @@
 
 Non-obvious choices and their rationale, so we don't re-litigate them. Newest at top.
 
+## 2026-08-11 — Task 6.3 (Tiers + Rookies): compact pills, and one asymmetry
+**Prospects render as rows at every width; the pick board keeps its desktop table.** That looks
+inconsistent until you read the criteria: 6.3 explicitly requires deleting `.prospect-grid` *and its
+760px query*, which leaves rows as the only prospect layout. The pick board is a table in the handoff's
+own before/after, so it follows the mobile-rows / desktop-table split every other list uses.
+
+**`.cost-pills.is-compact`.** Four slot-cost pills at full size need ~340px, and a row card's meta line
+offers ~275px at 390px — they would wrap, and "slot-cost pills fit one row per pick" is the criterion.
+Compact drops the *nested* `.pos` chip to plain colored text (the position color classes set `color` as
+well as `border-color`, so it survives), which brings the set to 224px. A chip inside a chip is the kind
+of thing this rollout exists to remove, so the desktop table is the only place it still happens.
+
+**The base-order table stays a table.** 6.3 says the reveal "keeps its `<details>`" and says nothing
+about converting the table inside it. It measures 358px at 390px — it does not scroll — so there is
+nothing to fix. It is a reference you open once, not a list you work in.
+
+**`.notice` gained a bottom margin.** Three views were hand-rolling `marginBottom: 16` inline. Every
+current call site is either followed by content (where the margin is wanted) or is the only child
+(where it is invisible), so this belongs on the rule, not the call site.
+
 ## 2026-08-11 — Task 6.2 (Market): the scarcity reveal, and where rows stop
 **Scarcity stays cards, not rows.** 6.2 says the cards "keep their bars but adopt card tokens" — the bar
 is the whole point of that screen and a row's trailing-metric zone has nowhere to put it. So the card
