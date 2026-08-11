@@ -2,7 +2,7 @@
 // Network-touching glue lives here (not in the pure engines) and is shared by the CLI and the server.
 
 import { accumulatedSalary, baseSalary, yearIncrement } from "./engines/keepers";
-import { buildAcquisitionIndex, leagueEntrySeason, ownerTenureStart } from "./history/tenure";
+import { buildAcquisitionIndex, buildPresenceIndex, ownerTenureStart, seasonsInLeague } from "./history/tenure";
 import { buildChain } from "./history/chain";
 import { buildDraftIndex } from "./history/prices";
 import { buildFaabIndex } from "./history/waivers";
@@ -68,6 +68,7 @@ export interface KeeperData {
   drafts: Awaited<ReturnType<typeof buildDraftIndex>>;
   faab: Awaited<ReturnType<typeof buildFaabIndex>>;
   acq: Awaited<ReturnType<typeof buildAcquisitionIndex>>;
+  presence: Awaited<ReturnType<typeof buildPresenceIndex>>;
   values: Map<string, ValueLine>;
   points: Map<string, number>; // last completed season's total fantasy points per player
   sheet: ReturnType<typeof loadSalarySheet>;
@@ -81,7 +82,9 @@ export async function loadKeeperData(ctx: Ctx): Promise<KeeperData> {
     buildAcquisitionIndex(ctx.chain),
     loadValues(ctx, getActiveSource(), points),
   ]);
-  return { drafts, faab, acq, values, points, sheet: loadSalarySheet() };
+  // Needs `acq`, so it follows rather than joins the batch. Rosters are already cached by then.
+  const presence = await buildPresenceIndex(ctx.chain, acq);
+  return { drafts, faab, acq, presence, values, points, sheet: loadSalarySheet() };
 }
 
 /** Return the same KeeperData with values recomputed for a different value source (snapshot uses this). */
@@ -103,7 +106,7 @@ async function loadLastSeasonWeekly(ctx: Ctx): Promise<Map<string, WeekScore[]>>
 
 /** Per-player keeper cost lines for a team (provenance + owner tenure + salary replay/override). */
 export function teamKeeperLines(ctx: Ctx, data: KeeperData, team: Team): KeeperLine[] {
-  const { drafts, faab, acq, sheet, points } = data;
+  const { drafts, faab, acq, presence, sheet, points } = data;
   const prov = buildProvenance(team.players, ctx.chain, drafts, faab, ctx.season);
   const currentYear = Number(ctx.season);
   const oldestSeason = Number(ctx.chain[ctx.chain.length - 1]?.season);
@@ -112,8 +115,7 @@ export function teamKeeperLines(ctx: Ctx, data: KeeperData, team: Team): KeeperL
     const pl = ctx.resolve(p.playerId);
 
     const lastSeasonPoints = points.has(p.playerId) ? Math.round((points.get(p.playerId) as number) * 10) / 10 : null;
-    const entrySeason = leagueEntrySeason(p.playerId, ctx.chain, acq);
-    const yearsInLeague = entrySeason ? currentYear - Number(entrySeason) + 1 : null;
+    const yearsInLeague = seasonsInLeague(p.playerId, ctx.chain, presence);
     const facts = { lastSeasonPoints, yearsInLeague };
 
     const tenureStart = Number(ownerTenureStart(p.playerId, team.ownerUserId, ctx.chain, acq) ?? p.acquisitionSeason);
@@ -180,6 +182,7 @@ function line(
     approximate: x.approximate,
     lastSeasonPoints: x.lastSeasonPoints,
     yearsInLeague: x.yearsInLeague,
+    nflExperience: pl.nflExperience,
   };
 }
 
@@ -324,7 +327,8 @@ export interface AllPlayerRow {
   teamId: number | null;
   teamName: string | null; // fantasy team, or null for a free agent
   lastSeasonPoints: number | null;
-  yearsInLeague: number | null; // rostered only
+  yearsInLeague: number | null; // seasons rostered in THIS league; rostered only
+  nflExperience: number | null; // completed NFL seasons — known for free agents too
   keeperCostNextYear: number | null; // rostered only
   baseCost: number | null;
   costKnown: boolean;
@@ -360,7 +364,7 @@ export async function loadAllPlayers(ctx: Ctx, data: KeeperData): Promise<AllPla
       rows.push({
         playerId: l.playerId, name: l.name, position: l.position, nflTeam: l.nflTeam,
         rostered: true, teamId: t.rosterId, teamName: t.teamName,
-        lastSeasonPoints: l.lastSeasonPoints, yearsInLeague: l.yearsInLeague,
+        lastSeasonPoints: l.lastSeasonPoints, yearsInLeague: l.yearsInLeague, nflExperience: l.nflExperience,
         keeperCostNextYear: l.keeperCostNextYear, baseCost: l.baseCost, costKnown: l.costKnown,
         salarySource: l.salarySource, approximate: l.approximate, acquiredVia: l.acquiredVia,
       });
@@ -380,7 +384,7 @@ export async function loadAllPlayers(ctx: Ctx, data: KeeperData): Promise<AllPla
       playerId: id, name: pl.name, position: pl.position, nflTeam: pl.team,
       rostered: false, teamId: null, teamName: null,
       lastSeasonPoints: data.points.has(id) ? round1(data.points.get(id) as number) : null,
-      yearsInLeague: null, keeperCostNextYear: null, baseCost: null, costKnown: false,
+      yearsInLeague: null, nflExperience: pl.nflExperience, keeperCostNextYear: null, baseCost: null, costKnown: false,
       salarySource: null, approximate: false, acquiredVia: null,
     });
   }

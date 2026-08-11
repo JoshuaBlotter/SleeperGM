@@ -2,6 +2,32 @@
 
 Non-obvious choices and their rationale, so we don't re-litigate them. Newest at top.
 
+## 2026-08-11 — Issue #11 "years in league wrong": two bugs, one of them the label
+Reported as "Matt Stanford has not been in the league the same years as Trevor Lawrence". Both read
+**5y**. Investigating turned up two separate defects; only the second is what the reporter saw.
+
+**1. `yearsInLeague` measured a span, not a count.** The type comment said "seasons this player has been
+in the league"; the code computed `currentYear - firstAcquisitionSeason + 1`. Those diverge the moment a
+player leaves and returns — someone taken in the 2022 startup auction, dropped for two years and
+re-signed still read as a 5-season veteran. It also collapses toward a constant in a startup league,
+because everyone in the first draft shares an entry season. Fixed with a **presence index** (season →
+players on a roster that season, unioned with that season's acquisitions, so players added and dropped
+inside one year still count) and `seasonsInLeague`, which counts. Rosters were already being fetched by
+`buildAcquisitionIndex`, so this costs no extra API calls. Moved 7 rostered players off the 5y pile.
+
+**2. …but that did NOT explain the report, and the honest answer was the label.** Stafford and Lawrence
+*have* both been on a Los Socios roster every season since 2022, so 5y was right for both. "In league"
+is the problem: in football that phrase means **NFL** seasons, universally. Stafford has 17 and Lawrence
+5 — of course they looked wrong as equals. So the field is now **"Rostered"** (seasons on a Los Socios
+roster) and **NFL experience is its own column**, from Sleeper's `years_exp`, which the codebase was
+already fetching for the rookie board and the RB age cliff. It costs nothing and is what the reporter
+was actually looking for.
+
+**A defense gets `nflExperience: null`, not the 0 Sleeper reports.** 0 means "incoming rookie" in this
+field, and the Steelers are not a rookie.
+
+**`leagueEntrySeason` is deleted.** Replacing the span math left it referenced only by its own tests.
+
 ## 2026-08-11 — Closing PR 1's token leaks, and `.gitattributes`
 **Three values never made it into the token set**, and PR 7's sweep did not catch them because it
 looked for dead rules, not for raw values. Found by re-running PR 1's own grep criteria against the

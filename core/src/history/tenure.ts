@@ -46,17 +46,39 @@ export async function buildAcquisitionIndex(chain: SeasonLink[]): Promise<Acquis
   return index;
 }
 
+/** season -> the set of players who were in the league at all that season. */
+export type PresenceIndex = Map<string, Set<string>>;
+
 /**
- * The earliest (oldest) season ANY owner acquired the player in this league chain = when the player
- * first entered the league. Used for "years in the league". Returns null if never seen in the index.
- * `chain` is newest-first, so we keep overwriting and the last hit is the oldest season present.
+ * Who was actually in the league each season: everyone on a roster, plus everyone acquired
+ * during that season (which catches players added and dropped inside the same year, who are
+ * on no end-of-season roster). Rosters come from the same cached fetch the acquisition index
+ * already made, so this costs no extra API calls.
  */
-export function leagueEntrySeason(playerId: string, chain: SeasonLink[], acq: AcquisitionIndex): string | null {
-  let earliest: string | null = null;
+export async function buildPresenceIndex(chain: SeasonLink[], acq: AcquisitionIndex): Promise<PresenceIndex> {
+  const index: PresenceIndex = new Map();
   for (const link of chain) {
-    if (acq.get(link.season)?.has(playerId)) earliest = link.season;
+    const present = new Set<string>();
+    for (const r of (await sleeper.getRosters(link.leagueId)) ?? []) {
+      for (const pid of r.players ?? []) present.add(pid);
+    }
+    for (const pid of acq.get(link.season)?.keys() ?? []) present.add(pid);
+    index.set(link.season, present);
   }
-  return earliest;
+  return index;
+}
+
+/**
+ * How many seasons the player has actually been in this league — a COUNT of seasons present,
+ * not the span since they first turned up. Those differ the moment a player leaves and comes
+ * back: someone taken in the startup auction, dropped for two years and re-signed has been in
+ * the league 3 seasons, not 5. Measuring the span also collapses to a constant for everyone
+ * who was in the first draft, which is most of a startup league. Null if never present.
+ */
+export function seasonsInLeague(playerId: string, chain: SeasonLink[], presence: PresenceIndex): number | null {
+  let seasons = 0;
+  for (const link of chain) if (presence.get(link.season)?.has(playerId)) seasons++;
+  return seasons || null;
 }
 
 /**

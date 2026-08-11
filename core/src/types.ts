@@ -5,6 +5,7 @@ export interface PlayerLite {
   name: string;
   position: string; // QB, RB, WR, TE, K, DEF, ...
   team: string | null; // NFL team code, null if FA
+  nflExperience: number | null; // completed NFL seasons (Sleeper years_exp); 0 = rookie, null if unknown
 }
 
 export type AcquiredVia = "auction" | "faab" | "free_agent" | "rookie" | "unknown";
@@ -64,7 +65,8 @@ export interface KeeperLine extends Provenance {
   salarySource: "sheet" | "computed"; // "sheet" = from the authoritative salary override
   approximate: boolean; // true when the API can't fully reconstruct (traded and/or pre-2022 origin)
   lastSeasonPoints: number | null; // total fantasy points last season (null if didn't score / not found)
-  yearsInLeague: number | null; // seasons this player has been in the league (any owner), null if unknown
+  yearsInLeague: number | null; // COUNT of seasons rostered in THIS fantasy league (any owner), null if never
+  nflExperience: number | null; // completed NFL seasons — not the same thing, and often confused with it
 }
 
 export interface ValueLine {

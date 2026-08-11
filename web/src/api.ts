@@ -198,7 +198,8 @@ export interface PlayerRow {
   teamId: number | null;
   teamName: string | null; // fantasy team, or null for a free agent
   lastSeasonPoints: number | null;
-  yearsInLeague: number | null;
+  yearsInLeague: number | null; // seasons rostered in THIS league
+  nflExperience: number | null; // completed NFL seasons — a different thing entirely
   keeperCostNextYear: number | null;
   baseCost: number | null;
   costKnown: boolean;

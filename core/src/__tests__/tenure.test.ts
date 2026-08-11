@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { leagueEntrySeason, ownerTenureStart, type AcquisitionIndex } from "../history/tenure";
+import { ownerTenureStart, seasonsInLeague, type AcquisitionIndex, type PresenceIndex } from "../history/tenure";
 import type { SeasonLink } from "../types";
 
 const chain: SeasonLink[] = ["2026", "2025", "2024", "2023", "2022"].map((s) => ({
@@ -36,11 +36,40 @@ test("null owner yields null (caller falls back to cost-basis season)", () => {
   expect(ownerTenureStart("ajb", null, chain, acqIndex())).toBeNull();
 });
 
-test("leagueEntrySeason returns the oldest season the player appears (any owner)", () => {
-  // A.J. Brown first appears in 2022 even though the current owner acquired him in 2024.
-  expect(leagueEntrySeason("ajb", chain, acqIndex())).toBe("2022");
+// ---- yearsInLeague: a COUNT of seasons present, not the span since first appearance ----
+// Issue #11: every player from the 2022 startup auction read the same "5y" regardless of
+// whether they had actually been around, because the old math was currentYear - entry + 1.
+
+/** `stay` is in the league every season; `gap` was drafted in 2022, left, and came back in 2025. */
+function presenceIndex(): PresenceIndex {
+  return new Map([
+    ["2026", new Set(["stay", "gap"])],
+    ["2025", new Set(["stay", "gap"])],
+    ["2024", new Set(["stay"])],
+    ["2023", new Set(["stay"])],
+    ["2022", new Set(["stay", "gap"])],
+  ]);
+}
+
+test("seasonsInLeague counts seasons present, so an unbroken tenure is the full chain", () => {
+  expect(seasonsInLeague("stay", chain, presenceIndex())).toBe(5);
 });
 
-test("leagueEntrySeason returns null for a player never seen in the index", () => {
-  expect(leagueEntrySeason("ghost", chain, acqIndex())).toBeNull();
+test("a player who left and returned counts only the seasons they were here", () => {
+  // Present in 2022, 2025 and 2026 — three seasons. The span since 2022 would say five.
+  expect(seasonsInLeague("gap", chain, presenceIndex())).toBe(3);
+});
+
+test("two players from the same startup draft can differ once one of them leaves", () => {
+  const p = presenceIndex();
+  expect(seasonsInLeague("stay", chain, p)).not.toBe(seasonsInLeague("gap", chain, p));
+});
+
+test("seasonsInLeague is null for a player who was never in the league", () => {
+  expect(seasonsInLeague("ghost", chain, presenceIndex())).toBeNull();
+});
+
+test("a player present only in the current season counts one, not zero", () => {
+  const p: PresenceIndex = new Map([["2026", new Set(["rookie"])]]);
+  expect(seasonsInLeague("rookie", chain, p)).toBe(1);
 });

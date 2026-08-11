@@ -70,10 +70,10 @@ test("summarizeCap totals against budget", () => {
 // --- valuation ---
 test("valuePlayers ranks studs above replacement and floors at $1", () => {
   const meta = new Map<string, PlayerLite>([
-    ["rb1", { id: "rb1", name: "RB1", position: "RB", team: null }],
-    ["rb2", { id: "rb2", name: "RB2", position: "RB", team: null }],
-    ["rb3", { id: "rb3", name: "RB3", position: "RB", team: null }],
-    ["rb4", { id: "rb4", name: "RB4", position: "RB", team: null }],
+    ["rb1", { id: "rb1", name: "RB1", position: "RB", team: null, nflExperience: null }],
+    ["rb2", { id: "rb2", name: "RB2", position: "RB", team: null, nflExperience: null }],
+    ["rb3", { id: "rb3", name: "RB3", position: "RB", team: null, nflExperience: null }],
+    ["rb4", { id: "rb4", name: "RB4", position: "RB", team: null, nflExperience: null }],
   ]);
   const pointsByPlayer = new Map([
     ["rb1", 300], ["rb2", 200], ["rb3", 100], ["rb4", 100],
@@ -94,10 +94,10 @@ test("valuePlayers ranks studs above replacement and floors at $1", () => {
 
 test("K/DEF are streamers: flat ~$1 worth regardless of points, excluded from the pool", () => {
   const meta = new Map<string, PlayerLite>([
-    ["rb1", { id: "rb1", name: "RB1", position: "RB", team: null }],
-    ["rb2", { id: "rb2", name: "RB2", position: "RB", team: null }],
-    ["k1", { id: "k1", name: "K1", position: "K", team: null }],
-    ["def1", { id: "def1", name: "DEF1", position: "DEF", team: "SF" }],
+    ["rb1", { id: "rb1", name: "RB1", position: "RB", team: null, nflExperience: null }],
+    ["rb2", { id: "rb2", name: "RB2", position: "RB", team: null, nflExperience: null }],
+    ["k1", { id: "k1", name: "K1", position: "K", team: null, nflExperience: null }],
+    ["def1", { id: "def1", name: "DEF1", position: "DEF", team: "SF", nflExperience: null }],
   ]);
   const pointsByPlayer = new Map([
     ["rb1", 300], ["rb2", 100],
@@ -133,7 +133,7 @@ function kl(id: string, acq: number, keep: number): KeeperLine {
     playerId: id, name: id, position: "RB", nflTeam: "SF", acquiredVia: "auction", acquisitionCost: acq,
     acquisitionSeason: "2025", yearsKept: 1, costKnown: true, baseCost: acq, keeperCostNextYear: keep,
     keeperCostIsPlaceholder: false, salarySource: "computed", approximate: false,
-    lastSeasonPoints: null, yearsInLeague: null,
+    lastSeasonPoints: null, yearsInLeague: null, nflExperience: null,
   };
 }
 

@@ -14,6 +14,22 @@
   (A.J. Brown $45, Pickens $35, Hurts $29, Achane $25, McConkey $16). Sheet salaries show `†`; players
   not in the sheet fall back to computed (`≈`).
 
+## Shipped 2026-08-11 (issue #11 — "years in league wrong")
+- **Two defects, only the second was the reported one.**
+  1. `yearsInLeague` computed `currentYear − firstAcquisition + 1` (a **span**) while its own comment
+     promised a **count** of seasons in the league. A player dropped for two years still read as
+     continuously present. Now a real count via a new **presence index** in `core/history/tenure.ts`
+     (`buildPresenceIndex` + `seasonsInLeague`), built from rosters the acquisition pass already
+     fetched — no extra API calls. Shifted 7 rostered players.
+  2. The reporter's actual complaint was the **label**. Stafford and Lawrence really have both been
+     rostered every season since 2022, so 5y was correct — but "in league" reads as *NFL* seasons
+     (Stafford 17, Lawrence 5). The field is now **"Rostered"**, and **NFL exp** is its own
+     column/detail sourced from Sleeper `years_exp` (already fetched for the rookie board).
+- `PlayerLite.nflExperience` and `KeeperLine.nflExperience` added; defenses are `null`, not 0.
+- `leagueEntrySeason` deleted — the span fix left it used only by its own tests.
+- 98 tests (was 91): presence counting, the leave-and-return case, and the NFL-exp mapping.
+- **`web/public/data.json` is gitignored**, so the deployed site picks this up on the next snapshot.
+
 ## Shipped 2026-08-11 (audit close-out + repo hygiene)
 - Re-ran **PR 1's own grep criteria** against the finished stylesheet and found three raw values the
   sweep had missed: the kept-row wash rgba ×2 → `--accent-wash` / `--accent-wash-hover`, `.seg button`

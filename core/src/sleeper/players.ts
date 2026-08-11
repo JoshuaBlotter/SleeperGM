@@ -9,14 +9,21 @@ const DEF_CODES = new Set([
 
 /** Turn a raw players map into resolved PlayerLite objects. Pure — testable with a fixture. */
 export function toPlayerLite(id: string, raw: RawPlayer | undefined): PlayerLite {
+  // A defense has no NFL "experience" to speak of, so it stays null rather than 0 (= rookie).
   if (DEF_CODES.has(id) && (!raw || raw.position === "DEF")) {
     const name = raw?.full_name || [raw?.first_name, raw?.last_name].filter(Boolean).join(" ") || `${id} DEF`;
-    return { id, name, position: "DEF", team: id };
+    return { id, name, position: "DEF", team: id, nflExperience: null };
   }
-  if (!raw) return { id, name: id, position: "?", team: null };
+  if (!raw) return { id, name: id, position: "?", team: null, nflExperience: null };
   const name =
     raw.full_name || [raw.first_name, raw.last_name].filter(Boolean).join(" ").trim() || id;
-  return { id, name, position: raw.position || "?", team: raw.team ?? null };
+  return {
+    id,
+    name,
+    position: raw.position || "?",
+    team: raw.team ?? null,
+    nflExperience: typeof raw.years_exp === "number" ? raw.years_exp : null,
+  };
 }
 
 export function buildResolver(players: Record<string, RawPlayer>) {

@@ -17,16 +17,22 @@ function numOf(v: number | null | undefined, asc: boolean): number {
 }
 const pts = (v: number | null) => (v == null ? "—" : v.toFixed(1));
 
-/** The three numeric columns, as a trailing metric. The row shows whichever one you sorted by. */
+/**
+ * The three numeric columns, as a trailing metric. The row shows whichever one you sorted by.
+ * "Rostered" is deliberately not called "in league": in football that means NFL seasons, and
+ * this is seasons on a Los Socios roster. NFL experience is its own field now (issue #11).
+ */
 const METRIC: Record<MetricKey, { label: string; of: (p: PlayerRow) => string }> = {
   lastSeasonPoints: { label: "last pts", of: (p) => pts(p.lastSeasonPoints) },
-  yearsInLeague: { label: "in league", of: (p) => (p.yearsInLeague == null ? "—" : `${p.yearsInLeague}y`) },
+  yearsInLeague: { label: "rostered", of: (p) => (p.yearsInLeague == null ? "—" : `${p.yearsInLeague}y`) },
   keeperCostNextYear: { label: "keep $", of: (p) => (p.keeperCostNextYear == null ? "—" : money(p.keeperCostNextYear)) },
 };
+const nflExp = (p: PlayerRow) =>
+  p.nflExperience == null ? "—" : p.nflExperience === 0 ? "rookie" : `${p.nflExperience}y`;
 const SORTS: { key: SortKey; label: string }[] = [
   { key: "lastSeasonPoints", label: "Last season points" },
   { key: "keeperCostNextYear", label: "Keeper cost" },
-  { key: "yearsInLeague", label: "Years in league" },
+  { key: "yearsInLeague", label: "Seasons rostered" },
   { key: "name", label: "Name" },
 ];
 
@@ -152,7 +158,10 @@ function AllPlayers() {
                 <th>NFL</th>
                 <th>Owner</th>
                 {th("lastSeasonPoints", "Last pts", true)}
-                {th("yearsInLeague", "In league", true)}
+                <th className="r" title="Completed NFL seasons">
+                  NFL exp
+                </th>
+                {th("yearsInLeague", "Rostered", true)}
                 {th("keeperCostNextYear", "Keep $", true)}
               </tr>
             </thead>
@@ -172,6 +181,7 @@ function AllPlayers() {
                     <Owner p={p} />
                   </td>
                   <td className="r">{pts(p.lastSeasonPoints)}</td>
+                  <td className="r dim">{nflExp(p)}</td>
                   <td className="r">
                     {p.yearsInLeague == null ? "—" : `${p.yearsInLeague} yr${p.yearsInLeague === 1 ? "" : "s"}`}
                   </td>
@@ -235,10 +245,13 @@ function AllPlayers() {
               }
               metric={METRIC[metricKey].of(p)}
               metricLabel={METRIC[metricKey].label}
-              /* The expander carries the two numeric columns the trailing metric is not showing. */
-              details={(Object.keys(METRIC) as MetricKey[])
-                .filter((k) => k !== metricKey)
-                .map((k) => ({ k: METRIC[k].label, v: METRIC[k].of(p) }))}
+              /* The expander carries the numeric columns the trailing metric is not showing. */
+              details={[
+                ...(Object.keys(METRIC) as MetricKey[])
+                  .filter((k) => k !== metricKey)
+                  .map((k) => ({ k: METRIC[k].label, v: METRIC[k].of(p) })),
+                { k: "NFL exp", v: nflExp(p) },
+              ]}
             />
           ))}
         </RowList>
@@ -303,7 +316,8 @@ function Legend() {
   return (
     <div className="legend">
       Free agents (<span className="chip chip-solid chip-warning">FA</span>) are unrostered but fantasy-relevant (in the
-      ADP list or 50+ points last season). Keep $ / In league apply to rostered players only.
+      ADP list or 50+ points last season). <strong>Rostered</strong> counts seasons on a Los Socios roster — not NFL
+      seasons, which are <strong>NFL exp</strong>. Keep $ / Rostered apply to rostered players only.
     </div>
   );
 }
