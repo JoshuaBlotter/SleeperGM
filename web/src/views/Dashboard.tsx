@@ -51,18 +51,24 @@ function TeamRowCard({ t, p, onOpen }: { t: TeamRow; p?: TeamProfile; onOpen: (i
 
   return (
     <Row
-      leading={<span className="row-rank">{t.rosterId}</span>}
+      /* The name gets the whole first line. The archetype rides the meta line instead: sharing
+         with a fixed-width chip left "Comedor De Culos" as "Comedor D…", and the name is the
+         thing you scan for. The roster id was never a rank, so it is gone entirely. */
       title={
+        <button className="plink" onClick={() => onOpen(t.rosterId)} title="Open team">
+          {t.teamName}
+        </button>
+      }
+      meta={
         <>
-          <button className="plink" onClick={() => onOpen(t.rosterId)} title="Open team">
-            {t.teamName}
-          </button>
           {p && <span className={`chip ${ARCH_CHIP[p.archetype]}`}>{ARCH_LABEL[p.archetype]}</span>}
+          <span>
+            {record(t.wins, t.losses, t.ties)} · {t.manager}
+          </span>
         </>
       }
-      meta={`${record(t.wins, t.losses, t.ties)} · ${t.manager}`}
       metric={p ? money(p.rosterValue) : "—"}
-      metricLabel="roster value"
+      metricLabel="value"
       details={details}
     />
   );

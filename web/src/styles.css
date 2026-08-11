@@ -522,8 +522,17 @@ h3 { margin: var(--space-6) 0 var(--space-2); color: var(--text-muted); font-siz
   color: var(--text-muted); font-size: var(--text-caption); line-height: var(--lh-caption);
 }
 
-/* The player name inside a row: still inline text, but with a 44px hit area. */
-.row-title .plink { min-height: var(--control-h); }
+/* The name inside a row: still inline text, but with a 44px hit area. `block` rather than the
+   inline-flex `.plink` uses elsewhere, because a flex container's text cannot ellipsis — the
+   line-height keeps it vertically centred and 44px tall. */
+.row-title .plink {
+  display: block;
+  min-height: var(--control-h);
+  line-height: var(--control-h);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .row-rank { color: var(--text-muted); font-size: var(--text-label); font-variant-numeric: tabular-nums; }
 
 /* Every mobile list is rows now, so the block-scroll hack this rule carried since PR 5 is

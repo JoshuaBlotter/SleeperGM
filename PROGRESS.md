@@ -14,6 +14,17 @@
   (A.J. Brown $45, Pickens $35, Hurts $29, Achane $25, McConkey $16). Sheet salaries show `†`; players
   not in the sheet fall back to computed (`≈`).
 
+## Shipped 2026-08-11 (Dashboard team names were being truncated)
+- Team names were cut off ("Comedor D…", "Kupp my b…") because the archetype chip shared the title
+  line and took fixed width. Three changes, and the name now gets the whole first line:
+  the **archetype chip moved to the meta line**, the **roster id leading number is gone** (it was
+  never a rank), and the trailing label shortened `roster value` → `value` (a `--text-micro`
+  letter-spaced label was setting the metric column's width at ~90px; it is now ~39px).
+  Title block went 158px → **243px**; all 12 names render in full at 390px, longest is 127px.
+- `.row-title .plink` is now `display:block` with `line-height:--control-h` so a name can actually
+  ellipsis — `text-overflow` does nothing to a flex container's text, which is what `.plink` was.
+  Benefits every row list; verified a 39-char name truncates instead of overflowing.
+
 ## Shipped 2026-08-11 (issue #7 — week-by-week score on hover/tap)
 - The drilldown chart now reads the week's score out beside its heading (`Wk 12 · 30.9 pts`) on
   **hover, tap or keyboard focus**; the non-selected bars dim to 0.35 so the asked-for week stands out.
