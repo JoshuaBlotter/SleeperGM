@@ -13,3 +13,4 @@ web/public/data.json
 .env
 config/salaries.json
 .DS_Store
+.claude/settings.local.json
