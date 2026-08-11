@@ -14,6 +14,26 @@
   (A.J. Brown $45, Pickens $35, Hurts $29, Achane $25, McConkey $16). Sheet salaries show `†`; players
   not in the sheet fall back to computed (`≈`).
 
+## Shipped 2026-08-10 (mobile design system, PRs 1–5 of 7)
+Rollout plan: `design_handoff_mobile_design_system/TASKS.md` (7 PRs, 23 tasks). **PRs 1–5 are on `main`;
+PRs 6 and 7 are not started.** Nothing in `core/` changed — this is `web/` only.
+- **PR1 tokens / PR2 controls** (earlier session): the `:root` token set, mobile-first CSS with one
+  760px breakpoint, and `.btn` / `.seg` / `.input` / `.chip` collapsing ~20 ad-hoc treatments.
+- **PR3 shell**: fixed bottom tab bar (Home · Team · Market · Players · More; Tiers/Trades/Rookies/
+  Rules behind More), a sticky context strip under a 52px top bar carrying the team and value-source
+  pickers, `lucide-react` for icons, and a generic `.toolbar` replacing the reused `.controls`/`.needs`.
+- **PR4 sheet**: `web/src/Sheet.tsx` — bottom-anchored on mobile, centered dialog above 760px, with
+  scroll lock, focus trap, focus return, Escape / scrim / swipe dismiss. The player drilldown and the
+  team / value-source / More pickers all run on it. Desktop keeps native `<select>` pickers.
+- **PR5 rows**: `web/src/Row.tsx` — the mobile list primitive. The keeper board and Targets render as
+  rows below 760px and as today's tables above it, with a sticky keeper **sim bar** (cap left, keeping,
+  used, sim surplus, reset) docked above the tab bar. Kept set and worth overrides behave as before.
+- **Still open (PR6/PR7)**: Players, Market, Tiers, Rookies, Trades, Dashboard and Rules still render
+  tables on mobile, so `table.grid` keeps `display:block; overflow-x:auto`. That rule is scheduled for
+  deletion once the last table becomes rows — see DECISIONS 2026-08-10.
+- Web is NOT covered by `npm run check`. Verify it with `npx tsc -p web/tsconfig.json --noEmit` and
+  `npm run web:build`.
+
 ## Shipped 2026-08-09 (League Brain v3)
 - **League Brain** (`specs/league-brain.md`): a "GM scouting report" on the **Dashboard**. Per-team
   **profile** (contender index 0–100 + archetype + tendency tags + a one-line witty scouting take) and

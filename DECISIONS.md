@@ -373,3 +373,33 @@ with the value dropdown):
   real points were worth in this league's auction economy. Paid pre-season vs earned = realized remorse, not
   a projection. The floor-y nature of auction VORP (only ~starters clear $1) means an expensive buy who
   finished outside startable range reads as a near-total bust — intended, and the blurb states the earned $.
+
+## 2026-08-10 — Mobile design system, PRs 3–5: four judgement calls
+Rolling out `design_handoff_mobile_design_system/TASKS.md`. Four places where the plan needed a call:
+
+- **`table.grid { display:block; overflow-x:auto }` is NOT deleted yet**, though task 5.1 says to. PR5
+  converts two lists (keeper board, Targets) to rows; PRs 6 and 7 convert the other seven. Deleting the
+  rule now would put five un-migrated tables into **page-level horizontal scroll** — a violation of the
+  handoff's own mobile invariant 5 ("no horizontal scrolling anywhere"), which outranks a line item.
+  What 5.1 actually targets is *nested* scroll containers, and that is fixed: `.table-scroll` lost its
+  `65vh` cap and its `overflow`, so a list now has exactly one scroller instead of two. **Delete the rule
+  in PR 6.4**, when Trades — the last table-based list — becomes rows.
+- **Scroll lock is `position:fixed`, not `overflow:hidden`.** Measured on this app: `body{overflow:hidden}`
+  left **342px** of viewport scroll behind an open sheet, because the clipped body still has a scroll
+  range. The sheet freezes body at its offset and restores it on close. Costs a `window.scrollTo` on
+  dismiss; the alternative silently fails the "page behind never scrolls" criterion.
+- **Mobile-vs-desktop list rendering is a JS hook (`useIsDesktop` in `ui.tsx`), not duplicated markup
+  behind a media query.** Rendering both a table and a row list for 40 targets and hiding one is wasted
+  DOM. The hook listens to the MediaQueryList **and** `window.resize` — device emulation (and iPad split
+  view) resizes without dispatching the former, which cost a debugging round here.
+- **The sim bar carries cap-left, not just cap-used.** Task 5.2 says cap-used and sim-surplus move into
+  the bar while cap-left and keeping get the display step, but its own acceptance criteria require cap
+  left to "stay on screen while scrolling the roster" and over-cap to "flip the bar to the danger role" —
+  which only works if cap left is in the bar. Resolved by putting both display-step numbers (cap left,
+  keeping) in the bar with used/surplus as its meta line, and dropping the now-redundant stat cards on
+  mobile. Desktop keeps all four cards unchanged.
+
+Two bugs from the earlier PRs were found by measuring in-browser and fixed in PR5: the `.toolbar`
+full-width rule stretched checkboxes to 265x13, and `input[type=checkbox] { height:auto }` left every
+checkbox at its intrinsic 13px rather than the specified 24px — including the ones the keeper simulator
+is entirely driven by.
