@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { api, type PlayerDetail, type WeekScore } from "./api";
+import { PlayerAvatar } from "./Avatar";
 import { Sheet } from "./Sheet";
 import { money, useAsync } from "./ui";
 import { closePlayer, useOpenPlayer } from "./playerModalStore";
@@ -206,6 +207,7 @@ export function PlayerModal() {
       onClose={closePlayer}
       labelledBy="player-sheet-title"
       title={d?.name ?? (details.loading ? "Loading…" : "Player")}
+      lead={d && <PlayerAvatar playerId={d.playerId} name={d.name} position={d.position} nflTeam={d.nflTeam} />}
       meta={
         d && (
           <>

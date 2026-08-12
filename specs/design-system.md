@@ -116,9 +116,20 @@ Replaces 9 values (3, 4, 5, 6, 8, 10, 12, 14, 999).
 --control-h-lg:52px;  /* tab bar item, sheet header, top bar */
 --control-h-sm:36px;  /* desktop only, or nested inside a 44px hit area */
 --row-h:64px;         /* row card minimum */
+--topbar-h:52px;      /* top bar — 68px on desktop, where the bar gains 16px of padding */
+--ctx-h:61px;         /* context strip */
+--avatar:32px;        /* team avatar, brand mark */
+--avatar-lg:48px;     /* player headshot in the drilldown */
 --safe-b:env(safe-area-inset-bottom);
 --bp-desktop:760px;   /* the only breakpoint */
 ```
+
+`--topbar-h` and `--ctx-h` are **fixed heights, not measurements**: three bars stick to the top of the
+page (top bar → context strip → list bar) and each one is offset by the sum of the heights above it.
+A bar shorter than the offset the next one uses leaves a transparent band that the page scrolls
+through in plain view. So the bar sets `min-height` from the token, every offset below is computed
+from the same token, and each offset subtracts 1px so the bars overlap by a hairline rather than
+risking a gap on a fractional device-pixel ratio.
 
 ## Mobile invariants
 
@@ -238,6 +249,27 @@ Replaces the centered `.modal` (currently `6vh 16px` padding, `max-height:86vh`,
 
 `.card.highlight` is the app's only gradient; keep it as the single exception or drop it — implementer's call.
 
+### Avatar — `.avatar`, `.pavatar`
+
+Remote imagery from Sleeper's public image CDN (`sleepercdn.com`) — manager avatars on the Dashboard
+rows and the Team heading, a player headshot in the drilldown. Three URL shapes: `/avatars/thumbs/{id}`,
+`/content/nfl/players/thumb/{playerId}.jpg`, `/images/team_logos/nfl/{code}.png`.
+
+- One box, two states. `.avatar` is a `--radius-full` disc at `--avatar` (or `--avatar-lg`); the
+  `.is-fallback` state is an initials disc of **identical size**. Every one of these images can 404 —
+  a manager who never set an avatar, a player Sleeper has no headshot for — and a fallback that
+  changed size would reflow the row. Never render one of these images without the fallback.
+- `.is-logo` switches `object-fit` to `contain`: a team logo is artwork with its own margins and must
+  not be cropped to the circle. A defense has no headshot, so its logo *is* the portrait.
+- `.pavatar` overlays the NFL team logo on the headshot's bottom-right corner as a 20px badge.
+
+### Medal — `.medal`
+
+A `--control-h-sm` rounded square holding one Lucide glyph, tinted by one of the four color roles
+(`.is-accent` / `.is-success` / `.is-warning` / `.is-danger`), sitting inside an `.info-card` heading.
+It exists so a deck of award cards is scannable by verdict. **Not a control** — it is never tappable,
+which is why it is not a `.chip`.
+
 ## Focus & accessibility
 
 The current stylesheet contains **no `:focus` or `:focus-visible` rule at all** across 17.6KB, and every custom button sets `border:0` on a transparent background. Add one global rule:
@@ -259,7 +291,12 @@ The kept set must continue to feed the Targets screen, and worth overrides must 
 
 ## Assets
 
-No image assets. Icons are **Lucide** (`lucide-react`), 24px, stroke width 1.5, colored via `currentColor` — they replaced the emoji and glyph characters (🏈 28px logo, 🧠, ✕, ↻, ↺, ▸/▾, ▲/▼, ⚠, →) that had no consistent size, weight or optical alignment and rendered in full color regardless of context. The 🏈 logo is now a text wordmark. The `†` and `≈` salary annotation marks stay — they are data notation, not icons.
+Icons are **Lucide** (`lucide-react`), 24px, stroke width 1.5, colored via `currentColor` — they replaced the emoji and glyph characters (🏈 28px logo, 🧠, ✕, ↻, ↺, ▸/▾, ▲/▼, ⚠, →) that had no consistent size, weight or optical alignment and rendered in full color regardless of context. The `†` and `≈` salary annotation marks stay — they are data notation, not icons.
+
+Two image assets, both added after the original rollout:
+
+- **`web/public/logo.svg`** — the only local one. It is the browser favicon *and* the `.brandmark` in the top-left of the header, deliberately the same file so the two cannot drift. A favicon cannot read custom properties, so its four colors are literal copies of `--surface`, `--line`, `--accent` and `--bg`; keep them in sync if those tokens move.
+- **Sleeper CDN imagery** — team avatars and player headshots, loaded at runtime. See `.avatar` above; each one is remote, optional and always paired with a fallback.
 
 ## Source files this affects
 

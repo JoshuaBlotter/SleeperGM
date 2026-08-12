@@ -1,7 +1,7 @@
 # PROGRESS — living state
 
 > Updated as work happens. Read this right after `CLAUDE.md` to know where things stand.
-> Last updated: 2026-08-12 (repo cleanup — see the entry at the bottom).
+> Last updated: 2026-08-12 (issues #15/#16/#17 — see the entry below).
 
 ## Status snapshot
 - **Health:** `npm run check` is GREEN — typecheck clean, 103 tests across 17 files pass.
@@ -14,6 +14,41 @@
   (Season 2025, 163 players). App reads CSV (preferred) and escalates one year → exact 2026 salaries
   (A.J. Brown $45, Pickens $35, Hurts $29, Achane $25, McConkey $16). Sheet salaries show `†`; players
   not in the sheet fall back to computed (`≈`).
+
+## Shipped 2026-08-12 (issues #15/#16/#17 — identity, cards, and the sticky-header gap)
+- **#17 — the page was visible through a band under the top bar.** The sticky stack (top bar →
+  context strip → list bar) offset each layer by a hard-coded sum, but the top bar's own height was
+  content-driven. On the deployed static site the bar's tallest item is the `updated …` stamp, not the
+  44px refresh button, so the bar came out ~59px while the strip below it stuck at 68px — a ~9px
+  transparent band the page scrolled through in plain sight. Height is now the `--topbar-h` token
+  (52px, 68px on desktop) that both offsets are computed from, so the three bars can't drift apart.
+  Measured in the browser: the strip now sits 1px *into* the bar at both breakpoints. Also fixes the
+  desktop list bar, which had been sticking 16px too high and hiding behind the strip.
+- **#16 — the Rules page has no floating text left.** "Other rules" was a bare `<ul>`; it is now a
+  **single** card holding a hairline-separated term/definition list (one card per rule was tried
+  first and read as five boxes of chrome around five one-line rules), and the two that quote the
+  rulebook (`resetCostOnReacquire`, `taxiCountsAgainstCap`) still read their wording off it. The
+  value-source preamble became the lead
+  card of the glossary deck, and the escalation formula annotates its heading instead of floating
+  above the list. `.rules-list` was the only user of its CSS and went with it.
+- **#15 — the redesign's missing color and identity, without emoji.**
+  - **Mark + favicon.** `web/public/logo.svg` (a blue football on the surface tint) is both the
+    browser tab icon and the header mark, top-left on every page beside "Sleeper GM". One file, so
+    the two can never diverge.
+  - **Superlative cards carry a tinted Lucide medal** keyed off the award's stable `id`, toned by its
+    verdict — green for a compliment, red for a receipt, amber for a risk, blue for a tendency. The
+    engine's `emoji` field is still there and still deliberately unused.
+  - **Sleeper images.** `avatar` now rides along on `/api/league`, `/api/team/:id` and the snapshot,
+    so manager avatars appear on the Dashboard team rows and beside the Team page heading. The player
+    drilldown leads with a headshot badged with its NFL team logo (a defense's logo *is* its
+    portrait). Every image has a same-size initials fallback — a missing headshot 403s, and a broken
+    image must not change a row's height.
+  - **Tiers.** Each band gets a rank pill and a player count, the top two bands get an accent edge,
+    and the dollar **cliff** between bands is printed between them — the gap is the entire premise of
+    the page and it wasn't on screen anywhere.
+- `npm run check` green (103 tests / 17 files), `web` typecheck and `web:build` clean. Sticky
+  geometry, avatars, medals, tier cliffs and the drilldown headshot all verified in the browser
+  against live snapshot data; the four Sleeper CDN URL shapes were checked for 200s.
 
 ## Shipped 2026-08-12 (repo cleanup — 880 KB and 13 files removed)
 - **Deleted dead build output**: `docs/` (committed once in the initial commit, never updated; Pages

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
-import { api } from "../api";
+import { api, type RulesResp } from "../api";
 import { Row, RowList } from "../Row";
 import { ErrorBox, Loading, useAsync, useIsDesktop } from "../ui";
 
@@ -26,6 +26,30 @@ const SOURCE_INFO: Record<string, { label: string; blurb: string }> = {
       "signal (where people actually draft), not one expert's list.",
   },
 };
+
+/**
+ * The five rules that aren't a table or a number — one card each, so the page has no loose
+ * bulleted list floating between its cards. Two of them read their wording off the rulebook.
+ */
+function otherRules(rules: RulesResp["rules"]): { title: string; body: string }[] {
+  return [
+    { title: "Waiver pickups", body: "A waiver-acquired player's keeper cost is the FAAB bid you paid to get them." },
+    {
+      title: "Cut & re-acquire",
+      body: `Cutting a player and picking him back up ${
+        rules.resetCostOnReacquire ? "resets his cost to the new acquisition price" : "does not reset his cost — the accumulated salary follows him"
+      }.`,
+    },
+    { title: "Trades", body: "Traded players carry their accumulated salary. Only the years-kept clock resets." },
+    {
+      title: "Taxi & IR",
+      body: `Taxi and IR players ${
+        rules.taxiCountsAgainstCap ? "count" : "do not count"
+      } against the cap, and are priced like any other player.`,
+    },
+    { title: "Kickers & defenses", body: "Streamers — roughly $0 of market value, and rarely worth a keeper slot." },
+  ];
+}
 
 /**
  * The contender index drives the Dashboard's archetypes and awards, but nothing on the site said
@@ -160,8 +184,12 @@ export function RulesView() {
         </div>
       </div>
 
-      <h3>Keeper escalation (every offseason)</h3>
-      <p className="dim lede">new salary = old salary + increase.</p>
+      {/* The formula annotates the heading rather than floating above the list as its own
+          paragraph — same pattern as the Dashboard's superlatives header. */}
+      <div className="head-row">
+        <h3>Keeper escalation (every offseason)</h3>
+        <span className="dim caption">new salary = old salary + increase</span>
+      </div>
       <RowList>
         {POS.map((p) => (
           <Row
@@ -184,12 +212,16 @@ export function RulesView() {
       <RookieCostTable table={rules.rookieCost.table} />
 
       <h3>Player value — how "worth" is calculated</h3>
-      <p className="dim lede">
-        "Worth" is the auction dollars a player is projected to command. The <strong>values</strong> picker in the
-        context strip switches which source drives worth, surplus, inflation, and trades. Manual overrides (if any)
-        always win. {activeSource ? <>Currently active: <strong>{activeSource}</strong>.</> : null}
-      </p>
       <div className="deck">
+        {/* The overview leads the glossary instead of floating above it as loose prose. */}
+        <div className="info-card">
+          <h4>What "worth" means</h4>
+          <p>
+            The auction dollars a player is projected to command. The <strong>values</strong> picker in the context
+            strip switches which source drives worth, surplus, inflation, and trades. Manual overrides (if any) always
+            win. {activeSource ? <>Currently active: <strong>{activeSource}</strong>.</> : null}
+          </p>
+        </div>
         {sources.map((src) => {
           const info = SOURCE_INFO[src];
           return (
@@ -218,13 +250,18 @@ export function RulesView() {
       <ContenderIndexCard />
 
       <h3>Other rules</h3>
-      <ul className="rules-list">
-        <li>Waiver-acquired players' keeper cost = the FAAB bid paid to get them.</li>
-        <li>Cut &amp; re-acquire {rules.resetCostOnReacquire ? "resets" : "does not reset"} cost to the new acquisition price.</li>
-        <li>Traded players carry their accumulated salary; only the years-kept clock resets.</li>
-        <li>Taxi &amp; IR {rules.taxiCountsAgainstCap ? "count" : "do not count"} against the cap; priced like any player.</li>
-        <li>Kickers &amp; defenses are streamers (~$0 market value); rarely worth keeping.</li>
-      </ul>
+      {/* ONE card, not one per rule: five cards for five one-line rules is more chrome than
+          content, and the deck's equal-height cells made short rules float in empty boxes. */}
+      <div className="info-card explainer">
+        <dl className="rule-list">
+          {otherRules(rules).map((r) => (
+            <div key={r.title}>
+              <dt>{r.title}</dt>
+              <dd>{r.body}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
       <div className="legend">Source of truth: core/src/config/league-rules.ts</div>
     </section>
   );

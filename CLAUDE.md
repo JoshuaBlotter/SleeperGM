@@ -67,10 +67,15 @@ base, `-soft` text-on-tint), eight neutrals, eight type steps, a 4pt space scale
 - `.btn` (primary/secondary/ghost/icon), `.seg` (segmented control, state class `.is-on`), `.chip`
   (solid/outline/neutral, `.chip-interactive` when tappable), `.card` (one base rule shared by
   `.info-card`, `.notice`, `.tier-band`, `.swap`), `.toolbar` (control bar inside a view body).
+- `TeamAvatar` / `PlayerAvatar` (`web/src/Avatar.tsx`) — Sleeper CDN imagery. Every one can 404, so
+  each renders an initials disc of the SAME size on error; never add one without that fallback.
+- `.medal` — a tinted Lucide glyph in an `.info-card` heading (the Dashboard's award deck). Not a control.
 
 **Invariants.** 44px minimum touch target with 8px between adjacent targets; 16px minimum font-size on
 every form control (below that iOS Safari zooms and stays zoomed); mobile-first CSS with exactly one
 `@media (min-width: 760px)` block; no horizontal scrolling and no nested scroll containers anywhere.
+The three sticky bars (top bar → `.ctx` → `.list-bar`) all derive their offsets from `--topbar-h` /
+`--ctx-h`; if a bar's real height ever stops matching its token, the page shows through the gap.
 
 **Mobile vs desktop.** Lists render as `Row`s below 760px and as tables above, via `useIsDesktop()`
 in `web/src/ui.tsx`. Exceptions, both deliberate: rookie prospects and swap cards are the same at

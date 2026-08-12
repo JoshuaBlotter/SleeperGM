@@ -5,6 +5,8 @@ export interface TeamRow {
   rosterId: number;
   teamName: string;
   manager: string;
+  /** Sleeper avatar id — optional because a snapshot built before it was added won't carry one. */
+  avatar?: string | null;
   wins: number;
   losses: number;
   ties: number;
@@ -62,6 +64,7 @@ export interface TeamResp {
   rosterId: number;
   teamName: string;
   manager: string;
+  avatar?: string | null;
   record: { wins: number; losses: number; ties: number };
   inflated: boolean;
   multiplier: number;

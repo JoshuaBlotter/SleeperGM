@@ -102,6 +102,8 @@ export function App() {
   return (
     <div className="app">
       <header className="topbar">
+        {/* Same file as the favicon, so the tab icon and the header mark can never drift apart. */}
+        <img className="brandmark" src="./logo.svg" alt="" width={32} height={32} />
         <div className="wordmark">
           <span className="wordmark-name">Sleeper GM</span>
           <span className="wordmark-sub">

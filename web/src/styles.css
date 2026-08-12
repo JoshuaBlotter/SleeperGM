@@ -72,6 +72,13 @@
   --control-h-lg: 52px;  /* tab bar item, sheet header, top bar */
   --control-h-sm: 36px;  /* desktop only, or nested inside a 44px hit area */
   --row-h: 64px;         /* row card minimum */
+  --avatar: 32px;        /* team avatar, brand mark */
+  --avatar-lg: 48px;     /* player headshot in the drilldown */
+  /* The sticky stack is three bars deep (top bar → context strip → list bar), and each one
+     is offset by the SUM of the heights above it. Both heights are therefore fixed rather
+     than content-driven: a top bar an inch shorter than the offset the strip below it uses
+     leaves a transparent band that the page scrolls through in plain view. */
+  --topbar-h: var(--control-h-lg);
   --ctx-h: 61px;         /* context strip — fixed so a list bar can stick beneath it */
   --sim-h: 96px;         /* keeper sim bar — the app pads by this much when it is shown */
   --safe-b: env(safe-area-inset-bottom);
@@ -109,11 +116,12 @@ code { background: var(--surface-2); padding: 1px var(--space-2); border-radius:
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  min-height: var(--control-h-lg);
+  min-height: var(--topbar-h);
   background: var(--bg);
   border-bottom: 1px solid var(--line);
 }
 .topbar > * { min-width: 0; }
+.brandmark { flex: none; width: var(--avatar); height: var(--avatar); }
 .wordmark { display: flex; flex-direction: column; justify-content: center; min-width: 0; flex: 1 1 auto; }
 .wordmark-name { font-size: var(--text-heading); line-height: var(--lh-heading); font-weight: var(--weight-bold); letter-spacing: var(--ls-title); }
 .wordmark-sub { color: var(--text-muted); font-size: var(--text-micro); line-height: var(--lh-micro); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -138,7 +146,9 @@ code { background: var(--surface-2); padding: 1px var(--space-2); border-radius:
 /* ---------- Context strip — sticky under the top bar ---------- */
 .ctx {
   position: sticky;
-  top: var(--control-h-lg);
+  /* One pixel INTO the bar above, so a fractional device-pixel ratio can round the two
+     edges apart without opening a hairline you can see the page through. */
+  top: calc(var(--topbar-h) - 1px);
   z-index: 9;
   display: flex;
   align-items: center;
@@ -393,6 +403,13 @@ h3 { margin: var(--space-6) 0 var(--space-2); color: var(--text-muted); font-siz
 .deflist dd { margin: 0; color: var(--text-muted); font-size: var(--text-label); line-height: var(--lh-label); }
 .award-winner .dim { font-weight: var(--weight-regular); }
 
+/* Several one-line rules inside ONE card — hairline-separated term/definition pairs, stacked so a
+   long rule keeps the full measure instead of being squeezed beside its own title. */
+.rule-list { margin: 0; }
+.rule-list > div + div { margin-top: var(--space-3); padding-top: var(--space-3); border-top: 1px solid var(--line-soft); }
+.rule-list dt { color: var(--text); font-size: var(--text-label); font-weight: var(--weight-bold); }
+.rule-list dd { margin: 0; color: var(--text-muted); font-size: var(--text-label); line-height: 1.55; }
+
 .why { display: inline-flex; flex-wrap: wrap; gap: var(--space-1); }
 
 /* ---------- Chip — one primitive, three variants ---------- */
@@ -422,9 +439,100 @@ h3 { margin: var(--space-6) 0 var(--space-2); color: var(--text-muted); font-siz
 .chip-interactive:hover:not(:disabled) { border-color: var(--accent); }
 .chip-interactive:disabled { opacity: 0.45; cursor: default; }
 
+/* ---------- Avatar — a Sleeper CDN image or an initials disc, always the same box ----------
+   Both states are the same size so a 404 (a manager with no avatar, a player with no headshot)
+   cannot change a row's height. */
+.avatar {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--avatar);
+  height: var(--avatar);
+  border-radius: var(--radius-full);
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  object-fit: cover;
+  overflow: hidden;
+  color: var(--text-muted);
+  font-size: var(--text-micro);
+  line-height: var(--lh-micro);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--ls-micro);
+}
+.avatar.is-lg { width: var(--avatar-lg); height: var(--avatar-lg); font-size: var(--text-label); }
+/* A team logo is artwork with its own margins — fit it inside the disc instead of cropping it. */
+.avatar.is-logo { object-fit: contain; padding: var(--space-1); }
+
+/* Player headshot with his NFL team's logo badged into the corner. */
+.pavatar { position: relative; flex: none; display: inline-flex; }
+.pavatar-badge {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  width: 20px;
+  height: 20px;
+  padding: 1px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  object-fit: contain;
+}
+
+/* Award mark in an .info-card heading — Lucide glyph on the award's own verdict tone. */
+.medal {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--control-h-sm);
+  height: var(--control-h-sm);
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+  color: var(--text-muted);
+}
+.medal.is-accent { background: var(--accent-tint); color: var(--accent); }
+.medal.is-success { background: var(--success-tint); color: var(--success); }
+.medal.is-warning { background: var(--warning-tint); color: var(--warning); }
+.medal.is-danger { background: var(--danger-tint); color: var(--danger); }
+
+/* A section heading that leads with an avatar. */
+.title-with-avatar { display: flex; align-items: center; gap: var(--space-3); min-width: 0; }
+
 /* Tier board (Tiers) */
 .tier-list { display: flex; flex-direction: column; gap: var(--space-3); }
-.tier-band .tier-label { display: flex; justify-content: space-between; font-size: var(--text-caption); margin-bottom: var(--space-2); }
+/* The rank, then whatever identifies the band, then its size — `.push` right-aligns the count,
+   so this is flex-start and NOT space-between (which would spread the first three too). */
+.tier-band .tier-label { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-2); font-size: var(--text-caption); margin-bottom: var(--space-2); }
+.tier-rank {
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  color: var(--text-muted);
+  font-size: var(--text-micro);
+  line-height: var(--lh-micro);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--ls-micro);
+}
+/* Only the top two bands are marked — past that the accent stops meaning "these are the good ones". */
+.tier-band { border-left: 3px solid var(--line); }
+.tier-band.tier-1 { border-left-color: var(--accent); }
+.tier-band.tier-1 .tier-rank { background: var(--accent-tint); color: var(--accent); }
+.tier-band.tier-2 { border-left-color: var(--accent-line); }
+.tier-band.tier-2 .tier-rank { background: var(--accent-tint); color: var(--accent-soft); }
+/* The value gap to the next band — the cliff the whole page is about, so it reads between them. */
+.tier-cliff {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  margin-top: var(--space-3);
+  color: var(--text-muted);
+  font-size: var(--text-micro);
+  line-height: var(--lh-micro);
+  text-transform: uppercase;
+  letter-spacing: var(--ls-micro);
+}
 .tier-chips { display: flex; flex-wrap: wrap; gap: var(--space-2); }
 
 /* Positional scarcity bars (Market → Scarcity) */
@@ -681,7 +789,7 @@ table.grid tr.kept:hover td { background: var(--accent-wash-hover); }
    line, stuck under the context strip so the result count and the sort stay on screen. */
 .list-bar {
   position: sticky;
-  top: calc(var(--control-h-lg) + var(--ctx-h));
+  top: calc(var(--topbar-h) + var(--ctx-h) - 2px);
   z-index: 8;
   background: var(--bg);
   padding: var(--space-2) 0;
@@ -723,13 +831,13 @@ th.sorted { color: var(--accent); }
    `table.grid`'s own max-width. */
 table.table-narrow { max-width: 420px; }
 
-.rules-list { color: var(--text); line-height: 1.8; padding-left: var(--space-5); }
-.rules-list li { margin-bottom: 2px; }
-
 footer { margin-top: var(--space-6); padding-top: var(--space-3); border-top: 1px solid var(--line); color: var(--text-muted); font-size: var(--text-caption); }
 
 /* ---------- desktop layer (the only breakpoint) ---------- */
 @media (min-width: 760px) {
+  /* The bar gains 16px of padding here, so the whole sticky stack shifts with it. */
+  :root { --topbar-h: calc(var(--control-h-lg) + var(--space-4)); }
+
   .app { padding: 0 var(--space-5) var(--space-8); }
 
   .topbar { gap: var(--space-5); padding: var(--space-2) 0; }
@@ -738,7 +846,7 @@ footer { margin-top: var(--space-6); padding-top: var(--space-3); border-top: 1p
 
   .tabs { display: flex; gap: var(--space-1); flex: 1 1 auto; flex-wrap: wrap; }
 
-  .ctx { top: calc(var(--control-h-lg) + var(--space-4)); justify-content: flex-end; }
+  .ctx { justify-content: flex-end; }
   .ctx-control { flex: 0 0 auto; max-width: 240px; }
 
   .tabbar { display: none; }

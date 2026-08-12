@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Sleeper GM">
+  <title>Sleeper GM</title>
+  <desc>
+    The app favicon AND the badge in the header. A favicon cannot read CSS custom properties, so the
+    four colors below are literal copies of the surface, line, accent and bg tokens in
+    web/src/styles.css. Keep them in sync if those tokens ever move. (Note for editors: XML forbids a
+    double hyphen inside a comment, which is why this note is a desc element and the token names are
+    written without their leading dashes.)
+  </desc>
+  <rect width="32" height="32" rx="8" fill="#171b22" />
+  <rect x="0.5" y="0.5" width="31" height="31" rx="7.5" fill="none" stroke="#2a3039" />
+  <g transform="rotate(-40 16 16)">
+    <ellipse cx="16" cy="16" rx="11" ry="6.75" fill="#4c8dff" />
+    <g stroke="#0e1116" stroke-width="1.7" stroke-linecap="round">
+      <path d="M8.6 16h14.8" />
+      <path d="M12.8 13.5v5M16 13.1v5.8M19.2 13.5v5" />
+    </g>
+  </g>
+</svg>

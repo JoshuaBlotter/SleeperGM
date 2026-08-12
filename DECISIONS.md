@@ -2,6 +2,53 @@
 
 Non-obvious choices and their rationale, so we don't re-litigate them. Newest at top.
 
+## 2026-08-12 — Issue #15: adding color back without adding emoji
+
+The issue is right that the redesign drained the app of personality, and right that emoji would read
+as machine output. Three judgement calls came out of that:
+
+- **The favicon is hand-drawn SVG, not a generated image.** The issue suggests an image generator.
+  A generated raster would be a binary blob nobody can adjust, in a repo whose whole design layer is
+  four color roles and a token scale. Twelve lines of SVG give a mark that is sharp at 16px and at
+  512px, weighs 600 bytes, and is the *same file* the header renders — so the tab icon and the
+  in-app mark cannot drift. Its four colors are literal copies of the surface/line/accent/bg tokens,
+  noted in the file, because a favicon cannot read CSS custom properties. **That note is a `<desc>`
+  element, not a comment, and the token names in it are written without their leading dashes on
+  purpose:** XML forbids a double hyphen inside a comment, so the obvious way to write this — an
+  HTML-style comment naming `--surface` and `--accent` — is a fatal parse error that makes the whole
+  file render as a broken image. It cost one round trip to find; don't reintroduce it.
+- **Short rules go in one card, not one card each.** The first pass gave each of the five "Other
+  rules" its own `.info-card` in a `.deck`. Five boxes of chrome around five one-line rules read as
+  clutter, and the grid's equal-height cells left the short ones floating in empty space. They are
+  now one card of hairline-separated term/definition pairs. The rule of thumb: a card is for a thing
+  you might act on separately — a deck of one-liners is a list.
+- **Icons are tone-coded, and the engine's emoji stays unused.** `leagueBrain.ts` ships an `emoji`
+  per superlative. The cards map the award's stable `id` to a Lucide glyph and one of the four color
+  roles instead. The tone is the award's verdict, so "Best Keepers" and "Buyer's Remorse" no longer
+  look identical at a glance — which is the actual complaint behind "boring", not the lack of a
+  picture. The `emoji` field is left in core: it is data, and the CLI may yet want it.
+- **Every remote image has a same-size fallback.** Sleeper's CDN is not a guarantee — a manager with
+  no avatar has none, and a missing headshot returns 403, not a placeholder. Each image is paired
+  with an initials disc of identical dimensions, so a 404 changes what a row shows and never how
+  tall it is. That is also why the avatars went into the `Row` primitive's existing `leading` slot
+  rather than becoming a new list variant.
+
+## 2026-08-12 — Issue #17: sticky offsets were computed from a height nothing enforced
+
+Three bars stick to the top, each offset by the sum of the heights above it. Those sums were literal
+(`--control-h-lg + --space-4`), but no rule made the top bar actually *be* that tall — its height came
+from its content. In static mode (the deployed site) the tallest thing in it is the `updated …` stamp
+at ~33px rather than the 44px refresh button, so the bar landed ~9px short of the offset the context
+strip used, and the page scrolled through the difference.
+
+The fix is to make the assumption enforceable rather than to re-measure it at runtime. `--topbar-h`
+is now a token, `min-height` on the bar consumes it, and both offsets below are computed from it, so
+the constants cannot disagree with reality. A `ResizeObserver` writing the measured height to a
+custom property would also work and would survive the top bar growing (its tab row wraps below ~900px
+today), but it puts layout in JS for a stack that is deliberately fixed-height. The offsets tuck 1px
+*into* the bar above instead of meeting it exactly: fractional device-pixel ratios round the two
+edges apart, and a 1px overlap is invisible where a 1px gap is not.
+
 ## 2026-08-11 — Issue #9: the Team page had three buttons called "Reset"
 Design review of the Team screen. The two the issue names are worse together than either is alone,
 and there was a third nobody mentioned:

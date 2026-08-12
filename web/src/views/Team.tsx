@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { CheckCheck, RotateCcw } from "lucide-react";
 import { api, type KeeperLine } from "../api";
+import { TeamAvatar } from "../Avatar";
 import { Row, RowList } from "../Row";
 import { Call, ErrorBox, Loading, Surplus, money, signed, useAsync, useIsDesktop } from "../ui";
 import { clearAllOverrides, clearOverride, recommendation, setOverride, useOverrides } from "../overrides";
@@ -313,10 +314,16 @@ export function TeamView({ teamId, source }: { teamId: number | null; source?: s
   return (
     <section>
       <div className="head-row">
-        <h2>
+        <h2 className="title-with-avatar">
           {meta.data ? (
             <>
-              {meta.data.teamName} <span className="dim">· {meta.data.manager} · {meta.data.record.wins}-{meta.data.record.losses}</span>
+              <TeamAvatar avatar={meta.data.avatar} name={meta.data.teamName} />
+              <span>
+                {meta.data.teamName}{" "}
+                <span className="dim">
+                  · {meta.data.manager} · {meta.data.record.wins}-{meta.data.record.losses}
+                </span>
+              </span>
             </>
           ) : (
             "Team"

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { ChevronsDown } from "lucide-react";
 import { api, type Tier } from "../api";
 import { ErrorBox, Loading, money, useAsync } from "../ui";
 import { openPlayer } from "../playerModalStore";
@@ -10,25 +11,45 @@ function TierBands({ tiers, showPos }: { tiers: Tier[]; showPos?: boolean }) {
   if (!tiers.length) return <p className="dim">No values from this source.</p>;
   return (
     <div className="tier-list">
-      {tiers.map((t) => (
-        <div className="tier-band" key={t.tier}>
-          <div className="tier-label">
-            <span className="strong">{t.label}</span>
-            <span className="dim">
-              {t.minValue === t.maxValue ? money(t.maxValue) : `${money(t.maxValue)}–${money(t.minValue)}`}
-            </span>
+      {tiers.map((t, i) => {
+        const range = t.minValue === t.maxValue ? money(t.maxValue) : `${money(t.maxValue)}–${money(t.minValue)}`;
+        // The overall board names a tier by its own dollar band, so there the label and the range
+        // are the same string; only the positional board has a name worth printing beside the rank.
+        const named = !t.label.startsWith("$");
+        // The gap to the next band is the whole premise of the page — the cliff you should reach
+        // across a tier break to stay above. It is data, so it goes between the bands.
+        const next = tiers[i + 1];
+        const cliff = next ? t.minValue - next.maxValue : 0;
+        return (
+          <div key={t.tier}>
+            <div className={"tier-band tier-" + Math.min(t.tier, 3)}>
+              <div className="tier-label">
+                <span className="tier-rank">T{t.tier}</span>
+                {named && <span className="strong">{t.label}</span>}
+                <span className="dim">{range}</span>
+                <span className="dim push">
+                  {t.players.length} player{t.players.length === 1 ? "" : "s"}
+                </span>
+              </div>
+              <div className="tier-chips">
+                {t.players.map((p) => (
+                  <button className="chip chip-neutral chip-interactive" key={p.playerId} onClick={() => openPlayer(p.playerId)} title="Player detail">
+                    {showPos && <span className={"pos pos-" + p.position}>{p.position}</span>}
+                    <span className="strong">{p.name}</span>
+                    <span className="dim">{money(p.value)}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+            {cliff > 0 && (
+              <div className="tier-cliff">
+                <ChevronsDown size={16} strokeWidth={1.5} aria-hidden="true" />
+                {money(cliff)} cliff
+              </div>
+            )}
           </div>
-          <div className="tier-chips">
-            {t.players.map((p) => (
-              <button className="chip chip-neutral chip-interactive" key={p.playerId} onClick={() => openPlayer(p.playerId)} title="Player detail">
-                {showPos && <span className={"pos pos-" + p.position}>{p.position}</span>}
-                <span className="strong">{p.name}</span>
-                <span className="dim">{money(p.value)}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

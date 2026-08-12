@@ -13,6 +13,7 @@ export function Sheet({
   onClose,
   title,
   meta,
+  lead,
   children,
   labelledBy,
 }: {
@@ -20,6 +21,8 @@ export function Sheet({
   onClose: () => void;
   title: ReactNode;
   meta?: ReactNode;
+  /** Optional mark before the title — a player headshot, a team avatar. Decorative. */
+  lead?: ReactNode;
   children: ReactNode;
   labelledBy?: string;
 }) {
@@ -133,6 +136,7 @@ export function Sheet({
           <span />
         </div>
         <div className="sheet-head" onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
+          {lead}
           <div className="sheet-title-block">
             <div className="sheet-title" id={labelledBy}>
               {title}
