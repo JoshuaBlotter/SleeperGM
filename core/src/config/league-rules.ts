@@ -1,10 +1,12 @@
 import { z } from "zod";
 
 /**
- * House rules for "Los Socios". Two rules are NOT yet known and are faked behind placeholders:
- *   §6.1 keeper price escalation  -> flat +$5/yr  (placeholder)
- *   §6.4 rookie startup cost      -> flat $3      (placeholder)
- * When the real rules doc arrives, change ONLY this file (+ docs/league-rules.md).
+ * House rules for "Los Socios" — the single source of truth. Every rule here is REAL, transcribed
+ * from the commissioner's rules doc; `sgm rulebook` renders them.
+ *
+ * §6.1 escalation and §6.4 rookie cost were once guessed. The `placeholder` flag and
+ * `outstandingRules()` stay as the guard: set it back to `true` on any rule that turns out to be a
+ * guess, and the rulebook prints an OUTSTANDING banner instead of quietly passing it off as fact.
  */
 
 export const EscalationSchema = z.object({

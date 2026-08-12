@@ -13,8 +13,7 @@ spot trades, track league-wide inflation, and keep my weird house rules straight
 - **CLI-first** build order: pure engines → console app to test logic early → React later.
 - Locked house rules from my answers: waiver keeper cost = FAAB acquisition cost; cost **resets on
   re-acquire**; taxi/IR **count** against cap but their players are ~free.
-- Added companion docs: **[diagrams.md](diagrams.md)** (interaction + swimlane flows) and
-  **[tasks.md](tasks.md)** (AI-workable task breakdown).
+- Added companion doc: **[diagrams.md](diagrams.md)** (interaction + swimlane flows).
 
 ---
 
@@ -161,8 +160,8 @@ drafts effectively permanent; team registry 15 min. A `refresh` command/flag for
 
 ## 6. House-rules config (ALL RESOLVED — no placeholders)
 
-A single versioned file the core loads, `config/league-rules.ts`, validated with Zod. Full rules are
-transcribed in [docs/league-rules.md](docs/league-rules.md) and rendered by `sgm rulebook`. Summary:
+A single versioned file the core loads, `config/league-rules.ts`, validated with Zod — the full rules
+are transcribed there and rendered by `sgm rulebook`. Summary:
 
 ```ts
 export const leagueRules = {
@@ -187,7 +186,7 @@ export const leagueRules = {
   resetCostOnReacquire: true,
 
   // 6.4  ✅ Rookie starting salary by draft slot (1-12) x position, then escalates like a vet.
-  //      Full table in docs/league-rules.md (e.g. 1.01 RB $12; McConkey 1.11 WR $1; Achane 1.12 RB $1).
+  //      Full table in league-rules.ts (e.g. 1.01 RB $12; McConkey 1.11 WR $1; Achane 1.12 RB $1).
   rookieCost: { model: "table", /* slot -> {QB,RB,WR,TE} */ },
 
   // 6.6  ✅ Traded players CARRY their original draft basis (auction $ or rookie pick), which then
@@ -213,12 +212,12 @@ export const leagueRules = {
 - **§6.1** keeper escalation (real): skill positions `old + positionalBase + yearsKept` (QB 1, RB 6,
   WR 6, TE 3); K/DEF `+$1/yr`. Applied annually → compounds over years kept.
 - **§6.4** rookie starting salary (real): a **draft-slot × position** table (full table in
-  docs/league-rules.md); escalates like a vet thereafter.
+  `config/league-rules.ts`); escalates like a vet thereafter.
 - **§6.6** traded players **carry their original draft basis** (auction $ or rookie pick), which then
   escalates — a trade does not reset cost. Verified: A.J. Brown carries his 2022 auction $1.
 
-**All house rules are now resolved and encoded** in `config/league-rules.ts` + `docs/league-rules.md`,
-rendered by `sgm rulebook`. One interpretation to confirm: escalation is replayed every year since
+**All house rules are now resolved and encoded** in `config/league-rules.ts`, rendered by
+`sgm rulebook`. One interpretation to confirm: escalation is replayed every year since
 acquisition (a 2022 keeper has 4 increases in 2026; rookies start the year after draft).
 
 ---
@@ -259,8 +258,8 @@ Turns a player into a projected auction-dollar **worth**, so we can compute surp
 
 ```
 sleeper-gm/
-├─ spec.md · diagrams.md · tasks.md      ← planning docs
-├─ package.json                          ← workspaces: core, cli, (server, web later)
+├─ spec.md · diagrams.md · specs/        ← planning docs + per-feature specs
+├─ package.json                          ← workspaces: core, cli, server, web
 ├─ core/
 │  ├─ src/
 │  │  ├─ sleeper/        ← typed API client + cache
@@ -271,9 +270,9 @@ sleeper-gm/
 │  │  └─ types.ts        ← shared domain types
 │  └─ cache/             ← players-nfl.json, drafts, registry…
 ├─ cli/
-│  └─ src/               ← commands: dashboard · team · rulebook · keepers · trades
-├─ docs/league-rules.md  ← human-readable house rules (rendered by Rulebook later)
-└─ (server/ · web/ added in later phases)
+│  └─ src/               ← commands: dashboard · team · rulebook · keepers · trades …
+├─ server/               ← Express API over core (local dev; the deployed site is static)
+└─ web/                  ← React (Vite) UI — the mobile app, built to web/dist
 ```
 
 ---

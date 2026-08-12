@@ -22,9 +22,6 @@ const MAX_TRIES = 3;
 // Circuit breaker: once the API is judged unreachable for this run, fail fast so the cache layer can
 // serve stale data immediately instead of grinding through ~200 timeouts.
 let apiDown = false;
-export function __resetApiState(): void {
-  apiDown = false;
-}
 
 async function fetchOnce(url: string): Promise<Response> {
   const ctrl = new AbortController();

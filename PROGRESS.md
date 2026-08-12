@@ -1,18 +1,38 @@
 # PROGRESS — living state
 
 > Updated as work happens. Read this right after `CLAUDE.md` to know where things stand.
-> Last updated: 2026-08-05 (initial build session — M0–M3 slices working end-to-end).
+> Last updated: 2026-08-12 (repo cleanup — see the entry at the bottom).
 
 ## Status snapshot
-- **Health:** `npm run check` is GREEN — typecheck clean, 38/38 tests pass.
-- **All six CLI commands work against the live league** (`dashboard`, `team`, `rulebook`, `keepers`,
-  `simulate`, `refresh`).
+- **Health:** `npm run check` is GREEN — typecheck clean, 103 tests across 17 files pass.
+- **All 14 CLI commands work against the live league** (`dashboard`, `team`, `rulebook`, `keepers`,
+  `simulate`, `refresh`, `brain`, `draft-value`, `inflation`, `rookies`, `scarcity`, `tiers`,
+  `trades`, `values`).
 - **All house rules are REAL** (no placeholders): §6.1 positional escalation, §6.4 rookie table,
   per-owner tenure reset, and salary that **accumulates through trades**.
 - **Authoritative salaries imported** from the commissioner's workbook → `config/salaries.csv`
   (Season 2025, 163 players). App reads CSV (preferred) and escalates one year → exact 2026 salaries
   (A.J. Brown $45, Pickens $35, Hurts $29, Achane $25, McConkey $16). Sheet salaries show `†`; players
   not in the sheet fall back to computed (`≈`).
+
+## Shipped 2026-08-12 (repo cleanup — 880 KB and 13 files removed)
+- **Deleted dead build output**: `docs/` (committed once in the initial commit, never updated; Pages
+  `build_type` is `workflow`, so every deploy comes from `upload-pages-artifact` in `refresh.yml`) and
+  `web/pagesApp.zip` (the same build, zipped for a manual upload that no longer happens).
+- **Retired finished plans**: `tasks.md` (T01–T24 all shipped, and still labelling T12–T21 🔴 blocked
+  on the rules doc) and the design handoff bundle. Its README survives as `specs/design-system.md`,
+  rewritten from a handoff into a spec of the system **as built**.
+- **Killed a phantom file.** `docs/league-rules.md` was referenced in nine places — including
+  `sgm rulebook`'s output and the web Rules page — and has never existed. `core/src/config/league-rules.ts`
+  is now named as the single source of truth everywhere.
+- **Corrected the stale rules story.** `CLAUDE.md` golden rule 4, the `league-rules.ts` header, this
+  file's "Blocked / waiting" section and four spec passages all still said §6.1/§6.4 were guessed
+  placeholders. They are real. The `placeholder`/`outstandingRules()` guard stays for future unknowns.
+- **Rewrote `web/DEPLOY.md`**, which documented a deploy that no longer exists (sync `web/dist` → `docs/`,
+  commit, wait for Pages). Also removed one genuinely dead function, `__resetApiState()` in
+  `sleeper/client.ts`, called from nowhere in the repo.
+- `npm run check` green (103 tests / 17 files), `web` typecheck and `web:build` clean, Rules page
+  verified in the browser.
 
 ## Shipped 2026-08-11 (issue #9 — Team page reset buttons)
 - The screen had **three** buttons saying "Reset": two for the keeper set (sim bar + desktop toolbar,
@@ -186,8 +206,9 @@
 - **Next open task: 6.2 Market.**
 
 ## Shipped 2026-08-10 (mobile design system, PRs 1–5 of 7)
-Rollout plan: `design_handoff_mobile_design_system/TASKS.md` (7 PRs, 23 tasks). **All 7 PRs are on
-`main` — the rollout is complete.** Nothing in `core/` changed — `web/` only.
+Rollout plan was 7 PRs / 23 tasks. **All 7 are on `main` — the rollout is complete**, so the plan
+has been retired; the resulting system is `specs/design-system.md`. Nothing in `core/` changed —
+`web/` only.
 - **PR1 tokens / PR2 controls** (earlier session): the `:root` token set, mobile-first CSS with one
   760px breakpoint, and `.btn` / `.seg` / `.input` / `.chip` collapsing ~20 ad-hoc treatments.
 - **PR3 shell**: fixed bottom tab bar (Home · Team · Market · Players · More; Tiers/Trades/Rookies/
@@ -235,7 +256,7 @@ Rollout plan: `design_handoff_mobile_design_system/TASKS.md` (7 PRs, 23 tasks). 
   network map, power ranking, trend-over-time. See `specs/league-brain.md` "Future ideas".
 
 ## Done
-- Planning docs: `spec.md` (v0.2), `diagrams.md`, `tasks.md`.
+- Planning docs: `spec.md` (v0.2), `diagrams.md`, and the feature specs under `specs/`.
 - Repo scaffold + autonomy scaffolding (`CLAUDE.md`, this file, `DECISIONS.md`, `README.md`).
 - **Core (all pure + unit-tested):** Sleeper client + TTL cache; players resolver; team registry;
   history chain walker; auction-price + FAAB extractors; provenance; rules config (Zod);
@@ -447,10 +468,9 @@ needed a one-time Pages source change; that was resolved and the note was stale.
 - `keepers` now takes a positional `[team]` like `team` (bare = all teams).
 
 ## Blocked / waiting on the user
-- **Keeper escalation formula** (spec §6.1) — faked as flat **+$5/yr** placeholder.
-- **Rookie startup cost** (spec §6.4) — faked as flat **$3** placeholder.
-- Both are marked `placeholder: true` in `config/league-rules.ts` and flagged by `sgm rulebook`.
-  When the real rules doc lands: update that config + `docs/league-rules.md` only.
+- Nothing. The two rules that were once guessed — keeper escalation (§6.1) and rookie startup cost
+  (§6.4) — arrived and are encoded for real in `core/src/config/league-rules.ts`. The
+  `placeholder` / `outstandingRules()` guard stays wired up for any future unknown.
 
 ## How to verify quickly
 ```bash

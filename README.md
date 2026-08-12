@@ -3,7 +3,7 @@
 A personal CLI (web later) for managing my Sleeper keeper/dynasty league **"Los Socios"** — keepers,
 player value, trades, and league-wide auction inflation.
 
-- **Plan:** [spec.md](spec.md) · **Flows:** [diagrams.md](diagrams.md) · **Backlog:** [tasks.md](tasks.md)
+- **Plan:** [spec.md](spec.md) · **Flows:** [diagrams.md](diagrams.md) · **Feature specs:** [specs/](specs/)
 - **Working agreement:** [CLAUDE.md](CLAUDE.md) · **State:** [PROGRESS.md](PROGRESS.md) · **Decisions:** [DECISIONS.md](DECISIONS.md)
 
 ## Quick start

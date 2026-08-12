@@ -24,7 +24,7 @@ export function rulebook(): void {
   console.log(renderRookieTable(r));
   console.log(` Trade carryover (§6.6):   traded players keep original basis, then escalate`);
   console.log(` Taxi / IR vs cap:         COUNT against cap; priced like any player (§6.5)`);
-  console.log(`\nSource of truth: core/src/config/league-rules.ts (+ docs/league-rules.md)`);
+  console.log(`\nSource of truth: core/src/config/league-rules.ts`);
 }
 
 function renderRookieTable(r = leagueRules): string {

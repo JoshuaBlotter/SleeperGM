@@ -1,24 +1,23 @@
-# Handoff: SleeperGM mobile design system
+# SleeperGM mobile design system
+
+> **Status: shipped.** This began as a design handoff and was rolled out over 7 PRs, all on `main`.
+> It is now the **reference spec for the system as built** — everything below describes what
+> `web/src/styles.css` and the shared primitives actually do. Reuse it; don't reinvent it. The
+> judgement calls made during the rollout are in `DECISIONS.md`; `CLAUDE.md` carries the short version.
 
 ## Overview
 
 SleeperGM is a fantasy-football league management web app (React + TypeScript + Vite, deployed as a static build). It is used almost exclusively on phones at 390–430px wide, but its CSS was written desktop-first and its UI grew organically: 28 distinct colors, 14 font sizes, 21 spacing values, 10 button treatments, three separate toggle-group implementations, and zero focus styles.
 
-This handoff covers a **standardization pass**: one token set, one canonical version of each core component, and a mobile-first layout, rolled out as 7 PR-sized chunks. It is explicitly **not a rebrand** — every color in the new token set already exists in `web/src/styles.css` today. The first PR is a pure rename with an empty visual diff.
+This was a **standardization pass**, not a rebrand: one token set, one canonical version of each core component, and a mobile-first layout. Every color in the token set already existed in `web/src/styles.css`.
 
-Source repo: `JoshuaBlotter/SleeperGM`, branch `main`, app under `web/`.
+## Environment
 
-## About the design files
-
-The `.dc.html` files bundled here are **design references** — prototypes showing the intended look and behavior. They are not production code and should not be copied into the app.
-
-The target codebase already exists and has an established environment: **React 18 + TypeScript, Vite, plain CSS in a single `web/src/styles.css` with CSS custom properties, no CSS framework, no component library.** Implement the designs inside that environment, in its idiom — CSS variables and semantic class names in `styles.css`, small typed React components in `web/src/`. Do not introduce Tailwind, CSS-in-JS, or a component library; the standardization is meant to reduce moving parts, not add them.
-
-One new dependency is expected and approved: `lucide-react`, for the icon set that replaces the current emoji and glyph characters.
+**React 18 + TypeScript, Vite, plain CSS in a single `web/src/styles.css` with CSS custom properties, no CSS framework, no component library.** Work in that idiom — CSS variables and semantic class names in `styles.css`, small typed React components in `web/src/`. Do not introduce Tailwind, CSS-in-JS, or a component library; the standardization exists to reduce moving parts, not add them. `lucide-react` is the one approved UI dependency, for the icon set that replaced the old emoji and glyph characters.
 
 ## Fidelity
 
-**High fidelity.** Colors, type sizes, weights, spacing, radii and control heights in this document are final and exact. The before/after screens in `Phase 2 — Design System.dc.html` are rendered at a true 390px, with "before" reproducing the current CSS faithfully — so a visual diff against the running app is meaningful.
+**High fidelity.** Colors, type sizes, weights, spacing, radii and control heights in this document are final and exact.
 
 Two things are deliberately *not* pinned: icon choice (any sensible Lucide glyph is fine) and exact copy for new microlabels.
 
@@ -258,30 +257,9 @@ No state architecture changes. State lives in `App.tsx` (active tab, selected te
 
 The kept set must continue to feed the Targets screen, and worth overrides must continue to persist, unchanged.
 
-## Rollout
-
-`TASKS.md` in this folder is the implementation plan: 7 PRs, 23 tasks, each with scope, affected files and acceptance criteria. Work them in order — PR 1 is a pure rename with an empty visual diff and everything else depends on it.
-
-If time is short, the three highest-value units are PR 1 (tokens), task 2.3 (16px form controls — one rule, ends the iOS zoom bug) and PR 3 (bottom nav).
-
 ## Assets
 
-No image assets. Icons are currently emoji and glyph characters (🏈 28px logo, 🧠, ✕, ↻, ↺, †, ≈, ▸/▾, ▲/▼, ⚠, →) with no consistent size, weight or optical alignment — and emoji render in full color regardless of context, making 🏈 and 🧠 the most saturated things on screen.
-
-Replace with **Lucide** (`lucide-react`), 24px, stroke width 1.5, colored via `currentColor`. The 🏈 logo becomes a text wordmark. Keep the `†` and `≈` salary annotation marks — they are data notation, not icons.
-
-## Files in this bundle
-
-| File | What it is |
-|---|---|
-| `README.md` | This document — self-sufficient spec |
-| `TASKS.md` | The 7-PR / 23-task rollout plan |
-| `tokens.css` | The token block, ready to paste into `styles.css` |
-| `Phase 1 — UI Audit.dc.html` | Full inventory of the current UI and every flagged inconsistency |
-| `Phase 2 — Design System.dc.html` | The system, plus before/after at 390px for Keepers, Dashboard and the drilldown |
-| `Phase 3 — Rollout Tasks.dc.html` | The same plan as `TASKS.md`, formatted for reading |
-
-Open the `.dc.html` files in a browser to view them.
+No image assets. Icons are **Lucide** (`lucide-react`), 24px, stroke width 1.5, colored via `currentColor` — they replaced the emoji and glyph characters (🏈 28px logo, 🧠, ✕, ↻, ↺, ▸/▾, ▲/▼, ⚠, →) that had no consistent size, weight or optical alignment and rendered in full color regardless of context. The 🏈 logo is now a text wordmark. The `†` and `≈` salary annotation marks stay — they are data notation, not icons.
 
 ## Source files this affects
 

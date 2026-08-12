@@ -634,3 +634,35 @@ Two bugs from the earlier PRs were found by measuring in-browser and fixed in PR
 full-width rule stretched checkboxes to 265x13, and `input[type=checkbox] { height:auto }` left every
 checkbox at its intrinsic 13px rather than the specified 24px — including the ones the keeper simulator
 is entirely driven by.
+
+## 2026-08-12 — Repo cleanup: what was deleted, and why `docs/` was safe to delete
+
+A cruft pass. Three of the calls were not obvious:
+
+- **`docs/` was 493 KB of dead build output, despite the Pages API still naming it.**
+  `GET /repos/:owner/:repo/pages` reports `"source": {"branch":"main","path":"/docs"}`, which reads
+  like the site is served from that folder. It is not: the same response says
+  `"build_type": "workflow"`, and that is what governs. `refresh.yml` builds and hands `web/dist`
+  straight to `actions/upload-pages-artifact` in one job. The `source` field is a leftover from the
+  original manual setup that GitHub keeps returning. Confirmed with `git log -- docs/`: one commit,
+  the initial one, never touched since — the deployed site had moved on months of commits ago.
+  `web/pagesApp.zip` was the same build zipped for manual upload (byte-identical asset hashes).
+- **The phantom `docs/league-rules.md` is gone, not written.** Nine places referenced it — including
+  two that printed it to the user (`sgm rulebook` and the web Rules page) — and it has never existed
+  in git history. Since every rule is already transcribed in `core/src/config/league-rules.ts` and
+  rendered by `sgm rulebook`, a second human-readable copy would be a thing to keep in sync for no
+  gain. The config file is now stated as the single source of truth everywhere.
+- **The `placeholder` machinery stays even though nothing is a placeholder.** Both §6.1 and §6.4 are
+  `placeholder: false` now, so `outstandingRules()` returns empty and the OUTSTANDING banner never
+  prints. Kept anyway: it is the guard that stops a future guessed rule from passing for fact. Only
+  the docs claiming the rules are *currently* open were corrected.
+
+Retired as finished: `tasks.md` (T01–T24, all shipped, and still marking T12–T21 as blocked on a rules
+doc that has long since arrived) and the design handoff bundle (rollout complete at 7/7 PRs; the three
+`.dc.html` phase docs plus `support.js` were rendered duplicates of the markdown, and `tokens.css` was
+already pasted into `styles.css`). The one living file, its README, became `specs/design-system.md`,
+next to `draft-toolkit.md` and `league-brain.md`.
+
+Dated entries above this one still mention the deleted paths. Left alone on purpose — this file is an
+append-only log of what was decided when, and editing old entries to match today's tree would make it
+lie about its own history.

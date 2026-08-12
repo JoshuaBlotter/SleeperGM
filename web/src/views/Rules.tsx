@@ -225,7 +225,7 @@ export function RulesView() {
         <li>Taxi &amp; IR {rules.taxiCountsAgainstCap ? "count" : "do not count"} against the cap; priced like any player.</li>
         <li>Kickers &amp; defenses are streamers (~$0 market value); rarely worth keeping.</li>
       </ul>
-      <div className="legend">Source of truth: core/src/config/league-rules.ts + docs/league-rules.md</div>
+      <div className="legend">Source of truth: core/src/config/league-rules.ts</div>
     </section>
   );
 }

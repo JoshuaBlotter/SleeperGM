@@ -7,8 +7,8 @@ state.
 ## What this is
 A personal Sleeper fantasy-football GM tool for the keeper/dynasty league **"Los Socios"**
 (`LEAGUE_ID=1389689313502961664`). Goals, data model, and rules are in **`spec.md`**; user flows in
-**`diagrams.md`**; the task backlog in **`tasks.md`**. Larger per-iteration feature specs live under
-**`specs/`** (e.g. `specs/draft-toolkit.md`) so `spec.md` stays lean.
+**`diagrams.md`**. Larger per-iteration feature specs live under **`specs/`** (`draft-toolkit.md`,
+`league-brain.md`, `design-system.md`) so `spec.md` stays lean.
 
 ## Golden rules
 1. **CLI-first.** All logic lives in `core/` as **pure, side-effect-free functions**. The CLI (`cli/`)
@@ -16,10 +16,10 @@ A personal Sleeper fantasy-football GM tool for the keeper/dynasty league **"Los
 2. **Everything verifiable offline.** Unit tests use tiny hand-written fixtures in
    `core/src/__tests__/fixtures/` — no network in tests. Live calls happen only in `npm run smoke`.
 3. **The Sleeper API is read-only, no auth.** Never add write calls, accounts, or secrets.
-4. **Two open house rules are faked, not guessed.** Keeper escalation (spec §6.1) and rookie startup
-   cost (spec §6.4) are unknown. They live behind `config/league-rules.ts` with `placeholder: true` and
-   are surfaced loudly (`sgm rulebook` prints an OUTSTANDING banner). When the real rules doc arrives,
-   only that config file + `docs/league-rules.md` should need to change.
+4. **House rules are never guessed silently.** All of them are now REAL and live in
+   `core/src/config/league-rules.ts` — the single source of truth, rendered by `sgm rulebook`. If a
+   rule ever has to be assumed, encode it there with `placeholder: true`; `outstandingRules()` makes
+   `sgm rulebook` print an OUTSTANDING banner so a guess can never pass for fact.
 
 ## Definition of Done (every code change)
 - `npm run check` is green (`typecheck` + `vitest`). This is the gate — if it's green, the change is safe.
@@ -51,7 +51,7 @@ A personal Sleeper fantasy-football GM tool for the keeper/dynasty league **"Los
 
 ## Design system (`web/`)
 The app is used on phones at 390–430px. Everything below is settled — reuse it, don't reinvent it.
-Full spec: `design_handoff_mobile_design_system/README.md`; the judgement calls are in `DECISIONS.md`.
+Full spec: `specs/design-system.md`; the judgement calls are in `DECISIONS.md`.
 
 **Tokens.** Every color, size, space and radius is a `:root` custom property in `web/src/styles.css`.
 Nothing outside `:root` may contain a raw hex, `rgba()`, px font-size, px spacing or px radius. Four
