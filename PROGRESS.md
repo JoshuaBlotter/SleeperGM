@@ -34,6 +34,19 @@
 - `npm run check` green (103 tests / 17 files), `web` typecheck and `web:build` clean, Rules page
   verified in the browser.
 
+## Shipped 2026-08-12 (the snapshot stamp now carries a time)
+- The top bar read `updated Aug 12`. A date is only enough if the site rebuilds once a day, and it
+  doesn't — `refresh.yml` fires on **every push to main** as well as the 11:00 UTC cron, so several
+  builds can share a date and the stamp couldn't tell them apart. Now `updated Aug 11, 10:34 PM`,
+  via `toLocaleString` with `month/day/hour/minute` — locale-aware, rendered in the reader's own zone
+  from the ISO `generatedAt`.
+- The hover title was also wrong ("refreshes when the nightly build runs" — only half the story). It
+  now names both triggers and carries the full stamp *with* the zone, which the compact label omits:
+  "Snapshot built Tuesday, August 11, 2026 at 10:34:02 PM MDT. Rebuilds on every push to main and
+  nightly at 11:00 UTC."
+- Measured at 375 / 390 / 1280px: the label is 149px, nothing truncates (wordmark name and sub both
+  fit), no horizontal scroll, and no overlap with the desktop tab row.
+
 ## Shipped 2026-08-11 (issue #9 — Team page reset buttons)
 - The screen had **three** buttons saying "Reset": two for the keeper set (sim bar + desktop toolbar,
   same action) and one that cleared custom Worth values. Same word, two meanings.

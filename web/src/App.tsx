@@ -41,11 +41,22 @@ const MORE: { id: Tab; label: string }[] = [
   { id: "rules", label: "Rules" },
 ];
 
+// The snapshot rebuilds on every push to main, not just on the nightly cron, so a date alone can't
+// tell you which of several same-day builds you are looking at. Time of day is the useful part.
+// Locale-aware and rendered in the reader's own zone; `updatedAt` is ISO/UTC.
 function fmtUpdated(iso?: string): string {
   if (!iso) return "";
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return "";
-  return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  return d.toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+}
+
+/** Full stamp for the tooltip — includes the zone, which the compact label omits. */
+function fmtUpdatedLong(iso?: string): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleString(undefined, { dateStyle: "full", timeStyle: "long" });
 }
 
 export function App() {
@@ -70,6 +81,7 @@ export function App() {
   const sources = league.data?.sources ?? [];
   const activeSource = source || league.data?.valueSource || "";
   const updated = fmtUpdated(league.data?.updatedAt);
+  const updatedLong = fmtUpdatedLong(league.data?.updatedAt);
   const showTeamPicker = tab === "team" || tab === "trades";
   const teamName = teams.find((t) => t.rosterId === teamId)?.teamName;
 
@@ -105,7 +117,14 @@ export function App() {
         </nav>
         <div className="controls">
           {isStatic ? (
-            <span className="updated" title="This is a static snapshot; data refreshes when the nightly build runs.">
+            <span
+              className="updated"
+              title={
+                updatedLong
+                  ? `Snapshot built ${updatedLong}. Rebuilds on every push to main and nightly at 11:00 UTC.`
+                  : "This is a static snapshot. It rebuilds on every push to main and nightly at 11:00 UTC."
+              }
+            >
               updated {updated || "—"}
             </span>
           ) : (
