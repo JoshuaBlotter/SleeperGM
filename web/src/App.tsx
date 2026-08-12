@@ -60,6 +60,12 @@ export function App() {
   useEffect(() => {
     api.staticMode().then(setIsStatic);
   }, []);
+  // A new screen starts at its top. This has to be an effect rather than a line in `go()`:
+  // closing a picker sheet restores the scroll position it locked, and that cleanup would
+  // otherwise run after the jump and undo it.
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [tab]);
   const teams = league.data?.teams ?? [];
   const sources = league.data?.sources ?? [];
   const activeSource = source || league.data?.valueSource || "";

@@ -131,14 +131,16 @@ export function Dashboard({
         </div>
       </div>
 
-      <Superlatives brain={brain} />
-
+      {/* Teams first: it is what you come here to open. The superlatives are a read, and twelve
+          award cards ahead of them meant scrolling most of a phone screen to reach the list. */}
       <h3>Teams</h3>
       <RowList>
         {d.teams.map((t) => (
           <TeamRowCard key={t.rosterId} t={t} p={profiles.get(t.rosterId)} onOpen={onOpenTeam} />
         ))}
       </RowList>
+
+      <Superlatives brain={brain} />
     </section>
   );
 }
