@@ -439,7 +439,8 @@ export function loadDraftValue(ctx: Ctx, data: KeeperData): DraftValueReport {
       keeperCost: r?.keeperCost ?? null,
     });
   }
-  return buildDraftValueReport(buys, auctionSeason, ctx.season);
+  // Inflated worth is what makes the comparison like-for-like — see the note in draftValue.ts.
+  return buildDraftValueReport(buys, auctionSeason, ctx.season, leagueInflation(ctx, data).multiplier);
 }
 
 /** A player's positional finish in one season: e.g. RB3 in 2024. */

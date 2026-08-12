@@ -230,7 +230,8 @@ function LastYearAuction({ source }: { source?: string }) {
   if (s.loading) return <Loading what="last year's auction" />;
   if (s.error) return <ErrorBox message={s.error} />;
   const d = s.data!;
-  const net = d.totalWorth - d.totalCost;
+  const net = d.totalMarketWorth - d.totalCost;
+  const flaggedCount = d.rows.filter((r) => r.flagged).length;
   // Δ and its percentage are one value, so they ride together on the metric line.
   const delta = (p: DraftValueRow) =>
     signed(p.delta) + (p.deltaPct == null ? "" : ` (${p.deltaPct > 0 ? "+" : ""}${p.deltaPct}%)`);
@@ -246,8 +247,10 @@ function LastYearAuction({ source }: { source?: string }) {
   return (
     <>
       <p className="dim lede">
-        What last season's ({d.auctionSeason}) <strong>auction buys</strong> cost, vs their {d.projectionSeason}{" "}
-        projected worth. Carried keepers and rookie picks are excluded — this is only what actually went to auction.
+        What last season's ({d.auctionSeason}) <strong>auction buys</strong> cost, vs what we expect them to cost in{" "}
+        {d.projectionSeason} — face worth inflated ×{d.multiplier.toFixed(2)}, so both numbers are auction dollars.
+        Carried keepers and rookie picks never went to auction, so they are not here (that is why a long-held keeper
+        can be missing while a $1 flier is not).
       </p>
       <div className="cards">
         <div className="card">
@@ -256,15 +259,25 @@ function LastYearAuction({ source }: { source?: string }) {
           <div className="k">{d.rows.length} players</div>
         </div>
         <div className="card">
-          <div className="k">{d.projectionSeason} projected worth</div>
-          <div className="v">{money(d.totalWorth)}</div>
+          <div className="k">{d.projectionSeason} expected cost</div>
+          <div className="v">{money(d.totalMarketWorth)}</div>
+          <div className="k">{money(d.totalWorth)} face × {d.multiplier.toFixed(2)}</div>
         </div>
         <div className={"card " + (net >= 0 ? "good" : "bad")}>
           <div className="k">Net vs last year</div>
           <div className="v">{signed(net)}</div>
-          <div className="k">{net >= 0 ? "projecting higher" : "projecting lower"}</div>
+          <div className="k">{net >= 0 ? "market up" : "market down"}</div>
         </div>
       </div>
+
+      {flaggedCount > 0 && (
+        <div className="notice">
+          <strong>{flaggedCount} price{flaggedCount === 1 ? "" : "s"} moved a long way.</strong> Buys of{" "}
+          {money(10)}+ whose expected cost is 40%+ off what was paid carry a <span className="chip chip-solid chip-warning">check</span>{" "}
+          mark. A real change in outlook looks like this — so does a value the source has plain wrong. Worth a look
+          before you trust it, and an override on the Team page if it is wrong.
+        </div>
+      )}
 
       <div className="toolbar">
         <select value={pos} onChange={(e) => setPos(e.target.value)} aria-label="Position">
@@ -294,7 +307,9 @@ function LastYearAuction({ source }: { source?: string }) {
                 <th>Player</th>
                 <th>Pos</th>
                 <th className="r">{d.auctionSeason} cost</th>
-                <th className="r">{d.projectionSeason} worth</th>
+                <th className="r" title={`Face worth × ${d.multiplier.toFixed(2)} inflation`}>
+                  {d.projectionSeason} expected
+                </th>
                 <th className="r">Δ</th>
                 <th>Now</th>
               </tr>
@@ -302,12 +317,16 @@ function LastYearAuction({ source }: { source?: string }) {
             <tbody>
               {rows.map((p: DraftValueRow) => (
                 <tr key={p.playerId}>
-                  <td className="strong">{p.name}</td>
+                  <td className="strong">
+                    {p.name} {p.flagged && <span className="chip chip-solid chip-warning">check</span>}
+                  </td>
                   <td>
                     <span className={"pos pos-" + p.position}>{p.position}</span>
                   </td>
                   <td className="r">{money(p.cost)}</td>
-                  <td className="r">{money(p.worth)}</td>
+                  <td className="r" title={`${money(p.worth)} face`}>
+                    {money(p.marketWorth)}
+                  </td>
                   <td className="r">
                     <span className={"num " + (p.delta > 0 ? "pos" : p.delta < 0 ? "neg" : "zero")}>{delta(p)}</span>
                   </td>
@@ -326,6 +345,7 @@ function LastYearAuction({ source }: { source?: string }) {
                 <>
                   <span>{p.name}</span>
                   <span className={"pos pos-" + p.position}>{p.position}</span>
+                  {p.flagged && <span className="chip chip-solid chip-warning">check</span>}
                 </>
               }
               meta={now(p)}
@@ -334,16 +354,18 @@ function LastYearAuction({ source }: { source?: string }) {
               metricRole={sign(p.delta)}
               details={[
                 { k: `${d.auctionSeason} cost`, v: money(p.cost) },
-                { k: `${d.projectionSeason} worth`, v: money(p.worth) },
+                { k: `${d.projectionSeason} expected`, v: money(p.marketWorth) },
+                { k: "face worth", v: money(p.worth) },
+                { k: "inflation", v: `×${d.multiplier.toFixed(2)}` },
               ]}
             />
           ))}
         </RowList>
       )}
       <div className="legend">
-        Δ = {d.projectionSeason} projected worth − {d.auctionSeason} auction cost. <span className="num neg">Red</span>{" "}
-        = we project them lower than last year's price (don't chase it); <span className="num pos">green</span> = value
-        has risen. "kept" players aren't back in the auction pool.
+        Δ = {d.projectionSeason} expected cost − {d.auctionSeason} auction cost, both in auction dollars.{" "}
+        <span className="num neg">Red</span> = the market has come down on them (don't chase last year's price);{" "}
+        <span className="num pos">green</span> = it has moved up. "kept" players aren't back in the auction pool.
       </div>
     </>
   );

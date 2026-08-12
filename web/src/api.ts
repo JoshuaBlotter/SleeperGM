@@ -107,9 +107,11 @@ export interface DraftValueRow {
   position: string;
   nflTeam: string | null;
   cost: number;
-  worth: number;
-  delta: number;
+  worth: number; // face worth, as the value source calibrates it
+  marketWorth: number; // worth x inflation — what we expect it to COST, the number comparable to `cost`
+  delta: number; // marketWorth - cost
   deltaPct: number | null;
+  flagged: boolean; // material buy, big price move — worth checking the value source
   kept: boolean;
   ownerTeam: string | null;
   keeperCost: number | null;
@@ -117,9 +119,11 @@ export interface DraftValueRow {
 export interface DraftValueReport {
   auctionSeason: string;
   projectionSeason: string;
+  multiplier: number;
   rows: DraftValueRow[];
   totalCost: number;
   totalWorth: number;
+  totalMarketWorth: number;
 }
 
 export interface ScarcityPlayer {
