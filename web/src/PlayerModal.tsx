@@ -16,6 +16,16 @@ const ARCHETYPE_BLURB: Record<string, string> = {
 };
 
 /** Bar height is data, not design — set as a property so the file carries no inline style objects. */
+/**
+ * Colors a positional finish by whether it was startable in a 12-team league: a top-12 finish is
+ * a every-week starter, 13-23 is a flex/bye-week body, 24+ was not on a roster that mattered.
+ * Only the rank is colored — the chip stays neutral so a season with three finishes does not
+ * read as three status badges.
+ */
+function rankBand(rank: number): string {
+  return rank <= 12 ? "is-elite" : rank <= 23 ? "is-mid" : "is-low";
+}
+
 const barHeight = (pct: number) => (el: HTMLDivElement | null) => {
   el?.style.setProperty("height", `${pct}%`);
 };
@@ -119,8 +129,12 @@ function Detail({ d }: { d: PlayerDetail }) {
           <span className="dim">Positional finish:</span>
           {d.finishes.map((f) => (
             <span className="chip chip-neutral" key={f.season} title={`${f.points} pts`}>
-              <span className="dim">{f.season}</span> {f.position}
-              {f.rank}
+              <span className="dim">{f.season}</span>
+              {/* Position and rank are one token — the chip's flex gap would read "RB 4". */}
+              <span>
+                {f.position}
+                <span className={"finish-rank " + rankBand(f.rank)}>{f.rank}</span>
+              </span>
             </span>
           ))}
         </div>
