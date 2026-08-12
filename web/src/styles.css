@@ -376,6 +376,16 @@ h3 { margin: var(--space-6) 0 var(--space-2); color: var(--text-muted); font-siz
 .info-card h4 { margin: 0 0 var(--space-1); font-size: var(--text-body); font-weight: var(--weight-bold); display: flex; align-items: center; gap: var(--space-2); text-transform: none; letter-spacing: 0; color: var(--text); }
 .info-card p { margin: 0; color: var(--text-muted); font-size: var(--text-label); line-height: 1.55; }
 .award-winner { font-weight: var(--weight-bold); font-size: var(--text-body); margin: 2px 0 var(--space-2); }
+
+/* A card that is mostly prose. Capped so a line does not run the full 1045px content width on
+   desktop: .info-card p is 13px, where ~6.2px per character puts 600px at a ~90-character
+   measure — the upper end of comfortable. Uncapped it would read at 168. */
+.explainer { max-width: 600px; }
+.explainer-body { display: flex; flex-direction: column; gap: var(--space-3); margin-top: var(--space-3); }
+/* Weight/term pairs, e.g. the contender index inputs. */
+.deflist { display: grid; grid-template-columns: auto 1fr; gap: var(--space-2) var(--space-3); margin: var(--space-3) 0 0; }
+.deflist dt { color: var(--text); font-size: var(--text-label); font-weight: var(--weight-bold); white-space: nowrap; }
+.deflist dd { margin: 0; color: var(--text-muted); font-size: var(--text-label); line-height: var(--lh-label); }
 .award-winner .dim { font-weight: var(--weight-regular); }
 
 .why { display: inline-flex; flex-wrap: wrap; gap: var(--space-1); }

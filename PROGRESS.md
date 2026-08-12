@@ -27,6 +27,18 @@
   gutters and makes read like a form submit. Added a disabled state for chips and a toolbar
   width opt-out.
 
+## Shipped 2026-08-11 (contender index explained on the Rules page)
+- The Dashboard shows a `contender index` and derives every archetype and two awards from it, but
+  nothing on the site said what it measured. Rules gains a **Team profiles** section with an
+  `.info-card` carrying the one-line definition and the four weights (30/30/25/15 — roster value,
+  keeper surplus, last-season wins, roster age) always visible, and the caveats behind the existing
+  `.card-expander`: age is an *urgency* signal so older scores higher; the score **ranks rather than
+  grades** because every input is min–max normalised across the twelve teams, so last place scores 0
+  by construction and the scale shifts with the data; one outlier flattens a 30%-weighted input; and
+  tags/regret/volatility do not feed it. 267px collapsed, 804px open at 390px.
+- New: `.explainer` (600px cap ≈ a 90-character measure — uncapped it read at 168 on desktop),
+  `.explainer-body`, `.deflist`.
+
 ## Shipped 2026-08-11 (Dashboard team names were being truncated)
 - Team names were cut off ("Comedor D…", "Kupp my b…") because the archetype chip shared the title
   line and took fixed width. Three changes, and the name now gets the whole first line:

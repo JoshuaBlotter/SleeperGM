@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { ChevronDown } from "lucide-react";
 import { api } from "../api";
 import { Row, RowList } from "../Row";
 import { ErrorBox, Loading, useAsync, useIsDesktop } from "../ui";
@@ -25,6 +26,66 @@ const SOURCE_INFO: Record<string, { label: string; blurb: string }> = {
       "signal (where people actually draft), not one expert's list.",
   },
 };
+
+/**
+ * The contender index drives the Dashboard's archetypes and awards, but nothing on the site said
+ * what it measures. The weights stay visible; the caveats — especially that it RANKS rather than
+ * grades — go behind an expander so this stays a card and not an essay.
+ */
+function ContenderIndexCard() {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="info-card explainer">
+      <h4>Contender index</h4>
+      <p>
+        A 0–100 score on the Dashboard for how ready a team is to win <em>now</em>. It sets each team's
+        archetype, orders the team list, and picks the Prime Contender and Deepest Rebuild awards.
+      </p>
+      <dl className="deflist">
+        <dt>30%</dt>
+        <dd>roster value — total worth of rostered skill players</dd>
+        <dt>30%</dt>
+        <dd>keeper surplus — total positive surplus, i.e. how many cheap studs you hold</dd>
+        <dt>25%</dt>
+        <dd>last season's wins</dd>
+        <dt>15%</dt>
+        <dd>roster age — mean NFL experience</dd>
+      </dl>
+      <button className="card-expander" aria-expanded={open} onClick={() => setOpen((o) => !o)}>
+        How to read it
+        <ChevronDown className="row-chev" size={18} strokeWidth={1.5} aria-hidden="true" />
+      </button>
+      {open && (
+        <div className="explainer-body">
+          <p>
+            <strong>Older scores higher.</strong> Age is not a quality signal here, it is an urgency one — an
+            old roster means the window is now, not that the team is building.
+          </p>
+          <p>
+            <strong>It ranks, it does not grade.</strong> Every input is rescaled against the other eleven
+            teams, so whoever has the lowest roster value scores zero on that input by construction, not
+            because the roster is worthless. The scale also shifts whenever the data or the value source
+            changes, so a 61 this week and a 61 next season are not the same claim.
+          </p>
+          <p>
+            <strong>One outlier flattens the middle.</strong> With twelve teams, a single extreme value
+            compresses everyone else on an input worth 30% of the score.
+          </p>
+          <p>
+            <strong>Archetypes come from thirds.</strong> Top third is <em>contender</em>, or{" "}
+            <em>win-now</em> if the roster is old or has sold its rookie picks. Bottom third is{" "}
+            <em>rebuilding</em> if it is young or stocked with picks, otherwise <em>retooling</em>. Everyone
+            else is <em>balanced</em>.
+          </p>
+          <p>
+            Tendency tags, regret and boom-bust volatility show up in a team's profile but do{" "}
+            <strong>not</strong> move the index.
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
 
 /** 12 slots × 4 positions is a matrix, so it stays a table — one position at a time on a phone. */
 function RookieCostTable({ table }: { table: Record<string, Record<string, number>> }) {
@@ -152,6 +213,9 @@ export function RulesView() {
           </p>
         </div>
       </div>
+
+      <h3>Team profiles — the contender index</h3>
+      <ContenderIndexCard />
 
       <h3>Other rules</h3>
       <ul className="rules-list">
