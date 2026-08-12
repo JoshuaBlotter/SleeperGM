@@ -27,6 +27,20 @@
   gutters and makes read like a form submit. Added a disabled state for chips and a toolbar
   width opt-out.
 
+## Shipped 2026-08-11 (issues #12/#13/#14 — the "Next in Line" batch)
+- **#14 scroll**: a tab change now scrolls to top. It is an effect keyed on `tab`, not a line in
+  `go()` — a picker sheet restores the scroll it locked on open, and that cleanup runs *after* the
+  click handler, silently undoing a `scrollTo` in `go()`. Sheets that close without navigating still
+  restore position. Dashboard also leads with **Teams** instead of 12 award cards; first row 320px.
+- **#13 finish ranks**: the rank carries the color, chip stays neutral — ≤12 success, 13–23 warning,
+  24+ danger. `.chip`'s flex gap split "RB4" into "RB 4", so position+rank are one flex child now.
+- **#12 last-year auction — a units bug.** Face worth is calibrated to the whole pool; an auction
+  price is what was paid in a market minus its keepers (~×1.79 here). Subtracting one from the other
+  put the 2025 class at **50.6%** of what was paid. `delta` now uses `marketWorth = worth × multiplier`
+  (K/DEF exempt, matching `inflateBoard`), giving $1029 vs $1122 = 8% down. Face worth is still shown.
+  Buys ≥$10 that moved ≥40% get a `check` chip (32 of 120) as override candidates. Hurts being absent
+  is correct — carried keepers never hit the auction; the lede now says so. Engine tests 2 → 7.
+
 ## Shipped 2026-08-11 (contender index explained on the Rules page)
 - The Dashboard shows a `contender index` and derives every archetype and two awards from it, but
   nothing on the site said what it measured. Rules gains a **Team profiles** section with an
