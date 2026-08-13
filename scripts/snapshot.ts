@@ -23,6 +23,7 @@ import {
   loadPlayerDetails,
   loadRookieBoard,
   loadScarcity,
+  loadSeasonRecap,
   loadTargetPool,
   loadTiers,
   loadTrending,
@@ -111,7 +112,12 @@ async function main() {
     bySource[src] = await buildForSource(ctx, d, src);
   }
 
-  const [rookies, playerDetails] = await Promise.all([loadRookieBoard(ctx), loadPlayerDetails(ctx, data)]);
+  // Source-independent, like playerDetails: the recap is about salaries and what happened, not worth.
+  const [rookies, playerDetails, history] = await Promise.all([
+    loadRookieBoard(ctx),
+    loadPlayerDetails(ctx, data),
+    loadSeasonRecap(ctx, data),
+  ]);
 
   const bundle = {
     generatedFor: ctx.season,
@@ -122,6 +128,7 @@ async function main() {
     playerDetails,
     rules: { rules: leagueRules, outstanding: outstandingRules() },
     rookies,
+    history,
   };
 
   const outDir = path.join(process.cwd(), "web", "public");

@@ -4,6 +4,8 @@
 // spike (the classic RB run). League-wide inflation hides this; scarcity is per-position. "kept" here =
 // currently rostered (a rational-keeper proxy) until managers lock their keepers — see the toolkit doc.
 
+import { compareBoard } from "./board";
+
 export interface ScarcityPlayer {
   playerId: string;
   name: string;
@@ -11,6 +13,7 @@ export interface ScarcityPlayer {
   nflTeam: string | null;
   value: number;
   kept: boolean; // rostered = off the auction board
+  points?: number; // last season's fantasy points — breaks the many ties at the same dollar
 }
 
 export interface PositionScarcity {
@@ -33,7 +36,7 @@ export interface PositionScarcity {
  */
 export function computeScarcity(players: ScarcityPlayer[], positions: string[], topN: number): PositionScarcity[] {
   return positions.map((position) => {
-    const pool = players.filter((p) => p.position === position).sort((a, b) => b.value - a.value);
+    const pool = players.filter((p) => p.position === position).sort(compareBoard);
     const top = pool.slice(0, topN);
     const keptValue = top.filter((p) => p.kept).reduce((s, p) => s + p.value, 0);
     const availableValue = top.filter((p) => !p.kept).reduce((s, p) => s + p.value, 0);

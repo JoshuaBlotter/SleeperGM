@@ -31,6 +31,7 @@ A personal Sleeper fantasy-football GM tool for the keeper/dynasty league **"Los
 - `npm run check` — typecheck + tests (the self-verification gate)
 - `npm test` / `npm run test:watch` — tests
 - `npm run smoke` — hit the LIVE Sleeper API, print key facts (catches upstream drift)
+- `npm run values:adp` / `npm run values:espn` — refresh a generated value source's CSV
 - `npm run fixtures` — refresh recorded live snapshots (integration, not unit)
 - `npm run sgm -- <command>` — run the CLI, e.g. `npm run sgm -- dashboard`
 
@@ -38,7 +39,9 @@ A personal Sleeper fantasy-football GM tool for the keeper/dynasty league **"Los
 - `core/src/sleeper/` — API client + TTL cache + players resolver
 - `core/src/registry/` — team registry (single-team views)
 - `core/src/history/` — season chain, auction prices, FAAB, provenance
-- `core/src/engines/` — keepers, cap, points, valuation (pure)
+- `core/src/engines/` — keepers, cap, points, valuation, salary history + season recap (pure)
+- `core/src/values/` — value sources: the ADP curve, the ESPN converter, CSV matching
+  (a source's dollars and the VORP fallback are **different axes** — see `ValueLine.ranked`)
 - `core/src/config/league-rules.ts` — house rules (with the two placeholders)
 - `cli/src/commands/` — one file per command
 

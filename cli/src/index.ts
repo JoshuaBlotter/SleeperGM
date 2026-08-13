@@ -10,6 +10,7 @@ import { trades } from "./commands/trades";
 import { values } from "./commands/values";
 import { rookies } from "./commands/rookies";
 import { draftValue } from "./commands/draftValue";
+import { history } from "./commands/history";
 import { scarcity } from "./commands/scarcity";
 import { tiers } from "./commands/tiers";
 import { brain } from "./commands/brain";
@@ -74,6 +75,11 @@ program
   .command("draft-value")
   .description("Last year's auction buys vs this year's projected worth (historical draft value)")
   .action(run(draftValue));
+
+program
+  .command("history")
+  .description("Last season's rookie + auction draft recap, and the salary ledger it escalates into")
+  .action(run(history));
 
 program
   .command("scarcity")

@@ -56,12 +56,14 @@ export {
   loadAllPlayers,
   loadTrending,
   loadDraftValue,
+  loadSeasonRecap,
   loadScarcity,
   loadTiers,
   loadTargetPool,
   leagueStarterSlots,
   loadPlayerDetails,
   loadLeagueBrain,
+  teamSalaryLadders,
   worthSource,
   worthSources,
   STREAMER_POSITIONS,
@@ -69,6 +71,10 @@ export {
 export type { Ctx, KeeperData, AllPlayerRow, TrendingRow, PlayerDetail, SeasonFinish, TierBoard } from "./app";
 export { tierize, bandize } from "./engines/tiers";
 export type { Tier, TierPlayer } from "./engines/tiers";
+export { salaryLadder } from "./engines/salaryHistory";
+export type { SalarySeason, SalaryEvent, SalaryAnchor, SalaryLadderOpts } from "./engines/salaryHistory";
+export { salarySchedule } from "./engines/keepers";
+export type { SalaryYear } from "./engines/keepers";
 export { gradePlayer } from "./engines/playerDetail";
 export type { PlayerGrade, Grade, Archetype } from "./engines/playerDetail";
 export { seasonWeeklyPoints } from "./engines/points";
@@ -79,11 +85,15 @@ export { parseValueCsv, matchValues, normalizeName } from "./values/valueSheet";
 export type { ValueRow, MatchResult } from "./values/valueSheet";
 export { adpToAuctionValues } from "./values/adp";
 export type { AdpPlayer } from "./values/adp";
+export { espnToValueRows, ESPN_POSITIONS, ESPN_PRO_TEAMS } from "./values/espn";
+export type { EspnPlayerNode, EspnOptions } from "./values/espn";
 export { listValueSources, getActiveSource, valueSourceExists, loadValueMap, loadValueRows, loadOverrides } from "./values/load";
 export { computeRookieBoard, rankRookieProspects } from "./engines/rookies";
 export type { RookieBoard, RookiePick, BaseSlot, TeamCapital, StandingRow, TradedPick, RookieProspect } from "./engines/rookies";
 export { buildDraftValueReport } from "./engines/draftValue";
 export type { DraftValueReport, DraftValueRow, AuctionBuy } from "./engines/draftValue";
+export { buildSeasonRecap } from "./engines/seasonRecap";
+export type { SeasonRecap, RecapRow, RecapDraftPick, RecapPlayerFacts } from "./engines/seasonRecap";
 export { computeScarcity } from "./engines/scarcity";
 export type { PositionScarcity, ScarcityPlayer } from "./engines/scarcity";
 export { computeLeagueBrain } from "./engines/leagueBrain";

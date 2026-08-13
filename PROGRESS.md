@@ -1,19 +1,58 @@
 # PROGRESS — living state
 
 > Updated as work happens. Read this right after `CLAUDE.md` to know where things stand.
-> Last updated: 2026-08-12 (issues #15/#16/#17 — see the entry below).
+> Last updated: 2026-08-13 (issues #18/#19/#20/#21 — see the entry below).
 
 ## Status snapshot
-- **Health:** `npm run check` is GREEN — typecheck clean, 103 tests across 17 files pass.
-- **All 14 CLI commands work against the live league** (`dashboard`, `team`, `rulebook`, `keepers`,
-  `simulate`, `refresh`, `brain`, `draft-value`, `inflation`, `rookies`, `scarcity`, `tiers`,
-  `trades`, `values`).
+- **Health:** `npm run check` is GREEN — typecheck clean, 121 tests across 20 files pass.
+- **All 15 CLI commands work against the live league** (`dashboard`, `team`, `rulebook`, `keepers`,
+  `simulate`, `refresh`, `brain`, `draft-value`, `history`, `inflation`, `rookies`, `scarcity`,
+  `tiers`, `trades`, `values`).
+- **Four value sources**: `vorp` (built-in), `adp`, `espn`, `fantasypros`. Default `adp`.
 - **All house rules are REAL** (no placeholders): §6.1 positional escalation, §6.4 rookie table,
   per-owner tenure reset, and salary that **accumulates through trades**.
 - **Authoritative salaries imported** from the commissioner's workbook → `config/salaries.csv`
   (Season 2025, 163 players). App reads CSV (preferred) and escalates one year → exact 2026 salaries
   (A.J. Brown $45, Pickens $35, Hurts $29, Achane $25, McConkey $16). Sheet salaries show `†`; players
   not in the sheet fall back to computed (`≈`).
+
+## Shipped 2026-08-13 (issues #18/#19/#20/#21 — the board is the source's, and salaries show their work)
+- **#18 — the "top 12" wasn't the source's top 12.** Two causes, both real.
+  - *Mixed axes.* An imported list covers ~250 players; everyone else fell back to **VORP**, which
+    prices last season's realized points. Interleaving the two put AJ Barner at TE3 (he isn't in the
+    ADP list at all) and left George Kittle out of the top 12. `ValueLine.ranked` now says which of
+    the two produced a number, and **tiers / scarcity / draft targets show only ranked players**.
+    Unranked players keep their VORP worth everywhere else, so the Team page still prices everyone.
+  - *A broken price curve.* `exp(-i/22)` charged **$100** for the #1 pick out of a $200 budget and
+    flattened **139 of 256** players to $1 — ties then broke on Sleeper player-id order, which is how
+    Chris Manhertz outranked Kittle. Refitted to ESPN's published auction values as a stretched
+    exponential `exp(-(i/tau)^1.33)`, `tau = 0.225 × draftable`: matches ESPN within ~$1 at every
+    tenth rank, #1 is now $60, and only 48 of 180 draftable slots sit at $1. Ties break on last
+    season's points via one shared comparator (`engines/board.ts`), so tiers and scarcity can't drift.
+  - Result, measured: TE top-12 under all three real sources now contains Kittle; Manhertz is off
+    every source's tier board including `vorp`.
+- **#21 — ESPN is a real value source now.** `npm run values:espn` → `config/values/espn.csv` (160
+  players) off ESPN's public `kona_player_info` endpoint. Position/team ids map to Sleeper's codes;
+  values are rescaled from ESPN's 10-team/$200 pool to our 12 × $200; $0 players are dropped, because
+  a $0 is ESPN saying "not on the board". The conversion is pure (`core/src/values/espn.ts`) + tested.
+- **#19 — the drilldown has a salary tab.** The sheet is now two tabs: the season (weekly log, grade,
+  archetype — unchanged) and **salary history**, one row per season with what each offseason added
+  and where the number came from: origin event from Sleeper, replayed year, or `†` the commissioner's
+  sheet. `≈` marks a replayed year the sheet goes on to contradict. Every rostered player gets a
+  drilldown now, even with no game log — a rookie still has a salary.
+- **#20 — a League History tab.** Three views on one recap: the **salary ledger** (all 204 rostered
+  players: 2025 salary → escalation → 2026 salary, filterable by team/position/name, with a **CSV
+  download** that carries exactly what the filters leave on screen), the **2025 auction** (all 120
+  bids, who bought, what they cost now) and the **2025 rookie draft** in pick order. Also `sgm history`
+  and `/api/history`. League totals: $2283 in 2025 → $3450 in 2026, +$1167 of escalation.
+- **The ledger and the cap charge are one replay.** `accumulatedSalary` is now the last row of
+  `salarySchedule`; `teamKeeperLines` takes its cost from `salaryLadder`; both read one `salaryInputs`.
+  Regression-checked against the previous snapshot: **204 players, 0 cost changes, 0 ladder
+  mismatches**. Also fixed a latent footgun — a player with no acquisition season arrives as
+  `Number(null) === 0`, which is finite and would have replayed two thousand years of escalation.
+- `npm run check` green (121 tests / 20 files), `web` typecheck and `web:build` clean. Verified in the
+  browser at 375px and 1280px: no horizontal scroll, the ladder fits the sheet, the CSV comes out as
+  205 lines of bare numbers with a UTF-8 BOM, and the scarcity TE window reads as ADP's own top 12.
 
 ## Shipped 2026-08-12 (issues #15/#16/#17 — identity, cards, and the sticky-header gap)
 - **#17 — the page was visible through a band under the top bar.** The sticky stack (top bar →

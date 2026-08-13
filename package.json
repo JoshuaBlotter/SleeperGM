@@ -24,6 +24,7 @@
     "web:build": "npm -w @sgm/web run build",
     "web": "npm run web:build && npm run server",
     "values:adp": "tsx scripts/fetch-adp-values.ts",
+    "values:espn": "tsx scripts/fetch-espn-values.ts",
     "snapshot": "tsx scripts/snapshot.ts",
     "web:static": "npm run snapshot && npm run web:build",
     "web:preview": "npm -w @sgm/web run preview"

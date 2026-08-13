@@ -11,9 +11,10 @@ import { RulesView } from "./views/Rules";
 import { PlayersView } from "./views/Players";
 import { RookiesView } from "./views/Rookies";
 import { TiersView } from "./views/Tiers";
+import { HistoryView } from "./views/History";
 import { PlayerModal } from "./PlayerModal";
 
-type Tab = "dashboard" | "team" | "inflation" | "trades" | "tiers" | "rookies" | "rules" | "players";
+type Tab = "dashboard" | "team" | "inflation" | "trades" | "tiers" | "rookies" | "rules" | "players" | "history";
 
 /** Desktop keeps the full horizontal row; mobile shows the first four plus More. */
 const TABS: { id: Tab; label: string }[] = [
@@ -24,6 +25,7 @@ const TABS: { id: Tab; label: string }[] = [
   { id: "trades", label: "Trades" },
   { id: "rookies", label: "Rookies" },
   { id: "players", label: "Players" },
+  { id: "history", label: "History" },
   { id: "rules", label: "Rules" },
 ];
 
@@ -38,6 +40,7 @@ const MORE: { id: Tab; label: string }[] = [
   { id: "tiers", label: "Tiers" },
   { id: "trades", label: "Trades" },
   { id: "rookies", label: "Rookies" },
+  { id: "history", label: "History" },
   { id: "rules", label: "Rules" },
 ];
 
@@ -206,6 +209,7 @@ export function App() {
         {tab === "tiers" && <TiersView source={activeSource || undefined} />}
         {tab === "rookies" && <RookiesView />}
         {tab === "players" && <PlayersView />}
+        {tab === "history" && <HistoryView />}
         {tab === "rules" && <RulesView />}
       </main>
 

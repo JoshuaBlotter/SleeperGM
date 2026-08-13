@@ -118,8 +118,8 @@ test("toSurplusLines computes surplus, sorts desc, recommends", () => {
     kl("cutme", 5, 50),
   ];
   const values = new Map([
-    ["keepme", { playerId: "keepme", points: 0, par: 0, value: 40 }],
-    ["cutme", { playerId: "cutme", points: 0, par: 0, value: 3 }],
+    ["keepme", { playerId: "keepme", points: 0, par: 0, value: 40, ranked: true }],
+    ["cutme", { playerId: "cutme", points: 0, par: 0, value: 3, ranked: true }],
   ]);
   const out = toSurplusLines(lines, values);
   expect(out[0]!.playerId).toBe("keepme");

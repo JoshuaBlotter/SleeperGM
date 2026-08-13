@@ -377,6 +377,29 @@ h3 { margin: var(--space-6) 0 var(--space-2); color: var(--text-muted); font-siz
 .wk-num { flex: none; height: 14px; font-size: var(--text-micro); line-height: var(--lh-micro); color: var(--text-muted); margin-top: 3px; }
 .wk-key { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-2); }
 
+/* The drilldown's two panes (season / salary). The sheet body has no top padding of its own,
+   so the control supplies the gap under the header. */
+.sheet-seg { margin-bottom: var(--space-4); }
+
+/* ---------- Salary ladder (#19) — one row per season, oldest first.
+   A four-column grid rather than table.grid: that sets white-space:nowrap on every cell, and this
+   has to fit a 390px sheet. Only the "how" column can wrap, and the numbers stay in their tracks. */
+.ladder { list-style: none; margin: 0; padding: 0; border: 1px solid var(--line); border-radius: var(--radius-md); overflow: hidden; }
+.ladder-row {
+  display: grid; grid-template-columns: 3.2rem 1fr auto auto; align-items: baseline;
+  gap: var(--space-2); padding: var(--space-3); border-bottom: 1px solid var(--line-soft);
+  font-size: var(--text-label);
+}
+.ladder-row:last-child { border-bottom: 0; background: var(--accent-wash); }
+.ladder-season { font-weight: var(--weight-bold); font-variant-numeric: tabular-nums; }
+.ladder-how { color: var(--text-muted); min-width: 0; }
+.ladder-note { margin-left: var(--space-2); font-variant-numeric: tabular-nums; }
+.ladder-raise { color: var(--text-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.ladder-salary { font-weight: var(--weight-bold); font-variant-numeric: tabular-nums; white-space: nowrap; text-align: right; }
+.ladder-salary.is-approx { color: var(--text-muted); }
+/* The † / ≈ marks sit in a fixed gutter so the dollar figures still line up when only some rows carry one. */
+.ladder-mark { display: inline-block; width: 0.7rem; text-align: left; color: var(--text-muted); font-weight: var(--weight-medium); }
+
 /* ---------- Card — ONE base rule. Stat cards, info/award cards, notices, tier bands and
    swap cards are all this; variants add only a border color or a 3px left accent. ---------- */
 .card, .info-card, .notice, .tier-band, .swap {

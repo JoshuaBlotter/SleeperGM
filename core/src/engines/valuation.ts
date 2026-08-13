@@ -68,12 +68,14 @@ export function valuePlayers(inp: ValuationInputs): Map<string, ValueLine> {
     const pos = inp.meta.get(id)?.position ?? "?";
     const points = Math.round(pts * 10) / 10;
     if (streamers.has(pos)) {
-      out.set(id, { playerId: id, points, par: 0, value: streamerValueOf(pos) });
+      // `ranked` is the value SOURCE's flag, set by loadValues; the VORP baseline claims every player
+      // it prices, and loadValues clears it for anyone an imported source doesn't list.
+      out.set(id, { playerId: id, points, par: 0, value: streamerValueOf(pos), ranked: true });
       continue;
     }
     const p = par.get(id) ?? 0;
     const value = p > 0 ? Math.max(1, Math.round(1 + p * dollarsPerPoint)) : 1;
-    out.set(id, { playerId: id, points, par: Math.round(p * 10) / 10, value });
+    out.set(id, { playerId: id, points, par: Math.round(p * 10) / 10, value, ranked: true });
   }
   return out;
 }

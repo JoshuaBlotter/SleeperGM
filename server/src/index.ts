@@ -21,6 +21,7 @@ import {
   loadKeeperData,
   loadLeagueBrain,
   loadRookieBoard,
+  loadSeasonRecap,
   loadTrending,
   outstandingRules,
   STREAMER_POSITIONS,
@@ -224,6 +225,15 @@ app.get(
 app.get(
   "/api/rules",
   api(async () => ({ rules: leagueRules, outstanding: outstandingRules() })),
+);
+
+// Salaries, not values — the recap is the same whichever value source is active.
+app.get(
+  "/api/history",
+  api(async () => {
+    const { ctx, data } = await getState();
+    return loadSeasonRecap(ctx, data);
+  }),
 );
 
 app.get(

@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { api, type PlayerDetail, type WeekScore } from "./api";
 import { PlayerAvatar } from "./Avatar";
+import { SalaryKey, SalaryLadder } from "./Salary";
 import { Sheet } from "./Sheet";
 import { money, useAsync } from "./ui";
 import { closePlayer, useOpenPlayer } from "./playerModalStore";
@@ -108,8 +109,45 @@ function WeekBars({
   );
 }
 
+/**
+ * Salary history (#19) — where the keeper cost came from. The season tab answers "is he any good";
+ * this one answers "why does he cost that", which is the question a keeper decision actually turns on.
+ */
+function SalaryTab({ d }: { d: PlayerDetail }) {
+  const rows = d.salaryHistory ?? [];
+  if (!rows.length) {
+    return (
+      <p className="notice">
+        {d.rostered
+          ? "No salary history — this player's acquisition isn't in the league's Sleeper record."
+          : "Free agent — no salary in this league until someone signs him."}
+      </p>
+    );
+  }
+  const first = rows[0]!;
+  const last = rows[rows.length - 1]!;
+  const raise = last.salary - first.salary;
+  return (
+    <>
+      <p className="dim lede">
+        {first.season}: {money(first.salary)} → {last.season}: <strong>{money(last.salary)}</strong>
+        {rows.length > 1 && <> · {money(raise)} of escalation over {rows.length - 1} offseason{rows.length > 2 ? "s" : ""}</>}
+      </p>
+      <SalaryLadder rows={rows} />
+      <SalaryKey rows={rows} />
+    </>
+  );
+}
+
 function Detail({ d }: { d: PlayerDetail }) {
   const g = d.grade;
+  if (!d.weekly.length) {
+    return (
+      <p className="notice">
+        No {d.season} game log for this player — a rookie, or he didn't play a snap that counted in our league.
+      </p>
+    );
+  }
   const gradeClass = g.grade === "A" ? "keep" : g.grade === "B" ? "hold" : "cut";
   const partial = g.firstWeek > 1 || g.lastWeek - g.firstWeek + 1 > g.games;
   return (
@@ -201,6 +239,10 @@ export function PlayerModal() {
   const id = useOpenPlayer();
   const details = useAsync(() => api.playerDetails(), []);
   const d = id ? details.data?.[id] : undefined;
+  const [tab, setTab] = useState<"season" | "salary">("season");
+  // Opening a different player starts on the season tab again — the sheet is reused, so without
+  // this the second player you tap inherits whichever tab the first one was left on.
+  useEffect(() => setTab("season"), [id]);
   return (
     <Sheet
       open={!!id}
@@ -226,9 +268,21 @@ export function PlayerModal() {
       {details.loading ? (
         <p className="dim">Loading…</p>
       ) : d ? (
-        <Detail d={d} />
+        <>
+          {/* Same `.seg` the view headers use — plain buttons, not an ARIA tablist. A tablist without
+              real tabpanels announces a structure that isn't there; `aria-pressed` is the honest one. */}
+          <div className="seg sheet-seg">
+            <button aria-pressed={tab === "season"} className={tab === "season" ? "is-on" : ""} onClick={() => setTab("season")}>
+              {d.season} season
+            </button>
+            <button aria-pressed={tab === "salary"} className={tab === "salary" ? "is-on" : ""} onClick={() => setTab("salary")}>
+              Salary history
+            </button>
+          </div>
+          {tab === "season" ? <Detail d={d} /> : <SalaryTab d={d} />}
+        </>
       ) : (
-        <p className="notice">No last-season game log for this player (e.g. a rookie or deep free agent).</p>
+        <p className="notice">Nothing on file for this player — not on a roster, and no game log last season.</p>
       )}
     </Sheet>
   );

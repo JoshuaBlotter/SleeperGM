@@ -1,7 +1,8 @@
 // Orchestration: compose the pure engines with live (cached) data into view models.
 // Network-touching glue lives here (not in the pure engines) and is shared by the CLI and the server.
 
-import { accumulatedSalary, baseSalary, yearIncrement } from "./engines/keepers";
+import { accumulatedSalary, baseSalary } from "./engines/keepers";
+import { salaryLadder, type SalaryAnchor, type SalarySeason } from "./engines/salaryHistory";
 import { buildAcquisitionIndex, buildPresenceIndex, ownerTenureStart, seasonsInLeague } from "./history/tenure";
 import { buildChain } from "./history/chain";
 import { buildDraftIndex } from "./history/prices";
@@ -10,6 +11,7 @@ import { buildProvenance } from "./history/provenance";
 import { computeInflation, type InflationPlayer, type InflationResult } from "./engines/inflation";
 import { computeRookieBoard, rankRookieProspects, type RookieBoard, type RookieProspect, type StandingRow, type TradedPick } from "./engines/rookies";
 import { buildDraftValueReport, type AuctionBuy, type DraftValueReport } from "./engines/draftValue";
+import { buildSeasonRecap, type RecapDraftPick, type RecapPlayerFacts, type SeasonRecap } from "./engines/seasonRecap";
 import { computeScarcity, type PositionScarcity, type ScarcityPlayer } from "./engines/scarcity";
 import { computeLeagueBrain, type LeagueBrain, type TeamBrainInput } from "./engines/leagueBrain";
 import { bandize, tierize, type Tier, type TierPlayer } from "./engines/tiers";
@@ -18,7 +20,7 @@ import type { TargetCandidate } from "./engines/draftTargets";
 import { findTeam, loadRegistry } from "./registry/teams";
 import { recommendation, toSurplusLines } from "./engines/surplus";
 import { loadSalarySheet, sheetSalary, sheetSupersededByReacquire } from "./config/salaries";
-import { leagueRules, rookieSlotCost } from "./config/league-rules";
+import { leagueRules, rookieBaseCost, rookieSlotCost } from "./config/league-rules";
 import { loadResolver } from "./sleeper/players";
 import { seasonPoints, seasonWeeklyPoints, type WeekScore } from "./engines/points";
 import { gradePlayer, type PlayerGrade } from "./engines/playerDetail";
@@ -104,9 +106,46 @@ async function loadLastSeasonWeekly(ctx: Ctx): Promise<Map<string, WeekScore[]>>
   return seasonWeeklyPoints(prevSeason?.season ?? ctx.season);
 }
 
+/**
+ * The inputs the salary rules need for one rostered player. Pulled out so the cap charge
+ * (`teamKeeperLines`) and the season-by-season ledger (`teamSalaryLadders`) start from exactly the
+ * same owner tenure and the same sheet anchor — they are two readings of one replay.
+ */
+function salaryInputs(ctx: Ctx, data: KeeperData, team: Team, p: Provenance, pl: PlayerLite) {
+  const tenureStart = Number(ownerTenureStart(p.playerId, team.ownerUserId, ctx.chain, data.acq) ?? p.acquisitionSeason);
+  const originSeason = Number(p.acquisitionSeason);
+  const sheet = data.sheet;
+  // The sheet is a pre-auction snapshot: a player re-acquired in its season or later reset (§6.3) to
+  // something it never captured, so it stops being an anchor for them.
+  const superseded = sheet ? sheetSupersededByReacquire(sheet.season, p.acquisitionSeason, p.acquiredVia) : false;
+  const entry = superseded ? undefined : sheetSalary(sheet, p.playerId, pl.name);
+  const anchor: SalaryAnchor | undefined =
+    entry && sheet ? { season: sheet.season, salary: entry.salary, yearsKept: entry.yearsKept ?? null } : undefined;
+  return { tenureStart, stintStarts: [originSeason, tenureStart], anchor };
+}
+
+/**
+ * Season-by-season salary for every player on a team (#19/#20) — where the salary started, what each
+ * offseason added, and which numbers are the commissioner's rather than ours. The last row of each
+ * ladder IS the keeper cost `teamKeeperLines` charges.
+ */
+export function teamSalaryLadders(ctx: Ctx, data: KeeperData, team: Team): Map<string, SalarySeason[]> {
+  const prov = buildProvenance(team.players, ctx.chain, data.drafts, data.faab, ctx.season);
+  const out = new Map<string, SalarySeason[]>();
+  for (const p of prov) {
+    const pl = ctx.resolve(p.playerId);
+    const { stintStarts, anchor } = salaryInputs(ctx, data, team, p, pl);
+    out.set(
+      p.playerId,
+      salaryLadder({ provenance: p, position: pl.position, stintStarts, throughSeason: Number(ctx.season), anchor }),
+    );
+  }
+  return out;
+}
+
 /** Per-player keeper cost lines for a team (provenance + owner tenure + salary replay/override). */
 export function teamKeeperLines(ctx: Ctx, data: KeeperData, team: Team): KeeperLine[] {
-  const { drafts, faab, acq, presence, sheet, points } = data;
+  const { drafts, faab, presence, points } = data;
   const prov = buildProvenance(team.players, ctx.chain, drafts, faab, ctx.season);
   const currentYear = Number(ctx.season);
   const oldestSeason = Number(ctx.chain[ctx.chain.length - 1]?.season);
@@ -118,27 +157,21 @@ export function teamKeeperLines(ctx: Ctx, data: KeeperData, team: Team): KeeperL
     const yearsInLeague = seasonsInLeague(p.playerId, ctx.chain, presence);
     const facts = { lastSeasonPoints, yearsInLeague };
 
-    const tenureStart = Number(ownerTenureStart(p.playerId, team.ownerUserId, ctx.chain, acq) ?? p.acquisitionSeason);
+    const { tenureStart, stintStarts, anchor } = salaryInputs(ctx, data, team, p, pl);
     const originSeason = Number(p.acquisitionSeason);
     const yearsKept = Number.isFinite(tenureStart) ? Math.max(0, currentYear - tenureStart) : p.yearsKept;
 
-    // 1) Authoritative salary sheet wins — UNLESS re-acquired (auction/FAAB) in the sheet's season or later.
-    const superseded = sheet ? sheetSupersededByReacquire(sheet.season, p.acquisitionSeason, p.acquiredVia) : false;
-    const entry = superseded ? undefined : sheetSalary(sheet, p.playerId, pl.name);
-    if (entry && sheet) {
-      let cost = entry.salary;
-      let yk = entry.yearsKept ?? Math.max(0, sheet.season - (Number.isFinite(tenureStart) ? tenureStart : sheet.season));
-      for (let year = sheet.season + 1; year <= currentYear; year++) {
-        yk += 1;
-        cost += yearIncrement(pl.position, yk, leagueRules);
-      }
-      cost = Math.max(leagueRules.keeperEscalation.floor, Math.round(cost));
-      return line(p, pl, { base: entry.salary, cost, yearsKept: yk, isPlaceholder: false, source: "sheet", approximate: false, ...facts });
+    // 1) Authoritative salary sheet wins — UNLESS re-acquired (auction/FAAB) in the sheet's season or
+    //    later, which `salaryInputs` already accounts for by withholding the anchor.
+    if (anchor) {
+      const ladder = salaryLadder({ provenance: p, position: pl.position, stintStarts, throughSeason: currentYear, anchor });
+      const cost = ladder[ladder.length - 1]?.salary ?? anchor.salary;
+      const yk = (anchor.yearsKept ?? Math.max(0, anchor.season - (Number.isFinite(tenureStart) ? tenureStart : anchor.season))) + (currentYear - anchor.season);
+      return line(p, pl, { base: anchor.salary, cost, yearsKept: yk, isPlaceholder: false, source: "sheet", approximate: false, ...facts });
     }
 
     // 2) Compute: replay accumulated salary, carrying through the trade to the current owner.
     const { base, isPlaceholder } = baseSalary(p, pl.position, leagueRules);
-    const stintStarts = [originSeason, tenureStart];
     const cost = accumulatedSalary({ originSeason, originCost: base, position: pl.position, stintStarts, throughSeason: currentYear });
 
     const acquiredSalary = accumulatedSalary({
@@ -211,15 +244,24 @@ export async function loadValues(
   const players = (await sleeper.getPlayers()) ?? {};
   if (source === "vorp") return applyOverrides(vorp, players);
 
-  // Overlay the active source on the VORP fallback (source wins where it has a player).
+  // Overlay the active source on the VORP fallback (source wins where it has a player). Anyone the
+  // source does NOT list keeps a VORP dollar so the Team page still has a worth for them, but is
+  // marked `ranked: false` — VORP prices last season's points and the source prices this season's
+  // market, and interleaving the two puts last year's blocking tight end above George Kittle (#18).
   const { byId } = loadValueMap(source, players);
-  const out = new Map(vorp);
-  for (const [id, value] of byId) out.set(id, { playerId: id, points: 0, par: 0, value });
+  const out = new Map<string, ValueLine>();
+  for (const [id, line] of vorp) out.set(id, { ...line, ranked: false });
+  for (const [id, value] of byId) out.set(id, priced(out.get(id), id, value));
   return applyOverrides(out, players);
 }
 
+/** A sourced/overridden value, keeping whatever VORP already knew about the player's actual season. */
+function priced(prev: ValueLine | undefined, playerId: string, value: number): ValueLine {
+  return { playerId, points: prev?.points ?? 0, par: prev?.par ?? 0, value, ranked: true };
+}
+
 function applyOverrides(map: Map<string, ValueLine>, players: Record<string, import("./sleeper/client").RawPlayer>) {
-  for (const [id, value] of loadOverrides(players)) map.set(id, { playerId: id, points: 0, par: 0, value });
+  for (const [id, value] of loadOverrides(players)) map.set(id, priced(map.get(id), id, value));
   return map;
 }
 
@@ -443,6 +485,67 @@ export function loadDraftValue(ctx: Ctx, data: KeeperData): DraftValueReport {
   return buildDraftValueReport(buys, auctionSeason, ctx.season, leagueInflation(ctx, data).multiplier);
 }
 
+/**
+ * Last season's draft recap + the salary ledger (#20). Source-INDEPENDENT: this is about salaries and
+ * what actually happened, not about what anyone is worth, so it is baked once rather than per source.
+ *
+ * The draft indexes the rest of the app uses (`data.drafts`) collapse a season to player -> price,
+ * which is all the keeper engine needs but loses the board — who bought, and in what order. So the
+ * picks are re-read here (cached, so no extra network) to recap the auction and the rookie draft as
+ * they were run.
+ */
+export async function loadSeasonRecap(ctx: Ctx, data: KeeperData): Promise<SeasonRecap> {
+  const prev = ctx.chain.find((c) => c.leagueId !== ctx.leagueId) ?? ctx.chain[0];
+  const season = prev?.season ?? ctx.season;
+
+  // Manager names: `picked_by` is a stable user_id, so a manager still in the league keeps today's
+  // team name; one who has since left is looked up in that season's own user list.
+  const teamByUser = new Map<string, string>();
+  for (const u of (await sleeper.getUsers(prev?.leagueId ?? ctx.leagueId)) ?? []) {
+    teamByUser.set(u.user_id, u.metadata?.team_name?.trim() || u.display_name || u.user_id);
+  }
+  for (const t of ctx.registry) if (t.ownerUserId) teamByUser.set(t.ownerUserId, t.teamName);
+
+  const auctionPicks: RecapDraftPick[] = [];
+  const rookiePicks: RecapDraftPick[] = [];
+  for (const d of (await sleeper.getDrafts(prev?.leagueId ?? ctx.leagueId)) ?? []) {
+    for (const p of (await sleeper.getDraftPicks(d.draft_id)) ?? []) {
+      if (!p.player_id) continue;
+      const raw = p.metadata?.amount;
+      const bid = raw !== undefined && raw !== "" && Number.isFinite(Number(raw)) ? Number(raw) : null;
+      const slot = p.draft_slot ?? 0;
+      // No bid means a linear (rookie) pick, whose salary comes from the §6.4 table, not the board.
+      const kind = bid === null ? "rookie" : "auction";
+      const pick: RecapDraftPick = {
+        playerId: p.player_id,
+        kind,
+        pickNo: p.pick_no ?? 0,
+        round: p.round ?? 0,
+        slot,
+        salary: bid ?? rookieBaseCost(slot, ctx.resolve(p.player_id).position, leagueRules),
+        byTeam: p.picked_by ? (teamByUser.get(p.picked_by) ?? null) : null,
+      };
+      (kind === "rookie" ? rookiePicks : auctionPicks).push(pick);
+    }
+  }
+
+  const facts = new Map<string, RecapPlayerFacts>();
+  const add = (id: string, extra: Partial<RecapPlayerFacts> = {}) => {
+    if (facts.has(id)) return;
+    const pl = ctx.resolve(id);
+    facts.set(id, { name: pl.name, position: pl.position, nflTeam: pl.team, salaryHistory: [], rostered: false, ownerTeam: null, thisSalary: null, ...extra });
+  };
+  for (const t of ctx.registry) {
+    const ladders = teamSalaryLadders(ctx, data, t);
+    for (const l of teamKeeperLines(ctx, data, t)) {
+      add(l.playerId, { salaryHistory: ladders.get(l.playerId) ?? [], rostered: true, ownerTeam: t.teamName, thisSalary: l.keeperCostNextYear });
+    }
+  }
+  for (const p of [...auctionPicks, ...rookiePicks]) add(p.playerId); // drafted then dropped — still part of the recap
+
+  return buildSeasonRecap({ season, nextSeason: ctx.season, auctionPicks, rookiePicks, facts });
+}
+
 /** A player's positional finish in one season: e.g. RB3 in 2024. */
 export interface SeasonFinish {
   season: string;
@@ -464,6 +567,8 @@ export interface PlayerDetail {
   rostered: boolean;
   teamName: string | null;
   keeperCost: number | null;
+  /** Season-by-season salary (#19), oldest first. Empty for a free agent — no salary to have a history. */
+  salaryHistory: SalarySeason[];
 }
 
 const FINISH_POSITIONS = new Set(["QB", "RB", "WR", "TE", "K", "DEF"]);
@@ -498,28 +603,30 @@ async function loadSeasonFinishes(ctx: Ctx): Promise<Map<string, SeasonFinish[]>
 }
 
 /**
- * Per-player drilldown details for every relevant player with a last-season game log (source-independent:
- * weekly points + grade + keeper cost don't depend on the value source). Baked whole so the web modal can
- * look a player up with no round-trip. Relevant = rostered OR scored ≥40 last season.
+ * Per-player drilldown details (source-independent: weekly points, grade, keeper cost and salary
+ * history don't depend on the value source). Baked whole so the web modal can look a player up with
+ * no round-trip. Relevant = rostered OR scored ≥80 last season.
+ *
+ * Every rostered player gets an entry even with no game log — a rookie or a player who missed the
+ * whole season still has a salary history (#19), and the drilldown is where you read it.
  */
 export async function loadPlayerDetails(ctx: Ctx, data: KeeperData): Promise<Record<string, PlayerDetail>> {
   const [weekly, finishes] = await Promise.all([loadLastSeasonWeekly(ctx), loadSeasonFinishes(ctx)]);
   const prev = ctx.chain.find((c) => c.leagueId !== ctx.leagueId) ?? ctx.chain[0];
   const season = prev?.season ?? ctx.season;
 
-  const rostered = new Map<string, { teamName: string; keeperCost: number }>();
+  const rostered = new Map<string, { teamName: string; keeperCost: number; salaryHistory: SalarySeason[] }>();
   for (const t of ctx.registry) {
-    for (const l of teamKeeperLines(ctx, data, t)) rostered.set(l.playerId, { teamName: t.teamName, keeperCost: l.keeperCostNextYear });
+    const ladders = teamSalaryLadders(ctx, data, t);
+    for (const l of teamKeeperLines(ctx, data, t)) {
+      rostered.set(l.playerId, { teamName: t.teamName, keeperCost: l.keeperCostNextYear, salaryHistory: ladders.get(l.playerId) ?? [] });
+    }
   }
 
-  const out: Record<string, PlayerDetail> = {};
-  for (const [id, log] of weekly) {
-    if (!log.length) continue;
-    const total = log.reduce((s, x) => s + x.points, 0);
-    const r = rostered.get(id);
-    if (!r && total < 80) continue; // trim: rostered players + last season's real contributors (drop deep scrubs)
+  const detail = (id: string, log: WeekScore[]): PlayerDetail => {
     const pl = ctx.resolve(id);
-    out[id] = {
+    const r = rostered.get(id);
+    return {
       playerId: id,
       name: pl.name,
       position: pl.position,
@@ -531,8 +638,18 @@ export async function loadPlayerDetails(ctx: Ctx, data: KeeperData): Promise<Rec
       rostered: !!r,
       teamName: r?.teamName ?? null,
       keeperCost: r?.keeperCost ?? null,
+      salaryHistory: r?.salaryHistory ?? [],
     };
+  };
+
+  const out: Record<string, PlayerDetail> = {};
+  for (const [id, log] of weekly) {
+    if (!log.length) continue;
+    const total = log.reduce((s, x) => s + x.points, 0);
+    if (!rostered.has(id) && total < 80) continue; // trim: rostered players + last season's real contributors
+    out[id] = detail(id, log);
   }
+  for (const id of rostered.keys()) if (!out[id]) out[id] = detail(id, []);
   return out;
 }
 
@@ -545,15 +662,17 @@ export interface TierBoard {
 
 /**
  * Tier board (#4): gap-cluster the value-ranked pool into draft tiers, per-position and cross-position.
- * Value-dependent (ranks come from the active source).
+ * Value-dependent (ranks come from the active source) — and it is the SOURCE'S board, so a player the
+ * active source doesn't list is left off rather than ranked on a VORP dollar (see loadValues).
  */
 export function loadTiers(ctx: Ctx, data: KeeperData): TierBoard {
   const byPos: Record<string, TierPlayer[]> = { QB: [], RB: [], WR: [], TE: [] };
   const all: TierPlayer[] = [];
   for (const [id, v] of data.values) {
+    if (!v.ranked) continue;
     const pl = ctx.resolve(id);
     if (!(pl.position in byPos)) continue;
-    const tp: TierPlayer = { playerId: id, name: pl.name, position: pl.position, nflTeam: pl.team, value: v.value };
+    const tp: TierPlayer = { playerId: id, name: pl.name, position: pl.position, nflTeam: pl.team, value: v.value, points: data.points.get(id) };
     byPos[pl.position]!.push(tp);
     all.push(tp);
   }
@@ -586,6 +705,7 @@ export function loadTargetPool(ctx: Ctx, data: KeeperData): TargetCandidate[] {
     }
   }
   for (const [id, v] of data.values) {
+    if (!v.ranked) continue; // the source's board, same as tiers/scarcity
     if (rosteredIds.has(id) || v.value < 3) continue; // cap depth: skip $0–2 free-agent scrubs (never real targets)
     const pl = ctx.resolve(id);
     if (!SCARCITY_POSITIONS.includes(pl.position)) continue;
@@ -605,6 +725,9 @@ export function leagueStarterSlots(ctx: Ctx): Record<string, number> {
  * worth ≥ keeper cost, i.e. positive surplus) — same assumption the inflation model uses. This is a
  * better proxy than raw "rostered" before managers lock keepers: overpriced roster players are treated
  * as likely cuts (available), so the map differentiates positions instead of reading 100% everywhere.
+ *
+ * The window is the ACTIVE SOURCE'S top N — players it doesn't rank are left out, because a VORP
+ * fallback dollar isn't on the same axis and would jump the queue (#18).
  */
 export function loadScarcity(ctx: Ctx, data: KeeperData, topN = 12): PositionScarcity[] {
   const keptIds = new Set<string>();
@@ -612,9 +735,10 @@ export function loadScarcity(ctx: Ctx, data: KeeperData, topN = 12): PositionSca
 
   const players: ScarcityPlayer[] = [];
   for (const [id, v] of data.values) {
+    if (!v.ranked) continue;
     const pl = ctx.resolve(id);
     if (!SCARCITY_POSITIONS.includes(pl.position)) continue;
-    players.push({ playerId: id, name: pl.name, position: pl.position, nflTeam: pl.team, value: v.value, kept: keptIds.has(id) });
+    players.push({ playerId: id, name: pl.name, position: pl.position, nflTeam: pl.team, value: v.value, kept: keptIds.has(id), points: data.points.get(id) });
   }
   return computeScarcity(players, SCARCITY_POSITIONS, topN);
 }

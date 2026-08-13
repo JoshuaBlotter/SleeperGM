@@ -2,6 +2,43 @@
 
 Non-obvious choices and their rationale, so we don't re-litigate them. Newest at top.
 
+## 2026-08-13 — Issues #18/#19/#20/#21: the value board is the SOURCE's board, and salaries show their work
+
+- **A value board only shows players the active source ranks.** #18 is right that "top 12 at the
+  position" is worthless if it isn't the source's top 12. It wasn't: an imported list covers ~250
+  players, and everyone else kept a **VORP** dollar — which prices *last season's realized points*,
+  not this season's market. Those are different axes, so an unranked blocking tight end with a good
+  2025 outranked George Kittle. `ValueLine.ranked` now records which of the two produced a number,
+  and tiers/scarcity/targets use only ranked players. Unranked players **keep their VORP worth**
+  everywhere else — the Team page needs a dollar for every rostered player, and $1-ing a stud the
+  source happens to omit would be worse than the bug. Rescaling VORP onto the source's scale was the
+  other option and was rejected: it fixes the units and not the disagreement, which is the actual
+  problem.
+- **The ADP→dollars curve is fitted to ESPN's real auction values, not guessed.** The old
+  `exp(-i/22)` charged **$100** for the #1 pick out of a $200 budget and flattened 139 of 256
+  players to $1 — half the draftable board tied, ordered by nothing. ESPN publishes an actual
+  auction value per player, and its curve has a **flat head** ($57 at #1, $48 at #11) and then a
+  hard collapse ($2 by #101), which no plain exponential fits. A stretched exponential,
+  `exp(-(i/tau)^1.33)` with `tau = 0.225 × draftable`, reproduces it to within ~$1 at every tenth
+  rank. Ties then break on last season's points (`engines/board.ts`) — the only other fact the board
+  has, and better than the Sleeper-id order that was deciding it before.
+- **ESPN is a generated source, so it's rescaled; the paste-in slots aren't.** `espn.csv` comes from
+  ESPN's stock 10-team/$200 league, so its values sum to $2000 and are scaled to our $2400 — same
+  treatment `adp.csv` gets, because both are generated and can be recalibrated honestly. Players
+  ESPN prices at **$0 are dropped rather than kept at $0**: a $0 is ESPN saying "not on the board",
+  which is a reason to leave someone out, not a rank to sort.
+- **The salary ladder and the keeper cost are one replay, not two.** #19/#20 both need the
+  season-by-season salary chain, and the danger with a second implementation is that the ledger a
+  manager reads stops matching the cost the cap engine charges. So `accumulatedSalary` is now the
+  last row of `salarySchedule`, `teamKeeperLines` takes its cost from `salaryLadder`, and both read
+  the same tenure/anchor inputs from one `salaryInputs`. Verified against the previous snapshot:
+  204 rostered players, zero cost changes, and every ladder ends on the charged salary.
+- **A year the sheet contradicts is marked, not smoothed.** For a sheet-anchored player the replayed
+  years *before* the anchor often don't reach the sheet's number (A.J. Brown replays to $23 for 2025;
+  the sheet says $36). Those rows carry `≈` and the sheet still wins from its season on. Hiding them
+  would leave a manager with a $1 origin and a $36 salary and no account of the gap; showing them
+  unmarked would pass a reconstruction off as the league's books.
+
 ## 2026-08-12 — Issue #15: adding color back without adding emoji
 
 The issue is right that the redesign drained the app of personality, and right that emoji would read

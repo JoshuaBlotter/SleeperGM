@@ -5,12 +5,15 @@
 // a new tier starts when the drop to the next player is large relative to their value. That lifts Josh
 // Allen above the QB pack and groups Trey McBride with elite WRs in the cross-position view.
 
+import { compareBoard } from "./board";
+
 export interface TierPlayer {
   playerId: string;
   name: string;
   position: string;
   nflTeam: string | null;
   value: number;
+  points?: number; // last season's fantasy points — breaks the many ties at the same dollar
 }
 
 export interface Tier {
@@ -40,7 +43,7 @@ const BAND_EDGES = [60, 45, 32, 22, 14, 8];
 
 /** Bucket players into fixed $ bands (draft-relevant: below the lowest edge is dropped). Pure. */
 export function bandize(players: TierPlayer[], edges: number[] = BAND_EDGES): Tier[] {
-  const sorted = [...players].sort((a, b) => b.value - a.value);
+  const sorted = [...players].sort(compareBoard);
   const buckets: TierPlayer[][] = edges.map(() => []);
   for (const p of sorted) {
     const i = edges.findIndex((lo) => p.value >= lo);
@@ -63,7 +66,7 @@ export function tierize(players: TierPlayer[], opts: TierOptions = {}): Tier[] {
   const gapPct = opts.gapPct ?? 0.2;
   const absBreak = opts.absBreak ?? 6;
   const minGap = opts.minGap ?? 2;
-  const sorted = [...players].sort((a, b) => b.value - a.value).slice(0, opts.limit ?? players.length);
+  const sorted = [...players].sort(compareBoard).slice(0, opts.limit ?? players.length);
 
   const tiers: Tier[] = [];
   let cur: TierPlayer[] = [];

@@ -1,0 +1,162 @@
+# ESPN auction values (PPR, 2026), rescaled from ESPN's 10-team pool to 12 x $200
+name,position,team,value
+Jahmyr Gibbs,RB,DET,68
+Bijan Robinson,RB,ATL,67
+Ja'Marr Chase,WR,CIN,67
+Puka Nacua,WR,LAR,66
+Jaxon Smith-Njigba,WR,SEA,65
+Christian McCaffrey,RB,SF,64
+Amon-Ra St. Brown,WR,DET,62
+Jonathan Taylor,RB,IND,62
+CeeDee Lamb,WR,DAL,61
+De'Von Achane,RB,MIA,60
+Justin Jefferson,WR,MIN,58
+James Cook III,RB,BUF,55
+Jeremiyah Love,RB,ARI,54
+Drake London,WR,ATL,52
+Ashton Jeanty,RB,LV,50
+Rashee Rice,WR,KC,48
+Trey McBride,TE,ARI,46
+Saquon Barkley,RB,PHI,44
+Derrick Henry,RB,BAL,43
+Chase Brown,RB,CIN,42
+Kenneth Walker III,RB,KC,41
+Breece Hall,RB,NYJ,40
+Brock Bowers,TE,LV,38
+Omarion Hampton,RB,LAC,38
+Nico Collins,WR,HOU,37
+A.J. Brown,WR,NE,36
+Garrett Wilson,WR,NYJ,36
+Chris Olave,WR,NO,35
+George Pickens,WR,DAL,34
+Josh Jacobs,RB,GB,32
+Javonte Williams,RB,DAL,31
+Malik Nabers,WR,NYG,30
+Tetairoa McMillan,WR,CAR,29
+Zay Flowers,WR,BAL,28
+DeVonta Smith,WR,PHI,26
+Josh Allen,QB,BUF,26
+Kyren Williams,RB,LAR,26
+Cam Skattebo,RB,NYG,25
+Travis Etienne Jr.,RB,NO,25
+Quinshon Judkins,RB,CLE,24
+Bucky Irving,RB,TB,23
+Emeka Egbuka,WR,TB,23
+Davante Adams,WR,LAR,22
+Ladd McConkey,WR,LAC,20
+Terry McLaurin,WR,WAS,20
+Jaylen Waddle,WR,DEN,18
+Tee Higgins,WR,CIN,18
+Jameson Williams,WR,DET,17
+Colston Loveland,TE,CHI,16
+Tyler Warren,TE,IND,16
+Carnell Tate,WR,TEN,14
+Luther Burden III,WR,CHI,13
+Rome Odunze,WR,CHI,13
+DJ Moore,WR,BUF,12
+Drake Maye,QB,NE,12
+Jayden Daniels,QB,WAS,12
+Lamar Jackson,QB,BAL,12
+Bhayshul Tuten,RB,JAX,11
+D'Andre Swift,RB,CHI,11
+Jalen Hurts,QB,PHI,11
+David Montgomery,RB,HOU,10
+Jadarian Price,RB,SEA,10
+TreVeyon Henderson,RB,NE,10
+Alec Pierce,WR,IND,8
+Courtland Sutton,WR,DEN,8
+Michael Pittman Jr.,WR,PIT,8
+Tony Pollard,RB,TEN,8
+DK Metcalf,WR,PIT,7
+Harold Fannin Jr.,TE,CLE,7
+Jordyn Tyson,WR,NO,7
+Kyle Pitts Sr.,TE,ATL,7
+Marvin Harrison Jr.,WR,ARI,7
+Sam LaPorta,TE,DET,7
+Jaxson Dart,QB,NYG,6
+Joe Burrow,QB,CIN,6
+Mike Evans,WR,SF,6
+Parker Washington,WR,JAX,6
+Bo Nix,QB,DEN,5
+Brian Thomas Jr.,WR,JAX,5
+Brock Purdy,QB,SF,5
+Christian Watson,WR,GB,5
+Dak Prescott,QB,DAL,5
+Matthew Golden,WR,GB,5
+Matthew Stafford,QB,LAR,5
+Michael Wilson,WR,ARI,5
+Trevor Lawrence,QB,JAX,5
+Caleb Williams,QB,CHI,4
+Jakobi Meyers,WR,JAX,4
+Jaylen Warren,RB,PIT,4
+Jordan Addison,WR,MIN,4
+Josh Downs,WR,IND,4
+Justin Herbert,QB,LAC,4
+Khalil Shakir,WR,BUF,4
+Patrick Mahomes,QB,KC,4
+Travis Hunter,WR,JAX,4
+Wan'Dale Robinson,WR,TEN,4
+Aaron Jones Sr.,RB,MIN,2
+Chuba Hubbard,RB,CAR,2
+Dallas Goedert,TE,PHI,2
+Dalton Kincaid,TE,BUF,2
+George Kittle,TE,SF,2
+Hunter Henry,TE,NE,2
+Isaiah Likely,TE,NYG,2
+J.K. Dobbins,RB,DEN,2
+Jacory Croskey-Merritt,RB,WAS,2
+Jake Ferguson,TE,DAL,2
+Jayden Reed,WR,GB,2
+Jonathon Brooks,RB,CAR,2
+Kenny Gainwell,RB,TB,2
+Kenyon Sadiq,TE,NYJ,2
+Kyle Monangai,RB,CHI,2
+Makai Lemon,WR,PHI,2
+Mark Andrews,TE,BAL,2
+Rachaad White,RB,WAS,2
+Rhamondre Stevenson,RB,NE,2
+Rico Dowdle,RB,PIT,2
+RJ Harvey,RB,DEN,2
+T.J. Hockenson,TE,MIN,2
+Travis Kelce,TE,KC,2
+Tucker Kraft,TE,GB,2
+Xavier Worthy,WR,KC,2
+Adonai Mitchell,WR,NYJ,1
+Alvin Kamara,RB,NO,1
+Baker Mayfield,QB,TB,1
+Blake Corum,RB,LAR,1
+Brian Robinson Jr.,RB,ATL,1
+Calvin Ridley,WR,TEN,1
+Chris Godwin Jr.,WR,TB,1
+Chris Rodriguez Jr.,RB,JAX,1
+Daniel Jones,QB,IND,1
+De'Zhaun Stribling,WR,SF,1
+Deebo Samuel Sr.,WR,SF,1
+Denzel Boston,WR,CLE,1
+Dylan Sampson,RB,CLE,1
+Germie Bernard,WR,PIT,1
+Isiah Pacheco,RB,DET,1
+Jalen Coker,WR,CAR,1
+Jalen McMillan,WR,TB,1
+Jared Goff,QB,DET,1
+Jayden Higgins,WR,HOU,1
+Jerry Jeudy,WR,CLE,1
+Jordan Mason,RB,MIN,1
+Juwan Johnson,TE,NO,1
+KC Concepcion,WR,CLE,1
+Kyler Murray,QB,MIN,1
+Malik Willis,QB,MIA,1
+Mike Washington Jr.,RB,LV,1
+Quentin Johnston,WR,LAC,1
+Rashid Shaheed,WR,SEA,1
+Ray Davis,RB,BUF,1
+Romeo Doubs,WR,NE,1
+Stefon Diggs,WR,WAS,1
+Tank Bigsby,RB,PHI,1
+Terrance Ferguson,TE,LAR,1
+Tre Tucker,WR,LV,1
+Tyler Allgeier,RB,ARI,1
+Tyler Shough,QB,NO,1
+Tyrone Tracy Jr.,RB,NYG,1
+Woody Marks,RB,HOU,1
+Zach Charbonnet,RB,SEA,1

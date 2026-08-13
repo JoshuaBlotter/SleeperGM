@@ -10,7 +10,13 @@ VORP model (fallback for anyone the source is missing), and `overrides.csv` alwa
 
 ## Sources here
 - **`adp.csv`** — auto-generated from Fantasy Football Calculator's public ADP, converted to auction $.
-  Refresh with `npm run values:adp`. This is the "extrapolate from ADP" source.
+  Refresh with `npm run values:adp`. This is the "extrapolate from ADP" source. The rank→dollars curve
+  is fitted to ESPN's published auction values (see `core/src/values/adp.ts`), so the two agree on
+  shape and disagree only where the two sites rank players differently.
+- **`espn.csv`** — auto-generated from ESPN's public fantasy endpoint, which publishes a real auction
+  value per player. Refresh with `npm run values:espn`. ESPN prices its own stock league (10 teams ×
+  $200), so the values are rescaled to our 12 × $200 pool; players ESPN prices at $0 are left out
+  entirely, because a $0 is ESPN saying "not on the draft board".
 - **`fantasypros.csv`, `cbs.csv`, `draftsharks.csv`, `footballguys.csv`** — pre-made **import slots** for
   the expert sites. These sites gate their values behind JS/login, so we can't scrape them reliably —
   instead, paste the site's own auction values into the matching file. Each slot stays **hidden** from

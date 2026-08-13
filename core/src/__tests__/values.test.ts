@@ -31,7 +31,7 @@ test("matchValues maps names (with suffix) and defenses to Sleeper ids", () => {
   expect(unmatched.map((r) => r.name)).toEqual(["Nobody Here"]);
 });
 
-test("adpToAuctionValues: convex, floored at $1, sums near the pool", () => {
+test("adpToAuctionValues: fitted curve, floored at $1, sums near the pool", () => {
   const list: AdpPlayer[] = Array.from({ length: 200 }, (_, i) => ({
     name: `P${i}`,
     position: "RB",
@@ -46,4 +46,21 @@ test("adpToAuctionValues: convex, floored at $1, sums near the pool", () => {
   const total = vals.reduce((s, x) => s + x.value, 0);
   expect(total).toBeGreaterThan(2200); // ≈ 12 × $200 pool
   expect(total).toBeLessThan(2600);
+});
+
+// #18: the curve used to charge $100 for the #1 pick out of a $200 budget and flatten everything past
+// about rank 130 to $1 — half the draftable board tied, so "top 12 at a position" was ordered by
+// nothing. These are the two properties that broke, checked against ESPN's published auction values
+// (its #1 is $57 in a 10-team/$200 league, ≈ $68 rescaled to ours; its rank-101 is $2).
+test("adpToAuctionValues: priced like a real auction, and rank survives deep into the board", () => {
+  const list: AdpPlayer[] = Array.from({ length: 256 }, (_, i) => ({ name: `P${i}`, position: "RB", team: "SF", adp: i + 1 }));
+  const vals = adpToAuctionValues(list, { numTeams: 12, budget: 200 });
+  const at = (rank: number) => vals[rank - 1]!.value;
+
+  expect(at(1)).toBeGreaterThan(45); // a stud costs a quarter-to-a-third of a $200 budget...
+  expect(at(1)).toBeLessThan(75); // ...not half of it
+  expect(at(11)).toBeGreaterThan(at(1) * 0.7); // flat head: the top dozen cluster, as ESPN's do
+  expect(at(101)).toBeGreaterThan(1); // rank still means something 100 picks in
+  const draftable = vals.slice(0, 180);
+  expect(draftable.filter((x) => x.value === 1).length).toBeLessThan(draftable.length / 3);
 });

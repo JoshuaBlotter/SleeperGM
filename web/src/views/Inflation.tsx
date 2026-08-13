@@ -40,7 +40,7 @@ function ScarcityCard({ pos }: { pos: PositionScarcity }) {
       </p>
       {/* The old <details> reveal: same disclosure, but at 44px with the row chevron. */}
       <button className="card-expander" aria-expanded={open} onClick={() => setOpen((o) => !o)}>
-        top {pos.topN} by value
+        top {pos.topN} on the board
         <ChevronDown className="row-chev" size={18} strokeWidth={1.5} aria-hidden="true" />
       </button>
       {open && (
@@ -71,7 +71,9 @@ function Scarcity({ source }: { source?: string }) {
       <p className="dim lede">
         How much of each position's top tier is a projected <strong>keeper</strong> (off the auction board). Higher =
         scarcer = expect a price run. "kept" = worth ≥ keeper cost (a rational keeper); overpriced roster players
-        count as likely cuts, so this firms up as managers actually lock their keepers.
+        count as likely cuts, so this firms up as managers actually lock their keepers. The tier is
+        <strong> {source ?? "the value source"}</strong>'s own top 12 — a player it doesn't rank is off the board, not
+        slotted in on last season's points.
       </p>
       <div className="deck">
         {positions.map((pos: PositionScarcity) => (

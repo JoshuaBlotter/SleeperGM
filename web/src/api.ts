@@ -136,6 +136,7 @@ export interface ScarcityPlayer {
   nflTeam: string | null;
   value: number;
   kept: boolean;
+  points?: number; // last season's points — the tiebreak that orders players priced the same
 }
 export interface PositionScarcity {
   position: string;
@@ -155,6 +156,7 @@ export interface TierPlayer {
   position: string;
   nflTeam: string | null;
   value: number;
+  points?: number;
 }
 export interface Tier {
   tier: number;
@@ -285,6 +287,17 @@ export interface SeasonFinish {
   rank: number;
   points: number;
 }
+export type SalaryEvent = "auction" | "faab" | "free_agent" | "rookie" | "unknown" | "kept" | "traded";
+/** One season of a player's salary: what it was, how it got there, and how much we trust it. */
+export interface SalarySeason {
+  season: string;
+  salary: number;
+  event: SalaryEvent;
+  increase: number | null;
+  note: string | null;
+  source: "sleeper" | "computed" | "sheet";
+  approximate: boolean;
+}
 export interface PlayerDetail {
   playerId: string;
   name: string;
@@ -297,6 +310,42 @@ export interface PlayerDetail {
   rostered: boolean;
   teamName: string | null;
   keeperCost: number | null;
+  /** Oldest first. Absent on a snapshot built before #19; empty for a free agent. */
+  salaryHistory?: SalarySeason[];
+}
+
+// League history (#20): last season's draft board, and the salary ledger it escalates into.
+export interface RecapRow {
+  playerId: string;
+  name: string;
+  position: string;
+  nflTeam: string | null;
+  basis: SalaryEvent;
+  note: string | null;
+  pickNo: number | null;
+  byTeam: string | null;
+  lastSalary: number | null;
+  lastSource: "sleeper" | "computed" | "sheet" | null;
+  approximate: boolean;
+  thisSalary: number | null;
+  delta: number | null;
+  rostered: boolean;
+  ownerTeam: string | null;
+}
+export interface SeasonRecap {
+  season: string;
+  nextSeason: string;
+  auction: RecapRow[];
+  rookie: RecapRow[];
+  ledger: RecapRow[];
+  totals: {
+    auctionSpend: number;
+    auctionPicks: number;
+    rookiePicks: number;
+    ledgerLast: number;
+    ledgerThis: number;
+    ledgerDelta: number;
+  };
 }
 
 export interface RookieProspect {
@@ -394,6 +443,7 @@ interface Bundle {
   playerDetails: Record<string, PlayerDetail>;
   rules: RulesResp;
   rookies: RookieBoard;
+  history?: SeasonRecap; // absent on a snapshot built before #20
 }
 let bundle: Bundle | null | undefined;
 
@@ -490,6 +540,7 @@ export const api = {
   },
   rules: async () => (await getBundle())?.rules ?? get<RulesResp>("/api/rules"),
   rookies: async () => (await getBundle())?.rookies ?? get<RookieBoard>("/api/rookies"),
+  history: async (): Promise<SeasonRecap> => (await getBundle())?.history ?? get<SeasonRecap>("/api/history"),
   playerDetails: async (): Promise<Record<string, PlayerDetail>> => {
     const b = await getBundle();
     if (b) return b.playerDetails ?? {};

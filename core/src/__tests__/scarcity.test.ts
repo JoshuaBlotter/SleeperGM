@@ -34,3 +34,16 @@ test("empty position → zero score, null bestAvailable", () => {
   expect(te!.bestAvailable).toBeNull();
   expect(te!.players).toHaveLength(0);
 });
+
+// #18: a value source ties a LOT of players at the same dollar, and the top-N window has to cut
+// somewhere inside the tie. Last season's points decide it, not the order the value map was built in.
+test("players tied on value are ordered by last season's points, then name", () => {
+  const tied: ScarcityPlayer[] = [
+    { playerId: "blocker", name: "Blocking Guy", position: "TE", nflTeam: "NYG", value: 2, kept: false, points: 4 },
+    { playerId: "star", name: "Real Starter", position: "TE", nflTeam: "SF", value: 2, kept: false, points: 180 },
+    { playerId: "nopoints", name: "Aaron Anonymous", position: "TE", nflTeam: "DAL", value: 2, kept: false },
+  ];
+  const [te] = computeScarcity(tied, ["TE"], 2);
+  expect(te!.players.map((x) => x.playerId)).toEqual(["star", "blocker"]);
+  expect(te!.bestAvailable?.playerId).toBe("star");
+});

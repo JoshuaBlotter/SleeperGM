@@ -74,6 +74,13 @@ export interface ValueLine {
   points: number;
   par: number; // points above replacement
   value: number; // projected auction dollars
+  /**
+   * Does the ACTIVE value source actually rank this player, or is this the VORP fallback?
+   * The two are not on the same axis — VORP prices last season's realized points, an imported list
+   * prices this season's market — so a fallback dollar must never be sorted against a sourced one.
+   * Draft-board views (tiers, scarcity, targets) show only ranked players; see loadValues.
+   */
+  ranked: boolean;
 }
 
 export interface SurplusLine extends KeeperLine {
