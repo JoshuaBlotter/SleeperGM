@@ -87,6 +87,7 @@ export { adpToAuctionValues } from "./values/adp";
 export type { AdpPlayer } from "./values/adp";
 export { espnToValueRows, ESPN_POSITIONS, ESPN_PRO_TEAMS } from "./values/espn";
 export type { EspnPlayerNode, EspnOptions } from "./values/espn";
+export { parseEspnTrends } from "./values/espnTrends";
 export { listValueSources, getActiveSource, valueSourceExists, loadValueMap, loadValueRows, loadOverrides } from "./values/load";
 export { computeRookieBoard, rankRookieProspects } from "./engines/rookies";
 export type { RookieBoard, RookiePick, BaseSlot, TeamCapital, StandingRow, TradedPick, RookieProspect } from "./engines/rookies";

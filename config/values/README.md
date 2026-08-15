@@ -17,6 +17,13 @@ VORP model (fallback for anyone the source is missing), and `overrides.csv` alwa
   value per player. Refresh with `npm run values:espn`. ESPN prices its own stock league (10 teams ×
   $200), so the values are rescaled to our 12 × $200 pool; players ESPN prices at $0 are left out
   entirely, because a $0 is ESPN saying "not on the draft board".
+- **`espn-trends.csv`** — ESPN's public **Live Draft Trends** AVG SALARY: what players are *actually*
+  going for in live ESPN auctions right now (vs. `espn.csv`, which is ESPN's published *estimate*).
+  There's no clean endpoint, so it's paste-driven — copy the whole trends table into a text file and run
+  `npm run values:espn-trends -- <file.txt>`. All the paste noise (repeated names, injury tags, `D/ST`,
+  ESPN's `WSH` spelling) is handled by `core/src/values/espnTrends.ts`. The **raw** ESPN salary is kept
+  (ESPN already prices a $200 auction; the site's inflation control does any league scaling) — rounded
+  to whole dollars; players going for $0 (i.e. undrafted) are left out.
 - **`fantasypros.csv`, `cbs.csv`, `draftsharks.csv`, `footballguys.csv`** — pre-made **import slots** for
   the expert sites. These sites gate their values behind JS/login, so we can't scrape them reliably —
   instead, paste the site's own auction values into the matching file. Each slot stays **hidden** from

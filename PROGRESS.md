@@ -579,6 +579,10 @@ npm run sgm -- dashboard   # lists the 12 real teams (needs network)
   none currently do on the user's roster. `npm run sgm:trace -- "<name>"` diagnoses any that appear.
 
 ## Resolved this session
+- **New value source `espn-trends`** — ESPN Live Draft Trends AVG SALARY (real live-auction market),
+  distinct from `espn` (ESPN's estimate). Noisy paste is parsed structurally by `parseEspnTrends`
+  (`core/src/values/espnTrends.ts`, tested); `npm run values:espn-trends -- <file>` bakes the CSV.
+  250 rows → 215 priced players, 0 unmatched. See DECISIONS 2026-08-15.
 - **T24 (cost basis)** — `buildDraftIndex` now reads every draft/season (auctions + rookie `linear`);
   rookie picks dollarize by `(round, slot)`; trades carry original basis; re-acquire/FAAB reset.
   The user's roster resolves with **zero unknowns** (A.J. Brown → 2022 auction $1 carried through trade;

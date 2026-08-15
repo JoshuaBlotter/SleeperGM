@@ -2,6 +2,28 @@
 
 Non-obvious choices and their rationale, so we don't re-litigate them. Newest at top.
 
+## 2026-08-15 — New value source: ESPN Live Draft Trends (`espn-trends`)
+
+- **A second, distinct ESPN source — not a replacement.** `espn.csv` is ESPN's *published estimate*
+  off the kona endpoint; `espn-trends.csv` is the **AVG SALARY** column of ESPN's public "Live Draft
+  Trends" page — what players are *actually* going for in live auctions. Different data, own file, so
+  the user can compare estimate vs. market.
+- **Kept RAW, not rescaled** (unlike `espn.ts`). ESPN's live auctions already run a $200 budget, the
+  same as ours, and the site's **inflation checkbox** is what scales a source for our league — so
+  rescaling here would double-count. The AVG SALARY dollars are used as-is, rounded to whole dollars
+  with a $1 floor. (First cut rescaled to the pool; the user corrected it — the market number is the
+  point of this source.)
+- **Parsed structurally from the end, not the start.** The trends table only exists as a rendered
+  copy-paste, and it's noisy: the player name repeats (once concatenated, once clean), an injury tag
+  (`Q`/`O`/…) sometimes sits between name and team, defenses read `Texans D/ST`, team codes use ESPN's
+  `WSH`. But every numeric stat carries a decimal or `+/-` sign, so **only rank lines match `/^\d+$/`** —
+  that bounds each record for free (and skips the column-header block above rank 1). Within a record the
+  tail is a fixed shape (`… NAME [INJURY?] TEAM POS AVGPICK d7 AVGSALARY d7 %ROST`), so team/pos/salary
+  are read as fixed offsets from the record's *end*, immune to how many name lines the paste produced.
+  Logic + test live in `core/src/values/espnTrends.ts`; `scripts/build-espn-trends.ts` is IO only.
+- **$0 salary = undrafted, so left out** (mirrors `espn.ts`): a player nobody bids on isn't a $0 to
+  rank. 250 pasted rows → 215 priced players, 0 unmatched against Sleeper.
+
 ## 2026-08-13 — Issues #18/#19/#20/#21: the value board is the SOURCE's board, and salaries show their work
 
 - **A value board only shows players the active source ranks.** #18 is right that "top 12 at the
