@@ -38,9 +38,12 @@ test("K/DEF escalate flat +$1/yr", () => {
   expect(keeperCostNextYear(def, "DEF", { throughSeason: 2026 }).cost).toBe(3); // 2 + 1
 });
 
-test("keeperCostNextYear respects floor", () => {
+test("a $0 pickup keeps a $0 basis (no minimum salary)", () => {
   const p: Provenance = { playerId: "y", acquiredVia: "free_agent", acquisitionCost: 0, acquisitionSeason: "2026", yearsKept: 0, costKnown: true };
-  expect(keeperCostNextYear(p, "K", { throughSeason: 2026 }).cost).toBe(1); // floor
+  // Same-season origin: nothing has escalated yet, so a free pickup is genuinely $0 — not floored to $1.
+  expect(keeperCostNextYear(p, "K", { throughSeason: 2026 }).cost).toBe(0);
+  // Kept a year, it escalates off that $0 basis: K adds a flat $1.
+  expect(keeperCostNextYear(p, "K", { throughSeason: 2027 }).cost).toBe(1);
 });
 
 test("rookieBaseCost reads the (slot x position) table", () => {

@@ -63,7 +63,10 @@ export const leagueRules: LeagueRules = LeagueRulesSchema.parse({
     positionalBase: { QB: 1, RB: 6, WR: 6, TE: 3 },
     flatIncrease: 1,
     flatPositions: ["K", "DEF"],
-    floor: 1,
+    // A $0 pickup (free-agent add / $0 waiver claim) keeps a $0 basis — there is no minimum salary.
+    // Every escalation adds a positive amount, so this floor only ever mattered for a $0 origin, which
+    // the league treats as genuinely free (see DECISIONS 2026-08-19).
+    floor: 0,
     placeholder: false,
   },
 

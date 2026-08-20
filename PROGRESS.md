@@ -1,10 +1,10 @@
 # PROGRESS — living state
 
 > Updated as work happens. Read this right after `CLAUDE.md` to know where things stand.
-> Last updated: 2026-08-13 (issues #18/#19/#20/#21 — see the entry below).
+> Last updated: 2026-08-19 (keeper-cost fixes for $0 pickups — see the entry below).
 
 ## Status snapshot
-- **Health:** `npm run check` is GREEN — typecheck clean, 121 tests across 20 files pass.
+- **Health:** `npm run check` is GREEN — typecheck clean, 127 tests across 21 files pass.
 - **All 15 CLI commands work against the live league** (`dashboard`, `team`, `rulebook`, `keepers`,
   `simulate`, `refresh`, `brain`, `draft-value`, `history`, `inflation`, `rookies`, `scarcity`,
   `tiers`, `trades`, `values`).
@@ -15,6 +15,16 @@
   (Season 2025, 163 players). App reads CSV (preferred) and escalates one year → exact 2026 salaries
   (A.J. Brown $45, Pickens $35, Hurts $29, Achane $25, McConkey $16). Sheet salaries show `†`; players
   not in the sheet fall back to computed (`≈`).
+
+## Fixed 2026-08-19 — two keeper-cost bugs on $0 in-season pickups
+Found by the user on Watson / M. Wilson / Bigsby / Meyers (all $0 waiver/FA adds). See DECISIONS.
+- **Latest add now wins within a season.** `buildFaabIndex` was freezing on a player's *earliest*-week
+  add, so a mid-season drop-and-re-add never reset the cost (§6.3). Michael Wilson (added wk12 $11,
+  wk15 $9, wk16 $0) showed **$11**; now resolves to his wk16 **$0**. Fix carries each add's
+  `status_updated` and keeps the latest (`indexAdds` / `mergeSeasonAdds` in `history/waivers.ts`).
+- **A $0 pickup shows $0, not $1.** `keeperEscalation.floor` was displaying a $1 basis while the math
+  used $0. Per the user, the league has **no minimum salary** → `floor: 0`. Origin reads $0; the WR
+  keeper cost stays $7 (0 + 6 + 1). All four now read: $0 basis → $7 (Bigsby, RB, same).
 
 ## Shipped 2026-08-13 (issues #18/#19/#20/#21 — the board is the source's, and salaries show their work)
 - **#18 — the "top 12" wasn't the source's top 12.** Two causes, both real.

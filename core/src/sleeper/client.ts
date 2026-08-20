@@ -105,6 +105,8 @@ export interface RawTransaction {
   adds: Record<string, number> | null; // playerId -> rosterId
   roster_ids?: number[]; // rosters party to the transaction (both sides of a trade)
   settings: { waiver_bid?: number } | null;
+  status_updated?: number; // epoch ms the transaction settled — orders adds within/across weeks
+  created?: number; // epoch ms the transaction was created (fallback ordering key)
 }
 export interface RawMatchup {
   roster_id: number;

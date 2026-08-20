@@ -1,6 +1,7 @@
 import { expect, test } from "vitest";
 import { indexPicks } from "../history/prices";
-import { indexTransactions } from "../history/waivers";
+import { indexAdds, indexTransactions, mergeSeasonAdds, type FaabAdd } from "../history/waivers";
+import type { RawTransaction } from "../sleeper/client";
 import { buildProvenance } from "../history/provenance";
 import type { AcqEvent, DraftIndex, FaabIndex } from "../types";
 import { chain, picks2024, picks2025, rookiePicks2024, txns2025 } from "./fixtures";
@@ -20,6 +21,32 @@ test("indexTransactions keeps completed waiver/free-agent adds with FAAB", () =>
   expect(idx.get("p_fa1")).toBe(0); // free agent
   expect(idx.has("p_ignored")).toBe(false); // failed
   expect(idx.has("p_traded")).toBe(false); // trade, not an add-for-cost
+});
+
+test("latest add wins across weeks — a mid-season drop & re-add resets cost (§6.3)", () => {
+  // Michael Wilson 2025: added wk12 for $11, re-added wk15 for $9, re-added wk16 for $0.
+  const wk12: RawTransaction[] = [
+    { type: "waiver", status: "complete", adds: { mw: 1 }, settings: { waiver_bid: 11 }, status_updated: 1200 },
+  ];
+  const wk15: RawTransaction[] = [
+    { type: "waiver", status: "failed", adds: { mw: 1 }, settings: { waiver_bid: 1 }, status_updated: 1500 },
+    { type: "waiver", status: "complete", adds: { mw: 1 }, settings: { waiver_bid: 9 }, status_updated: 1501 },
+  ];
+  const wk16: RawTransaction[] = [
+    { type: "waiver", status: "complete", adds: { mw: 1 }, settings: { waiver_bid: 0 }, status_updated: 1600 },
+  ];
+  const season = new Map<string, FaabAdd>();
+  for (const wk of [wk12, wk15, wk16]) mergeSeasonAdds(season, indexAdds(wk));
+  expect(season.get("mw")?.bid).toBe(0); // the wk16 add, not the earlier $11 (was the earliest-week bug)
+});
+
+test("indexAdds keeps the latest add within a batch, ignoring failed bids", () => {
+  const txns: RawTransaction[] = [
+    { type: "waiver", status: "complete", adds: { p: 1 }, settings: { waiver_bid: 5 }, status_updated: 10 },
+    { type: "waiver", status: "failed", adds: { p: 1 }, settings: { waiver_bid: 99 }, status_updated: 20 },
+    { type: "waiver", status: "complete", adds: { p: 1 }, settings: { waiver_bid: 3 }, status_updated: 30 },
+  ];
+  expect(indexAdds(txns).get("p")?.bid).toBe(3);
 });
 
 // Build indexes the way buildDraftIndex would (auctions + rookie draft merged per season).

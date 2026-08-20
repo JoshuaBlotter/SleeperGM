@@ -2,6 +2,24 @@
 
 Non-obvious choices and their rationale, so we don't re-litigate them. Newest at top.
 
+## 2026-08-19 — Two keeper-cost bugs on $0 in-season pickups
+
+Both surfaced by the user on Watson / M. Wilson / Bigsby / Meyers — all four were $0 waiver/FA adds.
+
+1. **`buildFaabIndex` kept a player's EARLIEST-week add, not the latest.** It iterated weeks 1→18 and
+   only set a player's bid `if (!perPlayer.has(pid))`, so the first add of the season stuck. That
+   defeats §6.3 (cut & re-acquire resets cost) *within* a season: Michael Wilson was added wk12 $11,
+   re-added wk15 $9, then wk16 $0 — and the board froze on $11. Fix: `indexAdds` now carries each add's
+   `status_updated` timestamp and `mergeSeasonAdds` keeps the LATEST across weeks (and within a week,
+   robust to list order). Wilson now resolves to his wk16 $0 add like the others. The cross-season
+   "newest priced event wins" was already right in provenance; only the intra-season fold was wrong.
+
+2. **A $0 pickup was displayed as $1** (the `keeperEscalation.floor`) while the escalation math built
+   off the real $0 — so the board showed "$1 basis" but a WR came out to $7 (0+6+1), not $8. The floor
+   only ever bit on a $0 origin (every escalation adds a positive amount). **User's call: there is no
+   minimum salary — a free pickup is genuinely $0.** Set `floor: 0`; origin now shows $0 and the $7
+   keeper cost is unchanged. (The alternative — a real $1 minimum, which would make it $8 — was declined.)
+
 ## 2026-08-15 — New value source: ESPN Live Draft Trends (`espn-trends`)
 
 - **A second, distinct ESPN source — not a replacement.** `espn.csv` is ESPN's *published estimate*
